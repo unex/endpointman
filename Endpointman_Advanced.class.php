@@ -1171,9 +1171,8 @@ class Endpointman_Advanced
 										//$res = sql($sql);
 										$res = sql($sql, 'getAll', DB_FETCHMODE_ASSOC);
 
-										if (count($res) > 0) {
+										if ($res) {  
 											$brand_id = sql($sql, 'getOne');
-										//	$brand_id = $brand_id[0];
 
 											$sql_model = "SELECT id FROM endpointman_model_list WHERE brand = " . $brand_id . " AND model LIKE '%" . $device[2] . "%' LIMIT 1";
 											$sql_ext = "SELECT extension, name FROM users WHERE extension LIKE '%" . $device[3] . "%' LIMIT 1";

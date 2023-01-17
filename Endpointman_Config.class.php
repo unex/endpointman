@@ -406,7 +406,7 @@ class Endpointman_Config
 			$row_out[$i]['installed'] = $row['installed'];
 			$row_out[$i]['hidden'] = $row['hidden'];
 			$row_out[$i]['count'] = $i;
-			$row_out[$i]['products'] = "";
+			$row_out[$i]['products'] = array();
 			if ($row['hidden'] == 1)
 			{
 				$i++;
@@ -423,7 +423,7 @@ class Endpointman_Config
 				$row_out[$i]['products'][$j]['short_name'] = $row2['short_name'];
 				$row_out[$i]['products'][$j]['hidden'] = $row2['hidden'];
 				$row_out[$i]['products'][$j]['count'] = $j;
-				$row_out[$i]['products'][$j]['models'] = "";
+				$row_out[$i]['products'][$j]['models'] = array();
 				if ($row2['hidden'] == 1)
 				{
 					$j++;
@@ -494,7 +494,7 @@ class Endpointman_Config
 				if((array_key_exists('firmware_vers', $row2)) AND ($row2['firmware_vers'] > 0)) {
 					$temp = $this->firmware_update_check($row2['id']);
 					$row_out[$i]['products'][$j]['update_fw'] = 1;
-					$row_out[$i]['products'][$j]['update_vers_fw'] = $temp['data']['firmware_ver'];
+					// $row_out[$i]['products'][$j]['update_vers_fw'] = $temp['data']['firmware_ver'];
 				} else {
 					$row_out[$i]['products'][$j]['update_fw'] = 0;
 					$row_out[$i]['products'][$j]['update_vers_fw'] = "";
@@ -681,9 +681,12 @@ class Endpointman_Config
                             mkdir($this->PHONE_MODULES_PATH . "endpoint");
                         }
 
-                        //TODO: Automate this somehow...
-                        rename($temp_location . "setup.php", $this->PHONE_MODULES_PATH . "setup.php");
-						rename($temp_location . "autoload.php", $this->PHONE_MODULES_PATH . "autoload.php");
+                        //NOTE - 14.0.2.1 provisioner_net package includes an incompatible setup.php - don't copy it
+                        //rename($temp_location . "setup.php", $this->PHONE_MODULES_PATH . "setup.php");
+
+                        //NOTE  - below is a copy of the bad setup.php - needed for device list page.  Should we copy new setup.php instead?
+                        rename($temp_location . "autoload.php", $this->PHONE_MODULES_PATH . "autoload.php");
+
                         rename($temp_location . "endpoint/base.php", $this->PHONE_MODULES_PATH . "endpoint/base.php");
                         rename($temp_location . "endpoint/global_template_data.json", $this->PHONE_MODULES_PATH . "endpoint/global_template_data.json");
                         $sql = "UPDATE endpointman_global_vars SET value = '" . $endpoint_last_mod . "' WHERE var_name = 'endpoint_vers'";
@@ -1528,7 +1531,7 @@ if ($this->configmod->get('debug')) echo format_txt(_("---Inserting Model %_NAME
         $sql = "SELECT * FROM  endpointman_product_list WHERE hidden = 0 AND id ='" . $id . "'";
         $res = sql($sql, 'getAll', DB_FETCHMODE_ASSOC);
 
-        if (count($res) > 0) {
+        if ($res) { 
             $row = sql($sql, 'getRow', DB_FETCHMODE_ASSOC);
 
             $sql = "SELECT directory FROM  endpointman_brand_list WHERE hidden = 0 AND id ='" . $row['brand'] . "'";

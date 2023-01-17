@@ -2,7 +2,7 @@
 	<rawname>endpointman</rawname>
 	<repo>unsupported</repo>
 	<name>OSS PBX End Point Manager</name>
-	<version>14.0.3</version>
+	<version>16.0.0</version>
 	<type>setup</type>
 	<category>Settings</category>
 	<license>GPLv3+</license>
@@ -23,6 +23,7 @@
 		Pull Requests can be made to either of these and are encouraged.
 	</description>
 	<changelog>
+		*16.0.0* Updates for PHP 7.4 and FreePBX 16
 		*14.0.3* Support for PHP 7
 		*14.0.2.1* Line State icon was only red. The state green/red is now fixed and works.
 		*14.0.2* Fixed a Problem if Sysadmin is not installed. Sysadmin is a commercial module and should not be forced to be installed to use OSS EPM.
@@ -90,7 +91,7 @@
 			<field name="name" type="string" length="255"/>
 			<field name="original_name" type="string" length="255"/>
 			<field name="product_id" type="string" length="11"/>
-			<field name="data" type="blob"/>
+			<field name="data" type="blob" notnull="false"/>
 		</table>
 		<table name="endpointman_global_vars">
 			<field name="idnum" type="integer" primarykey="true" autoincrement="true"/>
@@ -102,22 +103,22 @@
 		</table>
 		<table name="endpointman_line_list">
 			<field name="luid" type="integer" primarykey="true" autoincrement="true"/>
-			<field name="ipei" type="string" length="15"/>
+			<field name="ipei" type="string" length="15" default=""/>
 			<field name="mac_id" type="integer"/>
 			<field name="line" type="smallint"/>
 			<field name="ext" type="string" length="15"/>
 			<field name="description" type="string" length="20"/>
-			<field name="custom_cfg_data" type="blob"/>
-			<field name="user_cfg_data" type="blob"/>
+			<field name="custom_cfg_data" type="blob" notnull="false"/>
+			<field name="user_cfg_data" type="blob" notnull="false"/>
 		</table>
 		<table name="endpointman_mac_list">
 			<field name="id" type="integer" primarykey="true" autoincrement="true"/>
 			<field name="mac" type="string" length="12" notnull="false"/>
 			<field name="model" type="string" length="11"/>
 			<field name="template_id" type="integer"/>
-			<field name="global_custom_cfg_data" type="blob"/>
-			<field name="global_user_cfg_data" type="blob"/>
-			<field name="config_files_override" type="text"/>
+			<field name="global_custom_cfg_data" type="blob" notnull="false"/>
+			<field name="global_user_cfg_data" type="blob"  notnull="false"/>
+			<field name="config_files_override" type="text"  notnull="false"/>
 			<field name="global_settings_override" type="blob" notnull="false"/>
 			<field name="specific_settings" type="blob" notnull="false"/>
 			<key name="mac" type="unique">
@@ -130,7 +131,7 @@
 			<field name="model" type="string" length="25"/>
 			<field name="max_lines" type="smallint"/>
 			<field name="template_list" type="text"/>
-			<field name="template_data" type="blob"/>
+			<field name="template_data" type="blob" notnull="false"/>
 			<field name="product_id" type="string" length="11"/>
 			<field name="enabled" type="integer" default="0"/>
 			<field name="hidden" type="integer" default="0"/>
@@ -152,10 +153,10 @@
 			<field name="cfg_dir" type="string" length="255"/>
 			<field name="cfg_ver" type="string" length="255"/>
 			<field name="hidden" type="integer" default="0"/>
-			<field name="firmware_vers" type="string" length="255"/>
-			<field name="firmware_files" type="text"/>
+			<field name="firmware_vers" type="string" length="255" default=""/>
+			<field name="firmware_files" type="text" notnull="false"/>
 			<field name="config_files" type="text" notnull="false"/>
-			<field name="special_cfgs" type="blob"/>
+			<field name="special_cfgs" type="blob" notnull="false"/>
 		</table>
 		<table name="endpointman_template_list">
 			<field name="id" type="integer" primarykey="true" autoincrement="true"/>
@@ -171,7 +172,7 @@
 			<field name="name" type="string" length="255"/>
 			<field name="original_name" type="string" length="255"/>
 			<field name="product_id" type="string" length="11"/>
-			<field name="data" type="blob"/>
+			<field name="data" type="blob" notnull="false"/>
 		</table>
 </database>
 	<depends>

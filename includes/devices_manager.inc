@@ -152,11 +152,11 @@ switch ($sub_type) {
 			foreach($_REQUEST['selected'] as $key => $data) {
 			
 				foreach($lines as $line){
-						if ($data == $line[ext]){
+						if ($data == $line['ext']){
 						$sql = "SELECT mac_id FROM endpointman_line_list WHERE ext = " . $data;
 						$endpoint->eda->sql($sql);
 						$macid = $endpoint->eda->sql($sql,'getrow',DB_FETCHMODE_ASSOC);
-						$_REQUEST['selected'][$key] = $macid[mac_id];
+						$_REQUEST['selected'][$key] = $macid['mac_id'];
 						
 						}
 				}
@@ -302,11 +302,11 @@ switch ($sub_type) {
 			foreach($_REQUEST['selected'] as $key => $data) {
 			
 				foreach($lines as $line){
-						if ($data == $line[ext]){
+						if ($data == $line['ext']){
 						$sql = "SELECT mac_id FROM endpointman_line_list WHERE ext = " . $data;
 						$endpoint->eda->sql($sql);
 						$macid = $endpoint->eda->sql($sql,'getrow',DB_FETCHMODE_ASSOC);
-						$_REQUEST['selected'][$key] = $macid[mac_id];
+						$_REQUEST['selected'][$key] = $macid['mac_id'];
 						
 						}
 				}
