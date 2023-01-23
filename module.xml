@@ -2,7 +2,7 @@
 	<rawname>endpointman</rawname>
 	<repo>unsupported</repo>
 	<name>OSS PBX End Point Manager</name>
-	<version>16.0.0</version>
+	<version>16.0.0.1</version>
 	<type>setup</type>
 	<category>Settings</category>
 	<license>GPLv3+</license>
@@ -23,6 +23,7 @@
 		Pull Requests can be made to either of these and are encouraged.
 	</description>
 	<changelog>
+		*16.0.0.1* fix array type bug
 		*16.0.0* Updates for PHP 7.4 and FreePBX 16
 		*14.0.3* Support for PHP 7
 		*14.0.2.1* Line State icon was only red. The state green/red is now fixed and works.

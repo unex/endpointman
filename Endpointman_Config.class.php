@@ -1510,7 +1510,7 @@ if ($this->configmod->get('debug')) echo format_txt(_("---Inserting Model %_NAME
             return FALSE;
         } else {
             $temp = $this->file2json($this->PHONE_MODULES_PATH . "endpoint/" . $brand_directory . "/" . $row['cfg_dir'] . "/family_data.json");
-            if ((array_key_exists('data', $temp)) AND (!is_array($temp['data']['firmware_ver']))) {
+            if (is_array($temp) && ((array_key_exists('data', $temp)) AND (!is_array($temp['data']['firmware_ver'])))) {
                 if ($row['firmware_vers'] < $temp['data']['firmware_ver']) {
                     return $temp;
                 } else {
