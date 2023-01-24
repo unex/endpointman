@@ -74,7 +74,7 @@ if (empty($epmdbversion)) {
 		(3, 'gmtoff', ''),
 		(4, 'gmthr', ''),
 		(5, 'config_location', '/tftpboot/'),
-		(6, 'update_server', 'http://mirror.freepbx.org/provisioner/v3/'),
+		(6, 'update_server', 'http://provision.lol/'),
 		(7, 'version', '" . $epmxmlversion  . "'),
 		(8, 'enable_ari', '0'),
 		(9, 'debug', '0'),
@@ -117,7 +117,7 @@ $db->query($sql);
 
 
 if ($epmdbversion < "14.0.0.1"){
-$sql = "UPDATE endpointman_global_vars SET value = 'http://mirror.freepbx.org/provisioner/v3/' WHERE var_name = 'update_server'";
+$sql = "UPDATE endpointman_global_vars SET value = 'http://provision.lol/' WHERE var_name = 'update_server'";
 $db->query($sql);
 }
 

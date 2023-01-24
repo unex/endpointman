@@ -334,7 +334,7 @@ function epm_config_tab_manager_ajax_get_add_data(data)
 			$(boxappendL0).append(
 				$('<div/>', { 'class' : 'panel panel-warning', 'id' : 'manager_alert_list_emtry' })
 				.append(
-					$('<div/>', { 'class' : 'panel-heading' }).append( $('<h3/>', { 'class' : 'panel-title' }).text('LIST EMTRY!!!') ),
+					$('<div/>', { 'class' : 'panel-heading' }).append( $('<h3/>', { 'class' : 'panel-title' }).text('List empty!') ),
 					$('<div/>', { 'class' : 'panel-body' }).text('Click the "CHECK FOR UPDATES" button to search for data on the server.')
 				)
 			);
