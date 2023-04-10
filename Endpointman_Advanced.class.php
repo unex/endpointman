@@ -757,7 +757,7 @@ class Endpointman_Advanced
 				$db = $this->db;
 				$sql = 'INSERT INTO endpointman_custom_configs (name, original_name, product_id, data) VALUES (?,?,?,?)';
 				$q = $db->prepare($sql);
-				$ob = $q->execute(array(addslashes($dget['save_as_name']), addslashes($dget['original_name']), $dget['product_select'], addslashes($dget['config_text'])));
+				$ob = $q->execute(array(addslashes($dget['save_as_name']), addslashes($dget['original_name']), $dget['product_select'], $dget['config_text']));
 				$newidinsert = $db->lastInsertId();
 				$retarr = array("status" => true, "message" => "Saved to Database!");
 
@@ -782,7 +782,7 @@ class Endpointman_Advanced
 				$db = $this->db;
 				$sql = 'INSERT INTO endpointman_custom_configs (name, original_name, product_id, data) VALUES (?,?,?,?)';
 				$q = $db->prepare($sql);
-				$ob = $q->execute(array(addslashes($dget['save_as_name']), addslashes($dget['original_name']), $dget['product_select'], addslashes($dget['config_text'])));
+				$ob = $q->execute(array(addslashes($dget['save_as_name']), addslashes($dget['original_name']), $dget['product_select'], $dget['config_text']));
 				$newidinsert = $db->lastInsertId();
 				$retarr = array("status" => true, "message" => "Saved to Database!");
 
