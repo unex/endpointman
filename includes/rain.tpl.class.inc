@@ -3,9 +3,9 @@
 
 /**
  * Project: RainTPL, compile HTML template to PHP.
- *  
+ *
  * File: rain.tpl.class.php
- * 
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
@@ -28,13 +28,13 @@
  */
 
 
- 
+
 /**
- * 
+ *
  *Cache enabled:
  * TRUE improve speed
  * FALSE recompile template each executions
- * 
+ *
  */
 
 define( "TPL_CACHE_ENABLED", true );
@@ -58,20 +58,20 @@ define( "IN_RAINTPL", true );
 /**
  * RainTPL Template class.
  * Load and draw templates
- * 
+ *
  * @access public
- * 
+ *
  */
 
 class RainTPL{
-	
+
 	/**
 	 * All templates variables
 	 * @access private
 	 * @var array
 	 */
 	var $variables = array( );
-	
+
 
 	/**
 	 * Template directory
@@ -81,9 +81,9 @@ class RainTPL{
 	static $tpl_dir 		= "tpl",
 		   $tpl_compile_dir = "tmp/",
 		   $base_dir 		= null;
-	
-	
-	
+
+
+
 	/**
 	 * Constructor
 	 *
@@ -91,7 +91,7 @@ class RainTPL{
 	 * @return RainTPL
 	 */
 
-	function RainTPL( $tpl_dir = null, $tpl_compile_dir = null, $base_dir = null ){
+	function __construct( $tpl_dir = null, $tpl_compile_dir = null, $base_dir = null ){
 		if( $tpl_dir )
 			RainTPL::$tpl_dir = $tpl_dir . ( substr($tpl_dir,-1,1) != "/" ? "/" : "" );
 		if( $tpl_compile_dir )
@@ -99,14 +99,14 @@ class RainTPL{
 		if( $base_dir )
 			RainTPL::$base_dir = $base_dir;
 	}
-		
+
 	/**
 	 * Assign variable and name, or you can assign associative arrays variable to the template.
 	 *
 	 * @param mixed $variable_name Name of template variable
 	 * @param mixed $value value assigned to this variable
 	 */
-	
+
 	function assign( $variable, $value = null ){
 
 		if( is_array( $variable ) )
@@ -120,17 +120,17 @@ class RainTPL{
 		else
 			$this->variables[ $variable ] = $value;
 	}
-	
-	
+
+
 
 	/**
 	 * If return_string == false, echo the template with all assigned variables as a string, else return the template as a string.
-	 * 
+	 *
 	 * An appropriate use of this function is to store the result into a variable to bufferize or store the template.
-	 * 
+	 *
 	 * Example:
 	 * $tpl->draw( $tpl_name );
-	 * 
+	 *
 	 * or
 	 *
 	 * echo $tpl->draw( $tpl_name, TRUE );
@@ -138,11 +138,11 @@ class RainTPL{
 	 * @param string $tpl_name template to load
 	 * @return string
 	 */
-	
+
 	function draw( $tpl_name, $return_string = false ){
 		if( count( $a = explode('/', $tpl_name) ) > 1 ){
 			$temp = $tpl_name;
-			$tpl_name = end( $a );	
+			$tpl_name = end( $a );
 			$tpl_dir = substr( $temp, 0, strlen($temp) - strlen( $tpl_name ) );
 		}
 		else
@@ -177,13 +177,13 @@ class RainTPL{
 		//if return_string is true, the function return the output as a string
 		if( $return_string ){
 			ob_start();
-			include( $compiled_filename );		
+			include( $compiled_filename );
 			$contents = ob_get_contents();
 			ob_end_clean();
 			return $contents;
 		}
 		else
 			include( $compiled_filename );
-		
+
 	}
 }
