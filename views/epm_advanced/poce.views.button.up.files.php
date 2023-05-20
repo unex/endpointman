@@ -7,7 +7,7 @@
 					<?php echo _("Local File Configs"); ?> <i class="fa fa-chevron-down"></i>
 				</button>
   				<div class="dropdown-menu">
-    				<a class="dropdown-item disabled" href="#">Emtry1</a>
+    				<a class="dropdown-item disabled" href="#">Empty1</a>
   				</div>
 			</div>
 		</div>
@@ -19,7 +19,7 @@
 					<?php echo _("Custom Template Files"); ?> <i class="fa fa-chevron-down"></i>
 				</button>
 				<div class="dropdown-menu">
-					<a class="dropdown-item disabled" href="#">Emtry</a>
+					<a class="dropdown-item disabled" href="#">Empty</a>
 			  </div>
 			</div>
 		</div>
@@ -31,7 +31,7 @@
 					<?php echo _("User File Configs"); ?> <i class="fa fa-chevron-down"></i>
 				</button>
   				<div class="dropdown-menu">
-    				<a class="dropdown-item disabled" href="#">Emtry</a>
+    				<a class="dropdown-item disabled" href="#">Empty</a>
   				</div>
 			</div>
 		</div>
