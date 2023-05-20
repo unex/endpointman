@@ -875,7 +875,7 @@ class Endpointman_Advanced
 							"filename" => pathinfo($archivo, PATHINFO_FILENAME),
 							"extension" => pathinfo($archivo, PATHINFO_EXTENSION),
 							"timer" => $ftime,
-							"timestamp" => strftime("[%Y-%m-%d %H:%M:%S]", $ftime),
+							"timestamp" => strftime("[%Y-%m-%d %H:%M:%S]", (int)$ftime),
 							"mime_type" => mime_content_type($pathandfile),
 							"is_dir" => is_dir($pathandfile),
 							"is_file" => is_file($pathandfile),
