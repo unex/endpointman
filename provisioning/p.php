@@ -1,14 +1,14 @@
 <?PHP
 
 function getMethod() {
-	$method = $_SERVER['REQUEST_METHOD'];
-	$override = isset($_SERVER['HTTP_X_HTTP_METHOD_OVERRIDE']) ? $_SERVER['HTTP_X_HTTP_METHOD_OVERRIDE'] : (isset($_GET['method']) ? $_GET['method'] : '');
-	if ($method == 'POST' && strtoupper($override) == 'PUT') {
-		$method = 'PUT';
-	} elseif ($method == 'POST' && strtoupper($override) == 'DELETE') {
-		$method = 'DELETE';
-	}
-	return $method;
+    $method = $_SERVER['REQUEST_METHOD'];
+    $override = isset($_SERVER['HTTP_X_HTTP_METHOD_OVERRIDE']) ? $_SERVER['HTTP_X_HTTP_METHOD_OVERRIDE'] : (isset($_GET['method']) ? $_GET['method'] : '');
+    if ($method == 'POST' && strtoupper($override) == 'PUT') {
+        $method = 'PUT';
+    } elseif ($method == 'POST' && strtoupper($override) == 'DELETE') {
+        $method = 'DELETE';
+    }
+    return $method;
 }
 
 
@@ -29,10 +29,10 @@ $server_type = FreePBX::Endpointman()->configmod->get("server_type");
 
 //Check if it's allowed in FreePBX through Endpoint Manager first
 if ((!isset($server_type)) OR ($server_type != 'http')) {
-	header('HTTP/1.1 403 Forbidden', true, 403);
-	echo "<h1>"._("Error 403 Forbidden")."</h1>";
-	echo _("Access denied!");
-	die();
+    header('HTTP/1.1 403 Forbidden', true, 403);
+    echo "<h1>"._("Error 403 Forbidden")."</h1>";
+    echo _("Access denied!");
+    die();
 }
 
 
@@ -48,7 +48,7 @@ if(((getMethod() == 'PUT') OR (getMethod() == 'POST'))) {
     //$fp = fopen($endpoint->global_cfg['config_location'] . $_SERVER['REDIRECT_URL'], "a");
 
     /* Read the data 1 KB at a time
-        and write to the file */
+    and write to the file */
     //while ($data = fread($putdata, 1024))
     //    fwrite($fp, $data);
 
@@ -65,53 +65,53 @@ if(getMethod() == "GET") {
     $filename = basename($_SERVER["REQUEST_URI"]);
     $web_path = 'http://'.$_SERVER["SERVER_NAME"].dirname($_SERVER["PHP_SELF"]).'/';
     /*
-    if ($filename == "p.php") { 
-            $filename = "spa502G.cfg";
-            $_SERVER['REQUEST_URI']=$_SERVER['REQUEST_URI']."/spa502G.cfg";
-            $web_path = $web_path."p.php/";
+    if ($filename == "p.php") {
+        $filename = "spa502G.cfg";
+        $_SERVER['REQUEST_URI']=$_SERVER['REQUEST_URI']."/spa502G.cfg";
+        $web_path = $web_path."p.php/";
     }
-     */
-    
+    */
+
     # Firmware Linksys/SPA504G-7.4.3a is broken and MUST be upgraded.
     if (preg_match('/7.4.3a/', $_SERVER['HTTP_USER_AGENT'])) {
-            $str = '<flat-profile><Upgrade_Enable group="Provisioning/Firmware_Upgrade">Yes</Upgrade_Enable>';
-            $str .= '<Upgrade_Rule group="Provisioning/Firmware_Upgrade">http://'.$provis_ip.'/current.bin</Upgrade_Rule></flat-profile>';
-            echo $str;
-            exit;
+        $str = '<flat-profile><Upgrade_Enable group="Provisioning/Firmware_Upgrade">Yes</Upgrade_Enable>';
+        $str .= '<Upgrade_Rule group="Provisioning/Firmware_Upgrade">http://'.$provis_ip.'/current.bin</Upgrade_Rule></flat-profile>';
+        echo $str;
+        exit;
     }
-	
+
     $filename = str_replace('p.php/','', $filename);
     $strip = str_replace('spa', '', $filename);
     if(preg_match('/[0-9A-Fa-f]{12}/i', $strip, $matches) && !(preg_match('/[0]{10}[0-9]{2}/i',$strip))) {
-        
+
         #Just moved this Block of code up to fix the provisioning for Snom Phones
         require_once (PROVISIONER_BASE.'endpoint/base.php');
         $data = Provisioner_Globals::dynamic_global_files(strtolower($filename), FreePBX::Endpointman()->configmod->get("config_location"), $web_path);
         if($data !== FALSE) {
             echo $data;
-        } 
-        else {
-        	header("HTTP/1.0 404 Not Found", true, 404);
-        	echo "<h1>"._("Error 404 Not Found")."</h1>";
-        	echo _("File not Found!");
-        	die();
         }
-        
-    	exit;
+        else {
+            header("HTTP/1.0 404 Not Found", true, 404);
+            echo "<h1>"._("Error 404 Not Found")."</h1>";
+            echo _("File not Found!");
+            die();
+        }
+
+        exit;
         $mac_address = $matches[0];
-        
+
         $sql = "SELECT id FROM `endpointman_mac_list` WHERE `mac` LIKE '%" . $mac_address . "%'";
         $mac_id = sql($sql, 'getOne');
         $phone_info = FreePBX::Endpointman()->get_phone_info($mac_id);
-		$files = FreePBX::Endpointman()->prepare_configs($phone_info, FALSE, FALSE);
-        
+        $files = FreePBX::Endpointman()->prepare_configs($phone_info, FALSE, FALSE);
+
         if(!$files) {
             header("HTTP/1.0 500 Internal Server Error", true, 500);
             echo "<h1>"._("Error 500 Internal Server Error")."</h1>";
             echo _("System Failure!");
             die();
         }
-        
+
         if (array_key_exists($filename, $files)) {
             echo $files[$filename];
         } else {
@@ -121,8 +121,8 @@ if(getMethod() == "GET") {
             die();
         }
 
-    } 
-} 
+    }
+}
 else {
     header('HTTP/1.1 403 Forbidden', true, 403);
     echo "<h1>"._("Error 403 Forbidden")."</h1>";
