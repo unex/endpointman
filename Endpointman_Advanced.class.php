@@ -995,7 +995,7 @@ class Endpointman_Advanced
 					out(sprintf(_("Error: %s"), $this->file_upload_error_message($error)));
 				}
 				else {
-					$uploads_dir = $this->PHONE_MODULES_PATH . "temp/export";
+					$uploads_dir = $this->PHONE_MODULES_PATH . "temp/provisioner";
 					$name = $_FILES["files"]["name"][$key];
 					$extension = pathinfo($name, PATHINFO_EXTENSION);
 					if ($extension == "tgz")
@@ -1022,8 +1022,8 @@ class Endpointman_Advanced
 
 							if(file_exists($this->PHONE_MODULES_PATH."endpoint"))
 							{
-								$endpoint_last_mod = filemtime($this->PHONE_MODULES_PATH."temp/endpoint/base.php");
-								rename($this->PHONE_MODULES_PATH."temp/endpoint/base.php", $this->PHONE_MODULES_PATH."endpoint/base.php");
+								$endpoint_last_mod = filemtime($this->PHONE_MODULES_PATH."temp/provisioner/endpoint/base.php");
+								rename($this->PHONE_MODULES_PATH."temp/provisioner/endpoint/base.php", $this->PHONE_MODULES_PATH."endpoint/base.php");
 
 								outn(_("Updating Last Modified... "));
 								$sql = "UPDATE endpointman_global_vars SET value = '".$endpoint_last_mod."' WHERE var_name = 'endpoint_vers'";
