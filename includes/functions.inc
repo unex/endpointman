@@ -559,7 +559,7 @@ class endpointmanager {
 
         $sql = "DELETE FROM endpointman_line_list WHERE ext=" . $mac_id;
         $this->eda->sql($sql);
-		
+
 		$sql = "DELETE FROM endpointman_mac_list WHERE NOT EXISTS (SELECT * FROM endpointman_line_list WHERE mac_id = id)";
         $this->eda->sql($sql);
         $this->message['delete_device'] = "Deleted!";
@@ -648,22 +648,22 @@ class endpointmanager {
      *                )
      *         )
      */
-	 
-	 
-	 
-	 
+
+
+
+
 	 	//SIP EXTENSION SETTINGS get all Extensions and Settings
 	public function getSipextensions(){
-		
+
 		$ret = array();
-		
+
 		$sql = "SELECT * FROM sip";
 		$res = $this->eda->sql($sql, 'getAll', DB_FETCHMODE_ASSOC);
 
-		if ($res) { 
-            
+		if ($res) {
 
-            if (!$res) { 
+
+            if (!$res) {
                 $this->error['getSipSettings1'] = "Error with SQL Statement";
             }
 
@@ -674,29 +674,29 @@ class endpointmanager {
 			'keyword' => $row['keyword'],
 			'data' => $row['data'],
 			'flags' => $row['flags']
-			
+
 			);
 
-                } 
+                }
 	}
 		return $ret;
-		
-	}	
-		
-		
-		
+
+	}
+
+
+
 	 //SIP  SETTINGS get all SIP Settings Part 1
 	public function getSipSettings1(){
 
 		$ret = array();
-		
+
 		$sql = "SELECT * FROM sipsettings";
 		$res = $this->eda->sql($sql, 'getAll', DB_FETCHMODE_ASSOC);
 
-		if ($res) { 
-            
+		if ($res) {
 
-            if (!$res) { 
+
+            if (!$res) {
                 $this->error['getSipSettings1'] = "Error with SQL Statement";
             }
 
@@ -705,77 +705,77 @@ class endpointmanager {
 			$ret[$keyword] = array(
 			'data' => $row['data'],
 			'seq' => $row['seq']
-			
+
 			);
-		
-	
-	}	
+
+
 	}
-		
+	}
+
 		return $ret;
-	}	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
+	}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 	 //SIP  SETTINGS 2 get all SIP Settings Part 2
 	public function getSipSettings2(){
-		
+
 		$ret = array();
-		
+
 		$sql = "SELECT * FROM kvstore_Sipsettings";
 		$res = $this->eda->sql($sql, 'getAll', DB_FETCHMODE_ASSOC);
 
-            if (!$res) { 
+            if (!$res) {
                 $this->error['getSipSettings2'] = "Error with SQL Statement";
             }
-		if ($res) { 
+		if ($res) {
 
 		foreach ($res as $row) {
 			$key=$row['key'];
 			$ret[$key] = array(
 			'val' => $row['val'],
 			'type' => $row['type']
-			
+
 			);
-		
-	
-	}	
+
+
+	}
 	}
 		return $ret;
-	}	
-		
-		
-		
-		
+	}
 
-	
+
+
+
+
+
 	//GET ALL FEATURE CODES
 	public function getFeatureCodes(){
-		
+
 		$ret = array();
-		
+
 		$sql = "SELECT * FROM featurecodes";
 		$res = $this->eda->sql($sql, 'getAll', DB_FETCHMODE_ASSOC);
-		
-		
-		if ($res) { 
-            
-			
+
+
+		if ($res) {
+
+
             $featurecodes = $res;
 
-            if (!$featurecodes) { 
+            if (!$featurecodes) {
                 $this->error['featurecodes'] = "Error with SQL Statement";
             }
 
@@ -790,36 +790,36 @@ class endpointmanager {
 			'customcode' => $row['customcode'],
 			'enabled' => $row['enabled'],
 			'providedest' => $row['providedest']
-				
+
 			);
 
-		}	
+		}
 
-		
+
 }
-		
+
 		return $ret;
-	}	
-	 
-	 
-	 
-	 
-	 
-	 
+	}
+
+
+
+
+
+
 	 //SYSADMIN Settings
 	public function getSysadminSettings(){
 	//SYSADMIN IS A COMERCIAL MODULE - CHECK IF IT IS INSTALLED, ELSE THIS FEATURE WILL BE SKIPPED.
 	global $active_modules;
-	if (!empty($active_modules['sysadmin']['rawname'])) {	
+	if (!empty($active_modules['sysadmin']['rawname'])) {
 		$ret = array();
-		
+
 		$sql = "SELECT * FROM sysadmin_options";
 		$res = $this->eda->sql($sql, 'getAll', DB_FETCHMODE_ASSOC);
 
-		if ($res) { 
-            
+		if ($res) {
 
-            if (!$res) { 
+
+            if (!$res) {
                 $this->error['sysadmin_options'] = "Error with SQL Statement";
             }
 
@@ -827,39 +827,39 @@ class endpointmanager {
 			$key=$row['key'];
 			$ret[$key] = array(
 			'value' => $row['value']
-		);	
-	}	
+		);
+	}
 }
-		
+
 }
-		
+
 		return $ret;
-	}	
-	 
-	 
-	 
-	 
-	 
-	 
-	 
-	 
+	}
+
+
+
+
+
+
+
+
     function get_phone_info($mac_id=NULL) {
-	
-	
+
+
 			$sipextensions=$this->getSipextensions();
 			$SipSettings1=$this->getSipSettings1();
 			$SipSettings2=$this->getSipSettings2();
 			$featurecodes=$this->getFeatureCodes();
 			$getSysadminSettings=$this->getSysadminSettings();
-	
-	
-	
-	
-	
-	
-	
-	
-	
+
+
+
+
+
+
+
+
+
         //You could screw up a phone if the mac_id is blank
         if (!isset($mac_id)) {
             $this->error['get_phone_info'] = "Mac ID is not set";
@@ -869,7 +869,7 @@ class endpointmanager {
 
         $res = $this->eda->sql($sql);
 
-        if ($res) {  
+        if ($res) {
             //Returns Brand Name, Brand Directory, Model Name, Mac Address, Extension (FreePBX), Custom Configuration Template, Custom Configuration Data, Product Name, Product ID, Product Configuration Directory, Product Configuration Version, Product XML name,
             $sql = "SELECT endpointman_mac_list.specific_settings, endpointman_mac_list.config_files_override, endpointman_mac_list.global_user_cfg_data, endpointman_model_list.id as model_id, endpointman_brand_list.id as brand_id, endpointman_brand_list.name, endpointman_brand_list.directory, endpointman_model_list.model, endpointman_mac_list.mac, endpointman_mac_list.template_id, endpointman_mac_list.global_custom_cfg_data, endpointman_product_list.long_name, endpointman_product_list.id as product_id, endpointman_product_list.cfg_dir, endpointman_product_list.cfg_ver, endpointman_model_list.template_data, endpointman_model_list.enabled, endpointman_mac_list.global_settings_override FROM endpointman_line_list, endpointman_mac_list, endpointman_model_list, endpointman_brand_list, endpointman_product_list WHERE endpointman_mac_list.model = endpointman_model_list.id AND endpointman_brand_list.id = endpointman_model_list.brand AND endpointman_product_list.id = endpointman_model_list.product_id AND endpointman_mac_list.id = endpointman_line_list.mac_id AND endpointman_mac_list.id = " . $mac_id;
 
@@ -889,19 +889,19 @@ class endpointmanager {
             $sql = "SELECT endpointman_line_list.*, sip.data as secret, devices.*, endpointman_line_list.description AS epm_description FROM endpointman_line_list, sip, devices WHERE endpointman_line_list.ext = devices.id AND endpointman_line_list.ext = sip.id AND sip.keyword = 'secret' AND mac_id = " . $mac_id . " ORDER BY endpointman_line_list.line ASC";
             $lines_info = $this->eda->sql($sql, 'getAll', DB_FETCHMODE_ASSOC);
             foreach ($lines_info as $line) {
-			
-			
-			
-			
 
 
-			
-			
-			
-			
-			
-			
-			
+
+
+
+
+
+
+
+
+
+
+
                 $phone_info['line'][$line['line']] = $line;
                 $phone_info['line'][$line['line']]['description'] = $line['epm_description'];
 				$phone_info['line'][$line['line']]['extension'] = $line['ext'];
@@ -915,8 +915,8 @@ class endpointmanager {
 				$phone_info['line'][$line['line']]['callerid']=$sipextensions[$phone_info['line'][$line['line']]['extension'] . '-' . 'callerid']['data'];
 				$phone_info['line'][$line['line']]['encryption']=$sipextensions[$phone_info['line'][$line['line']]['extension'] . '-' . 'encryption']['data'];
 				$phone_info['line'][$line['line']]['timestamp']=time();
-				
-				
+
+
 //Calculate the right SIP PORT (SIP/PJSIP/TLS/TCP)
 	//TLS
 	if ($phone_info['line'][$line['line']]['sipdriver'] == "chan_pjsip" and $phone_info['line'][$line['line']]['transport'] == '0.0.0.0-tls') {
@@ -996,11 +996,11 @@ class endpointmanager {
 	if ($phone_info['line'][$line['line']]['sipdriver'] == "chan_sip" and $phone_info['line'][$line['line']]['transport'] == 'udp') {
 	$phone_info['line'][$line['line']]['server_port'] = $SipSettings1['bindport']['data'];
 	$phone_info['line'][$line['line']]['proto'] = 'udp';
-	}				
-				
-				
-				
-                
+	}
+
+
+
+
             }
 			//print_r ($phone_info);
         } else {
@@ -1024,13 +1024,13 @@ class endpointmanager {
             $phone_info['mac'] = $row['mac'];
             $sql = "SELECT endpointman_line_list.*, sip.data as secret, devices.* FROM endpointman_line_list, sip, devices WHERE endpointman_line_list.ext = devices.id AND endpointman_line_list.ext = sip.id AND sip.keyword = 'secret' AND mac_id = " . $mac_id;
             $lines_info = $this->eda->sql($sql, 'getAll', DB_FETCHMODE_ASSOC);
-			
+
             foreach ($lines_info as $line) {
                 $phone_info['line'][$line['line']] = $line;
-				
+
             }
         }
-		
+
         return $phone_info;
     }
 
@@ -1336,12 +1336,12 @@ class endpointmanager {
                 $z = 0;
                 while ($z < count($cfg_data['data'])) {
 				//$key = $key . $z;
-				
-				
+
+
                     $template_variables_array['data'][$z]['key'] = $key;
                     $template_variables_array['data'][$z]['value'] = $cfg_data['data'][$z]['value'];
                     $template_variables_array['data'][$z]['description'] = $cfg_data['data'][$z]['text'];
-					
+
                     if ($cfg_data['data'][$z]['value'] == $num) {
                         $template_variables_array['data'][$z]['checked'] = 'checked';
                     }
@@ -1595,7 +1595,7 @@ class endpointmanager {
     }
 
     function write_configs($provisioner_lib, $reboot, $write_path, $phone_info, $returned_data) {
-	
+
         //Create Directory Structure (If needed)
         if (isset($provisioner_lib->directory_structure)) {
             foreach ($provisioner_lib->directory_structure as $data) {
@@ -1667,31 +1667,31 @@ class endpointmanager {
                     }
                 }
 
-			
-				
-				
-				
+
+
+
+
 				//print_r ($additionalmac);
 				//print_r ($file2);
 				file_put_contents($write_path . $file, $data);
-				
+
                 chmod($write_path . $file, 0775);
-				
-			
-			
+
+
+
 	//Add Additional MAC File Symlinks to enable autoprovisioning for Multicell Devices like Snom and much more devices
 				//$additionalmacs should be added as Input field in the Template JSON File and MAC Adresses should be inserted comma "," separated.
 				$globalcfgdata = unserialize($phone_info['global_custom_cfg_data']);
 				$globalcfgdata_cs = unserialize($phone_info['template_data_info']['global_custom_cfg_data']);
-				
-				
+
+
 				$additionalmacs = $globalcfgdata['data']['additionalmacs'];
 				$additionalmacs = explode(',', $additionalmacs);
 				$additionalmacs_cs = $globalcfgdata_cs['data']['additionalmacs'];
 				$additionalmacs_cs = explode(',', $additionalmacs_cs);
-				
+
 				$filelist = scandir($write_path);
-				
+
 			//Now we remove symlinks for your device and rebuild all symlinks you have entered in global Settings input area $additionalmacs in your template settings.
 				foreach($filelist as $filesymlinkcheck) {
 					if (is_link($write_path . $filesymlinkcheck)) {
@@ -1700,15 +1700,15 @@ class endpointmanager {
 						}
 			}
 			}
-			
+
 				foreach($additionalmacs as $additionalmac) {
 				if ($additionalmac !== ""){
 						if (strpos($file, '_additional') !== false) {
 					$filesymlink = str_replace($phone_info['mac'],$additionalmac,$file);
 						$filesymlink = str_replace("_additional", "", "$filesymlink");
 						if (!file_exists($write_path . $filesymlink)) {
-				
-				
+
+
 				symlink($write_path . $file, $write_path . $filesymlink);
 						}
 					}
@@ -1720,17 +1720,17 @@ class endpointmanager {
 					$filesymlink = str_replace($phone_info['mac'],$additionalmac,$file);
 						$filesymlink = str_replace("_additional", "", "$filesymlink");
 						if (!file_exists($write_path . $filesymlink)) {
-				
-				
+
+
 				symlink($write_path . $file, $write_path . $filesymlink);
 						}
 					}
 				}
 				}
-			
-	//END OF SYMLINK SECTION		
-				
-				
+
+	//END OF SYMLINK SECTION
+
+
                 if (!file_exists($write_path . $file)) {
                     $this->error['parse_configs'] = "File (" . $file . ") not written to hard drive!";
                     return(FALSE);
@@ -1749,50 +1749,50 @@ class endpointmanager {
     function display_configs() {
 
     }
-	
-	
-	
-	
-	
-	
 
-	
 
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     /**
      * Prepare and then send the data that Provisioner expects, then take what provisioner gives us and do what it says
@@ -1884,7 +1884,7 @@ class endpointmanager {
                         foreach ($temp as $list) {
                             $sql = "SELECT original_name,data FROM endpointman_custom_configs WHERE id = " . $list;
                             $res = $this->eda->sql($sql);
-                            if ($res) {  
+                            if ($res) {
                                 $data = $this->eda->sql($sql, 'getRow', DB_FETCHMODE_ASSOC);
                                 $provisioner_lib->config_files_override[$data['original_name']] = $data['data'];
                             }
@@ -1898,7 +1898,7 @@ class endpointmanager {
                         foreach ($temp as $list) {
                             $sql = "SELECT original_name,data FROM endpointman_custom_configs WHERE id = " . $list;
                             $res = $this->eda->sql($sql);
-                            if ($res) {  
+                            if ($res) {
                                 $data = $this->eda->sql($sql, 'getRow', DB_FETCHMODE_ASSOC);
                                 $provisioner_lib->config_files_override[$data['original_name']] = $data['data'];
                             }
@@ -1980,14 +1980,14 @@ class endpointmanager {
 
                 $provisioner_lib->settings = $new_template_data;
 
-				
-				
-//LOAD FEATURECODES					
+
+
+//LOAD FEATURECODES
 	$featurecodes=$this->getFeatureCodes();
 	$getSysadminSettings=$this->getSysadminSettings();
 
 
-	
+
 
 //Calculate Voicemail Number
 	if (!$featurecodes['myvoicemail']['customcode']) {
@@ -2002,7 +2002,7 @@ class endpointmanager {
 	}
 	else  {
 		$provisioner_lib->settings['dnd_on'] = $featurecodes['dnd_on']['customcode'];
-	}	
+	}
 //Calculate DND_OFF_NUMBER
 	if (!$featurecodes['dnd_off']['customcode']) {
 		$provisioner_lib->settings['dnd_off'] = $featurecodes['dnd_off']['defaultcode'];
@@ -2016,12 +2016,12 @@ class endpointmanager {
 	}
 	else  {
 		$provisioner_lib->settings['dnd_toggle'] = $featurecodes['dnd_toggle']['customcode'];
-	}		
-				
-				
-				
-				
-				
+	}
+
+
+
+
+
                 //Loop through Lines!
                 $li = 0;
                 foreach ($phone_info['line'] as $line) {
@@ -2044,7 +2044,7 @@ class endpointmanager {
 					'transport' => $line['transport'],
 					'trustrpid' => $line['trustrpid'],
 					'callerid' => $line['callerid'],
-					'encryption' => $line['encryption'],							
+					'encryption' => $line['encryption'],
 					'tech' => $line['tech'],
 					'ipei' => $line['ipei'],
 					'myvoicemail' => $provisioner_lib->settings['myvoicemail'],
@@ -2059,9 +2059,9 @@ class endpointmanager {
 					'sslhpro' => $getSysadminSettings['sslhpro']['value'],
 					'hpro' => $getSysadminSettings['hpro']['value']
 					);
-	
 
-					
+
+
 
 					//STATIC LINE SETTINGS WITHOUT LOOP (accXSetting)
 
@@ -2089,79 +2089,79 @@ class endpointmanager {
 					$provisioner_lib->settings['provispass'] = $getSysadminSettings['provispass']['value'];
 					$provisioner_lib->settings['sslhpro'] = $getSysadminSettings['sslhpro']['value'];
 					$provisioner_lib->settings['hpro'] = $getSysadminSettings['hpro']['value'];
-					
+
 					$provisioner_lib->settings['timestamp'] = time();
 
-		
-		
+
+
 				//THIS ARE EXTRA VALUES FOR GRANDSTREAM
-					
+
 					//Add loop Values for Grandstream (Tested with Analog HT8XX Adapter)
-						
+
 						//PROTO UPD/TCP/TLS
 						if ($line['proto'] == "tcp") {
 							$line_statics['gsproto'] = '1';
 						}
 						if ($line['proto'] == "udp") {
 							$line_statics['gsproto'] = '0';
-						}					
+						}
 						if ($line['proto'] == "tls") {
 							$line_statics['gsproto'] = '2';
 						}
-						
-						
+
+
 						//GRANDSTREAM SRTP YES/NO
-	
+
 						if ($line['encryption'] == "yes" || $line['media_encryption'] == "sdes" ) {
 							$line_statics['gsSRTP'] = '1';
 						}
 						if ($line['encryption'] == "no" || $line['media_encryption'] == "no" ) {
 							$line_statics['gsSRTP'] = '0';
 						}
-						
-		
+
+
 					//Add static Values for Grandstream (Tested with Analog HT8XX Adapter)
-					
+
 						$provisioner_lib->settings['acc' . $line['line'] . 'gsproto'] = $line_statics['gsproto'];
 						$provisioner_lib->settings['acc' . $line['line'] . 'gsSRTP'] = $line_statics['gsSRTP'];
-					
+
 				//THIS ARE EXTRA VALUES FOR YEALINK
-					
+
 					//Add loop Values for Yealink
-						
+
 						//PROTO UPD/TCP/TLS
 						if ($line['proto'] == "tcp") {
 							$line_statics['yealinktransport'] = '1';
 						}
 						if ($line['proto'] == "udp") {
 							$line_statics['yealinktransport'] = '0';
-						}					
+						}
 						if ($line['proto'] == "tls") {
 							$line_statics['yealinktransport'] = '2';
 						}
-						
-						
+
+
 						//Yealink SRTP YES/NO
-	
+
 						if ($line['encryption'] == "yes" || $line['media_encryption'] == "sdes" ) {
 							$line_statics['yealinksrtp'] = '2';
 						}
 						if ($line['encryption'] == "no" || $line['media_encryption'] == "no" ) {
 							$line_statics['yealinksrtp'] = '0';
 						}
-						
-		
+
+
 					//Add static Values for Grandstream (Tested with Analog HT8XX Adapter)
-					
+
 						$provisioner_lib->settings['acc' . $line['line'] . 'yealinktransport'] = $line_statics['gsproto'];
 						$provisioner_lib->settings['acc' . $line['line'] . 'yealinksrtp'] = $line_statics['gsSRTP'];
-					
-					
-					
+
+
+
 			//MERGE ARRAYS
-					
-					
-					
+
+
+
                     $provisioner_lib->settings['line'][$li] = array_merge($line_options, $line_statics);
                     $li++;
                 }
@@ -2220,7 +2220,7 @@ class endpointmanager {
                 //Setting a line variable here...these aren't defined in the template_data.xml file yet. however they will still be parsed
                 //and if they have defaults assigned in a future template_data.xml or in the config file using pipes (|) those will be used, pipes take precedence
                 $provisioner_lib->processor_info = "EndPoint Manager Version " . $this->global_cfg['version'];
-				
+
 
                 // Because every brand is an extension (eventually) of endpoint, you know this function will exist regardless of who it is
                 //Start timer
@@ -2295,7 +2295,7 @@ class endpointmanager {
         $sql = "SELECT * FROM  endpointman_product_list WHERE hidden = 0 AND id ='" . $id . "'";
         $res = $this->eda->sql($sql);
 
-        if ($res) { 
+        if ($res) {
             $row = $this->eda->sql($sql, 'getRow', DB_FETCHMODE_ASSOC);
 
             $sql = "SELECT directory FROM  endpointman_brand_list WHERE hidden = 0 AND id =" . $row['brand'];
