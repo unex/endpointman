@@ -1659,6 +1659,10 @@ class endpointmanager {
                         }
                     }
                     if (file_exists($write_path . $file)) {
+                        if (!file_exists(dirname($write_path . 'config_bkup/' . $file))) {
+                            mkdir(dirname($write_path . 'config_bkup/' . $file));
+                        }
+
                         copy($write_path . $file, $write_path . 'config_bkup/' . $file . '.' . time());
                     }
                 }
