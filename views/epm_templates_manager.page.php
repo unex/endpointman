@@ -1,18 +1,18 @@
 <?php
 	if (!defined('FREEPBX_IS_AUTH')) { die('No direct script access allowed'); }
-	
+
 	if ($_REQUEST['subpage'] != "manager") {
 		echo "Pagina no valida!";
 		return;
 	}
-	
-	
+
+
 	$product_list = "SELECT * FROM endpointman_product_list WHERE id > 0";
 	$product_list =sql($product_list,'getAll', DB_FETCHMODE_ASSOC);
-	
+
 	$mac_list = "SELECT * FROM endpointman_mac_list";
 	$mac_list =sql($mac_list, 'getAll', DB_FETCHMODE_ASSOC);
-	
+
 	if((!$product_list) && (!$mac_list)) {
 		echo '<div class="alert alert-warning" role="alert">';
 		echo '<strong>'._("Warning!").'</strong>'.(" Welcome to Endpoint Manager. You have no products (Modules) installed, click").' <a href="config.php?display=epm_config"><b>'._("here").'</b></a> '._(" to install some");
@@ -27,12 +27,12 @@
 	}
 	unset ($product_list);
 	unset ($mac_list);
-	
-	
+
+
 	echo load_view(__DIR__.'/epm_templates/manager.views.grid.php', array('request' => $_REQUEST));
 	echo load_view(__DIR__.'/epm_templates/manager.views.new.modal.php', array('request' => $_REQUEST));
-	
- 
+
+
 /*
  <script type="text/javascript" charset="utf-8">
  $(function(){

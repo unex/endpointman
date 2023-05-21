@@ -8,7 +8,7 @@ $list = array(
 			'epm_placeholders'	=>  _('Config File Placeholders')
 		);
 $li = array();
-		
+
 foreach ($list as $k => $v) {
 	// If current user does not have access to this sub-menu then don't display it
 	//
@@ -18,7 +18,7 @@ foreach ($list as $k => $v) {
 	}
 	$li[$k] = $v;
 
-	
+
 }
 $li[] = '<hr />';
 
@@ -32,7 +32,7 @@ echo '<a class="list-group-item" href="?display=epm_oss">' . $li['epm_oss'] . '<
 
 
 if (
-array_key_exists('epm_advanced', $li) or 
+array_key_exists('epm_advanced', $li) or
 array_key_exists('epm_devices', $li)
 )
 {
@@ -50,7 +50,7 @@ echo '<span class="list-group-item"><h3>' . _("Brands") . '</h3></span>';
 echo '<a class="list-group-item" href="?display=epm_config">' . $li['epm_config'] . '</a>';
 }
 if (
-array_key_exists('epm_templates', $li) or 
+array_key_exists('epm_templates', $li) or
 array_key_exists('epm_placeholders', $li)
 )
 {
@@ -64,4 +64,3 @@ echo '<a class="list-group-item" href="?display=epm_placeholders">' . $li['epm_p
 }
 echo '</div>';
 ?>
-

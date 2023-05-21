@@ -2,13 +2,13 @@
 /*
 	Ross Scrivener http://scrivna.com
 	PHP file diff implementation
-	
+
 	Much credit goes to...
-	
+
 	Paul's Simple Diff Algorithm v 0.1
 	(C) Paul Butler 2007 <http://www.paulbutler.org/>
 	May be used and distributed under the zlib/libpng license.
-	
+
 	... for the actual diff code, i changed a few things and implemented a pretty interface to it.
 */
 class diff {
@@ -16,11 +16,11 @@ class diff {
 	var $changes = array();
 	var $diff = array();
 	var $linepadding = null;
-	
+
 	function doDiff($old, $new){
 		if (!is_array($old)) $old = file($old);
 		if (!is_array($new)) $new = file($new);
-	
+
 		foreach($old as $oindex => $ovalue){
 			$nkeys = array_keys($new, $ovalue);
 			foreach($nkeys as $nindex){
@@ -30,17 +30,17 @@ class diff {
 					$omax = $oindex + 1 - $maxlen;
 					$nmax = $nindex + 1 - $maxlen;
 				}
-			}       
+			}
 		}
 		if($maxlen == 0) return array(array('d'=>$old, 'i'=>$new));
-		
+
 		return array_merge(
 						$this->doDiff(array_slice($old, 0, $omax), array_slice($new, 0, $nmax)),
 						array_slice($new, $nmax, $maxlen),
 						$this->doDiff(array_slice($old, $omax + $maxlen), array_slice($new, $nmax + $maxlen)));
-						
+
 	}
-	
+
 	function diffWrap($old, $new){
 		$this->diff = $this->doDiff($old, $new);
 		$this->changes = array();
@@ -58,14 +58,14 @@ class diff {
 		$this->diff = $ndiff;
 		return $this->diff;
 	}
-	
+
 	function formatcode($code){
 		$code = htmlentities($code);
 		$code = str_replace(" ",'&nbsp;',$code);
 		$code = str_replace("\t",'&nbsp;&nbsp;&nbsp;&nbsp;',$code);
 		return $code;
 	}
-	
+
 	function showline($line){
 		if ($this->linepadding === 0){
 			if (in_array($line,$this->changes)) return true;
@@ -84,19 +84,19 @@ class diff {
 		return false;
 
 	}
-	
+
 	function inline($old, $new, $linepadding=null){
 		$this->linepadding = $linepadding;
-		
+
 		$ret = '<pre><table width="100%" border="0" cellspacing="0" cellpadding="0" class="code">';
 		$ret.= '<tr><td>Old</td><td>New</td><td></td></tr>';
 		$count_old = 1;
 		$count_new = 1;
-		
+
 		$insert = false;
 		$delete = false;
 		$truncate = false;
-		
+
 		$diff = $this->diffWrap($old, $new);
 
 		foreach($diff as $line => $k){
@@ -148,7 +148,7 @@ class diff {
 				$class = ($insert) ? 'ins_end' : $class;
 				$delete = false;
 				$insert = false;
-				
+
 				if (!$truncate){
 					$truncate = true;
 					$ret.= '<tr><th>...</th>';

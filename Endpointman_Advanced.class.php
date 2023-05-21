@@ -295,7 +295,7 @@ class Endpointman_Advanced
 				$dget['value'] = strtolower($dget['value']);
 				$sql = "UPDATE endpointman_global_vars SET value='" . ($dget['value'] == "yes" ? "1": "0") . "' WHERE var_name='disable_help'";
 				break;
-	
+
 			case "disable_endpoint_warning":
 				$dget['value'] = strtolower($dget['value']);
 				$sql = "UPDATE endpointman_global_vars SET value='" . ($dget['value'] == "yes" ? "1": "0") . "' WHERE var_name='disable_endpoint_warning'";
@@ -372,7 +372,7 @@ class Endpointman_Advanced
 				$dget['value'] = trim($dget['value']);
 				$sql = "UPDATE endpointman_global_vars SET value='" . $dget['value'] . "' WHERE var_name='userpass'";
 				break;
-				
+
 			case "ntp_server":
 				$dget['value'] = trim($dget['value']);
 				$sql = "UPDATE endpointman_global_vars SET value='" . $dget['value'] . "' WHERE var_name='ntp'";
@@ -797,7 +797,7 @@ class Endpointman_Advanced
 		elseif ($dget['type_file'] == "tfile")
 		{
 			/*
-			
+
 			$db = $this->db;
 			$sql = 'INSERT INTO endpointman_custom_configs (name, original_name, product_id, data) VALUES (?,?,?,?)';
 			$q = $db->prepare($sql);
@@ -818,7 +818,7 @@ class Endpointman_Advanced
 		unset($dget);
 		return $retarr;
 	}
-	
+
 	function epm_advanced_poce_delete_config_custom()
 	{
 		$arrVal['VAR_REQUEST'] = array("product_select", "type_file", "sql_select");
@@ -1171,7 +1171,7 @@ class Endpointman_Advanced
 										//$res = sql($sql);
 										$res = sql($sql, 'getAll', DB_FETCHMODE_ASSOC);
 
-										if ($res) {  
+										if ($res) {
 											$brand_id = sql($sql, 'getOne');
 
 											$sql_model = "SELECT id FROM endpointman_model_list WHERE brand = " . $brand_id . " AND model LIKE '%" . $device[2] . "%' LIMIT 1";

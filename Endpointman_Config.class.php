@@ -661,12 +661,12 @@ class Endpointman_Config
             $temp = $this->file2json($this->PHONE_MODULES_PATH . 'endpoint/master.json');
             $endpoint_package = $temp['data']['package'];
             $endpoint_last_mod = $temp['data']['last_modified'];
-			
+
             $sql = "SELECT value FROM endpointman_global_vars WHERE var_name LIKE 'endpoint_vers'";
             $data = sql($sql, 'getOne');
 
             $contents = file_get_contents($this->UPDATE_PATH . "/update_status");
-			
+
             if ($contents != '1') {
                 if (($data == "") OR ($data <= $endpoint_last_mod)) {
                     if ((!$master_result) OR (!$this->system->download_file($this->UPDATE_PATH . '/' . $endpoint_package, $temp_location . $endpoint_package)))
@@ -1531,7 +1531,7 @@ if ($this->configmod->get('debug')) echo format_txt(_("---Inserting Model %_NAME
         $sql = "SELECT * FROM  endpointman_product_list WHERE hidden = 0 AND id ='" . $id . "'";
         $res = sql($sql, 'getAll', DB_FETCHMODE_ASSOC);
 
-        if ($res) { 
+        if ($res) {
             $row = sql($sql, 'getRow', DB_FETCHMODE_ASSOC);
 
             $sql = "SELECT directory FROM  endpointman_brand_list WHERE hidden = 0 AND id ='" . $row['brand'] . "'";

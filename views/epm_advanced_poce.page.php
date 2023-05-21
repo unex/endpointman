@@ -26,7 +26,7 @@
 
 
 
-<?php 
+<?php
 
 /*
  <a href="config.php?display=epm_advanced&amp;subpage=poce&sendid=<?php echo $sendidt; ?>&amp;filename=<?php echo $filename; ?>&amp;product_select=<?php echo $_REQUEST['product_select']; ?>&amp;<?php echo $type.'='.$sendidt; ?>">
@@ -39,7 +39,7 @@
 
 
 <form method="post" action="config.php?type=tool&amp;display=epm_advanced&amp;subpage=poce&amp;product_select={$product_selected}&amp;phone_options=true">
-{if condition="isset($options)"}	
+{if condition="isset($options)"}
 {$options}
 {/if}
 </form>

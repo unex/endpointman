@@ -3,7 +3,7 @@ global $active_modules;
 
 if (!empty($active_modules['endpoint']['rawname'])) {
 	if (FreePBX::Endpointman()->configmod->get("disable_endpoint_warning") !== "1") {
-		include('page.epm_warning.php');  
+		include('page.epm_warning.php');
 	}
 }
 ?>
@@ -28,9 +28,9 @@ if ((! isset($_REQUEST['subpage'])) || ($_REQUEST['subpage'] == "")) {
 ?>
 <div class="container-fluid" id="epm_templates">
 	<h1><?php echo _("End Point Configuration Manager")?></h1>
-	<?php 
+	<?php
 	foreach($epm->myShowPage() as $key => $page) {
-		if (strtolower($_REQUEST['subpage']) == $key) 
+		if (strtolower($_REQUEST['subpage']) == $key)
 		{
 		?>
 		<h2><?php echo $page['name']; ?></h2>
@@ -39,7 +39,7 @@ if ((! isset($_REQUEST['subpage'])) || ($_REQUEST['subpage'] == "")) {
 				<div class="col-sm-12">
 					<div class="fpbx-container">
 						<div class="display <?php echo ($key == "editor") ? "full" : "no"?>-border">
-							<?php include($page['page']); ?>			
+							<?php include($page['page']); ?>
 						</div>
 					</div>
 				</div>

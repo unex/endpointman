@@ -10,9 +10,9 @@
 ***** BEGIN LICENSE BLOCK *****
 Version: MPL 1.1/GPL 2.0/LGPL 2.1
 
-The contents of this file are subject to the Mozilla Public License Version 
-1.1 (the "License"); you may not use this file except in compliance with 
-the License. You may obtain a copy of the License at 
+The contents of this file are subject to the Mozilla Public License Version
+1.1 (the "License"); you may not use this file except in compliance with
+the License. You may obtain a copy of the License at
 http://www.mozilla.org/MPL/
 
 Software distributed under the License is distributed on an "AS IS" basis,
@@ -22,12 +22,12 @@ License.
 
 The Original Code is the Provisioner System for VoIP/PBX/SWITCH Servers.
 
-The Initial Developer of the Original Code is Jort Bloem working for 
-Business Techology Group.  Portions created by the Initial Developer are 
-Copyright (C) 2011 Business Technology Group http://www.btg.co.nz/ . 
+The Initial Developer of the Original Code is Jort Bloem working for
+Business Techology Group.  Portions created by the Initial Developer are
+Copyright (C) 2011 Business Technology Group http://www.btg.co.nz/ .
 All Rights Reserved.
 
-Contributor(s): 
+Contributor(s):
 	Jort Bloem
 
 Alternatively, the contents of this file may be used under the terms of
@@ -55,7 +55,7 @@ the terms of any one of the MPL, the GPL or the LGPL.
 	same, and if DateTimeZone is already provided, this file does nothing.
 
 	This class seems to have slightly different timezone info than
-	the standard DateTimeZone, this has only been confirmed in December 
+	the standard DateTimeZone, this has only been confirmed in December
 	1901; probably due to a different time database, or different handling.
 	There may be other discrepancies.
 
@@ -67,8 +67,8 @@ DIFFERENCES:
 		in /usr/share/zoneinfo, and with tzdump.
 	* None of the procedural-style functions. You have to create an object
 		and query it.
-	* NO CONSTANTS 
-	* getLocation - NOT IMPLEMENTED - I don't know where this data 
+	* NO CONSTANTS
+	* getLocation - NOT IMPLEMENTED - I don't know where this data
 		comes from
 	* getTransitions - this does not take any parameters, and always
 		returns ALL transitions. NOTE ALSO - the data used to create
@@ -78,7 +78,7 @@ DIFFERENCES:
 	* listAbbreviations - NOT IMPLEMENTED
 	* listIdentifiers - List of timezones differs slightly from the
 		PHP 5.3 implementation on my box - there are some extra
-		timezones reported by this library. I have not done an 
+		timezones reported by this library. I have not done an
 		exhaustive comparison. For example, on my box, this function
 		lists both Africa/Asmara and Africa/Asmera, whereas PHP 5.3
 		only lists one of these.
@@ -86,7 +86,7 @@ DIFFERENCES:
 
 if (!class_exists("DateTime")) {
 	class DateTime {
-            
+
         }
 }
 
@@ -132,7 +132,7 @@ if (!class_exists("DateTimeZone")) {
 		}
 		function getOffset() {
 			# Gets the current time offset.
-			# This is found in the LAST transition happening on or 
+			# This is found in the LAST transition happening on or
 			# before now().
 			$this->getZDump();
 			foreach ($this->ZDump AS $atransition) {

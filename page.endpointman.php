@@ -3,7 +3,7 @@ global $active_modules;
 
 if (!empty($active_modules['endpoint']['rawname'])) {
 	if (FreePBX::Endpointman()->configmod->get("disable_endpoint_warning") !== "1") {
-		include('page.epm_warning.php');  
+		include('page.epm_warning.php');
 	}
 }
 ?>
@@ -45,5 +45,5 @@ switch ($page) {
 
     default:
         include LOCAL_PATH . 'includes/devices_manager.inc';
-		
+
 		}

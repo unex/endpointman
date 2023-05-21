@@ -98,7 +98,7 @@ if (empty($epmdbversion)) {
 		(27, 'userpass', '111111'),
 		(28, 'intsrvip', ''),
 		(29, 'disable_endpoint_warning', '0')";
-		
+
 		$db->query($sql);
 		out("Done");
 	}

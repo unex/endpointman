@@ -3,14 +3,14 @@ global $active_modules;
 
 if (!empty($active_modules['endpoint']['rawname'])) {
 	if (FreePBX::Endpointman()->configmod->get("disable_endpoint_warning") !== "1") {
-		include('page.epm_warning.php');  
+		include('page.epm_warning.php');
 	}
 }
 ?>
 
 <script>
  var $hwgrid = $('#hwgrid');
-    var mydata = 
+    var mydata =
 [
     {
 		"type": "<?php echo _('Line Loop')?>",
@@ -131,13 +131,13 @@ if (!empty($active_modules['endpoint']['rawname'])) {
         "brand": "<?php echo _('Global')?>",
         "placeholder": "<?php echo _('$secret')?>",
 		"description": "<?php echo _('Password for the mapped Extension')?>"
-    },	
+    },
     {
 		"type": "<?php echo _('Line Loop')?>",
         "brand": "<?php echo _('Global')?>",
         "placeholder": "<?php echo _('$displayname')?>",
 		"description": "<?php echo _('Display name for the Extension (The Name of the Extension')?>"
-    },	
+    },
     {
 		"type": "<?php echo _('Line Loop')?>",
         "brand": "<?php echo _('Global')?>",
@@ -360,7 +360,7 @@ if (!empty($active_modules['endpoint']['rawname'])) {
         "placeholder": "<?php echo _('$myvoicemail')?>",
 		"description": "<?php echo _('Number of the Voicemail from Featurecodes')?>"
 	}
-	
+
 ];
 
 $(function () {
@@ -396,16 +396,16 @@ If you need a specific value to add your Phone you can make a feature request.
 
 								</td>
 								<td>
-								
+
 
 								</td>
 							</tr>
 						</tbody>
 					</table>
-					
-					
-					
-					
+
+
+
+
 				</div>
 			</div>
 		</div>

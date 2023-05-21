@@ -11,12 +11,12 @@ namespace FreePBX\modules;
 
 class Endpointman_Devices
 {
-	public function __construct($freepbx = null, $cfgmod = null) 
+	public function __construct($freepbx = null, $cfgmod = null)
 	{
 		$this->freepbx = $freepbx;
 		$this->db = $freepbx->Database;
 		$this->config = $freepbx->Config;
-		$this->configmod = $cfgmod;			
+		$this->configmod = $cfgmod;
 	}
 
 	public function myShowPage(&$pagedata) {
@@ -40,8 +40,8 @@ class Endpointman_Devices
 		*/
 		return false;
 	}
-	
-    public function ajaxHandler($module_tab = "", $command = "") 
+
+    public function ajaxHandler($module_tab = "", $command = "")
 	{
 		$retarr = "";
 		if ($module_tab == "manager")
@@ -58,17 +58,17 @@ class Endpointman_Devices
 		}
 		return $retarr;
 	}
-	
+
 	public function doConfigPageInit($module_tab = "", $command = "") {
-		
+
 	}
-	
+
 	public function getRightNav($request) {
 		return "";
 	}
-	
+
 	public function getActionBar($request) {
 		return "";
 	}
-	
+
 }

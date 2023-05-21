@@ -18,7 +18,7 @@ function in_array_recursive($needle, $haystack) {
         if($element == $needle) {
             return TRUE;
         }
-    } 
+    }
     return FALSE;
 }
 

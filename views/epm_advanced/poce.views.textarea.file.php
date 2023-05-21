@@ -17,7 +17,7 @@
 					<input type="hidden" name="filename" value="" />
 					<input type="hidden" name="location" value="" />
 					<input type="hidden" name="datosok" value="false" />
-					
+
           			<div id="box_sec_source" class="row">
           				<div class="col-xs-12">
           					<button type="button" class='btn btn-default btn-sm pull-xs-right' name="bt_source_full_screen" onclick="epm_advanced_tab_poce_bt_acction(this);" disabled><i class="fa fa-arrows-alt"></i> <?php echo _('Full Screen F11')?></button>
@@ -26,7 +26,7 @@
           					<i class='fa fa-exclamation-triangle'></i> <font style="font-size: 0.8em; font-style: italic;"><?php echo _("NOTE: Key F11 Full Screen, ESC Exit FullScreen.")?></font>
           				</div>
           			</div>
-          			
+
           			<div id="box_bt_save" class="row">
           				<div class="col-xs-9">
           					<i class='fa fa-exclamation-triangle'></i> <font style="font-size: 0.8em; font-style: italic;"><?php echo _("NOTE: File may be over-written during next package update. We suggest also using the <b>Share</b> button below to improve the next release.")?></font>
@@ -36,7 +36,7 @@
         					<button type="button" class='btn btn-danger' name="button_delete" onclick="epm_advanced_tab_poce_bt_acction(this);" disabled><i class='fa fa-trash-o'></i> <?php echo _('Delete')?></button>
           				</div>
           			</div>
-          			
+
           			<div id="box_bt_save_as" class="row">
           				<div class="col-xs-7">
           					<i class='fa fa-exclamation-triangle'></i> <font style="font-size: 0.8em; font-style: italic;"><?php echo _("NOTE: File is permanently saved and not over-written during next package update.")?></font>
@@ -50,7 +50,7 @@
     						</div>
 	          			</div>
 	          		</div>
-	          		
+
 	          		<div id="box_bt_share" class="row">
 	          			<div class="col-xs-9">
 	          				<i class='fa fa-exclamation-triangle'></i> <font style="font-size: 0.8em; font-style: italic;"> <?php echo _("Upload this configuration file to the <b>Provisioner.net Team</b>. Files shared are confidential and help improve the quality of releases.")?></font>

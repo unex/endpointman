@@ -98,7 +98,7 @@ if($_REQUEST['type'] == "brand") {
                 exec("tar -xvf ".PHONE_MODULES_PATH.'temp/'. $_REQUEST['package'] ." -C ".$temp_directory);
                 echo "Done!<br />";
 
-                $package = basename($_REQUEST['package'], ".tgz");    
+                $package = basename($_REQUEST['package'], ".tgz");
                 $package = explode("-",$package);
 
 		if ($endpoint->global_cfg['debug']) echo "Looking for file ".$temp_directory.$package[0]." to pass on to update_brand() <br />";
@@ -107,7 +107,7 @@ if($_REQUEST['type'] == "brand") {
 //                  Note: no need to delete/unlink/rmdir as this is handled in update_brand()
                 } else {
                     echo "Please name the Package the same name as your brand! <br />";
-                }       
+                }
             } else {
 //		Did not find the <brand>.tgz file
                 $endpoint->error['upload'] = "No File Provided";

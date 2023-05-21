@@ -3,7 +3,7 @@ global $active_modules;
 
 if (!empty($active_modules['endpoint']['rawname'])) {
 	if (FreePBX::Endpointman()->configmod->get("disable_endpoint_warning") !== "1") {
-		include('page.epm_warning.php');  
+		include('page.epm_warning.php');
 	}
 }
 ?>
@@ -16,7 +16,7 @@ if (!empty($active_modules['endpoint']['rawname'])) {
  * @license MPL / GPLv2 / LGPL
  * @package Endpoint Manager
  */
- 
+
 if (!defined('FREEPBX_IS_AUTH')) { die('No direct script access allowed'); }
 
 $epm = FreePBX::create()->Endpointman;

@@ -23,7 +23,7 @@
 	error_reporting(E_ALL | E_STRICT);							// Error reporting
 	ini_set( "display_errors", 1 );						// If debug is true, display error and display startup errors
 	ini_set( "html_errors", 0 );						// html in errors
-	
+
 	$error_time = time();
 	//-1 all errors
 	$error_report_type 	  = -1; //E_USER_ERROR | E_COMPILE_WARNING | E_COMPILE_ERROR | E_CORE_WARNING | E_CORE_ERROR | E_ERROR;	// Error type must be reported if DEBUG = false
@@ -46,7 +46,7 @@
 	    E_STRICT => 'Strict'
 	);
 
-	
+
 	function draw_error_report(){return null;}
 	//------------------------------------------
 	// Functions
@@ -58,7 +58,7 @@
 
 		$html = debug_error( $errstr, $errno, $errfile, $errline );
 
-		
+
 		if( DEBUG ){
 			if( $error_n == 1 )
 				echo "<style>.ee{ border:1px solid #aaaaff;background:#f8f8ff;padding:10px;margin:10px;}</style>";
@@ -66,10 +66,10 @@
 		}
 		elseif(  $errno & $error_report_type )
 			$error_reporting[$errstr] = $errno;
-			
-		if( $errno & $error_log_file_type  )				
+
+		if( $errno & $error_log_file_type  )
 			log_error( $html );					// log error
-		
+
 	}
 
 
@@ -82,14 +82,14 @@
 				$html .= '<div class="ei">'."\n";
 			    for( $i = 3; $i < count( $debug_array ); $i++ )
 				   	$html .= "-" . str_replace( SITE_DIR, "", isset( $debug_array[$i]['file'] ) ? $debug_array[ $i ][ 'file' ] : null ) . " : " . ( isset($debug_array[$i]['line']) ? $debug_array[$i]['line'] : null ). "<br/>\n";
-				$html .= "</div>";	   	
-			}			
+				$html .= "</div>";
+			}
 			$html .= "</div>";
 
 			return $html;
 	}
-	
-	
+
+
 
 	function log_error( $html ){
 
@@ -100,7 +100,6 @@
 		error_log( $html, 3, $file );
 	}
 
-	
+
 	// set my error handler as default error handler
 	set_error_handler( "myErrorHandler" );
-	 

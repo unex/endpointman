@@ -38,7 +38,7 @@
 
 	<form name="iedl_form_import_cvs" enctype="multipart/form-data" method="post">
 	<input type="hidden" name="MAX_FILE_SIZE" value="30000" />
-	
+
 	<div class="element-container">
 		<div class="row">
 			<div class="col-md-12">
@@ -47,7 +47,7 @@
 						<div class="col-md-3">
 							<label class="control-label" for="bt_import_csv"><?php echo _("Import CSV file of devices")?></label>
 							<i class="fa fa-question-circle fpbx-help-icon" data-for="bt_import_csv"></i>
-							<!-- 
+							<!--
 							data-url="ajax.php?module=endpointman&amp;module_sec=epm_advanced&amp;module_tab=iedl&amp;command=upload&amp;MAX_FILE_SIZE=30000"
 							<button type="submit" class='btn btn-default' id='button_import' name='button_import'><i class='fa fa-upload'></i><?php echo _("Import")?></button>
 							 -->
@@ -70,7 +70,7 @@
 			</div>
 		</div>
 	</div>
-	
+
 	</form>
 </div>
 
@@ -95,11 +95,11 @@
 								<li><code class='inline'><?php echo _('Extension')?></code> - <?php echo _('can be blank')?></li>
 								<li><code class='inline'><?php echo _('Line')?></code> - <?php echo _('can be blank')?></li>
 							</ul>
-	
+
 							<h6><?php echo _('Examples')?>:</h6>
 							<code class='inline'>001122334455,Cisco/Linksys,7940,4321,1</code><br/>
 							<code class='inline'>112233445566,Cisco/Linksys,7945,,</code>
-							
+
 						</div>
 					</div>
 				</div>

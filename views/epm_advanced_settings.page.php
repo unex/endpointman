@@ -1,16 +1,16 @@
 <?php
 	if (!defined('FREEPBX_IS_AUTH')) { die('No direct script access allowed'); }
-	
+
 	FreePBX::Endpointman()->configmod->getConfigModuleSQL(false);
-	
-	
+
+
 	if ((FreePBX::Endpointman()->configmod->get("server_type") == 'file') AND (FreePBX::Endpointman()->epm_advanced->epm_advanced_config_loc_is_writable())) {
 		FreePBX::Endpointman()->tftp_check();
 	}
-	
+
 	if (FreePBX::Endpointman()->configmod->get("use_repo") == "1") {
 		if (FreePBX::Endpointman()->has_git()) {
-			
+
 			if (!file_exists(FreePBX::Endpointman()->PHONE_MODULES_PATH . '/.git')) {
 				$o = getcwd();
 				chdir(dirname(FreePBX::Endpointman()->PHONE_MODULES_PATH));
@@ -121,12 +121,12 @@
 							if ($server_type == 'http') {
 							echo '<div class="alert alert-info" role="alert" id="cfg_type_alert">';
 								echo '<strong>' . _("Updated!") . '</strong>' . _(" - Point your phones to: ") . '<a href="' . $server_type . '://' . FreePBX::Endpointman()->configmod->get("srvip") . '/provisioning/p.php/" class="alert-link" target="_blank">' . $server_type . '://' . FreePBX::Endpointman()->configmod->get("srvip") . '/provisioning/p.php/</a>';
-							echo '</div>';	
+							echo '</div>';
 							}
 							if ($server_type == 'https') {
 							echo '<div class="alert alert-info" role="alert" id="cfg_type_alert">';
 								echo '<strong>' . _("Updated!") . '</strong>' . _(" - Point your phones to: ") . '<a href="' . $server_type . '://' . FreePBX::Endpointman()->configmod->get("srvip") . '/provisioning/p.php/" class="alert-link" target="_blank">' . $server_type . '://' . FreePBX::Endpointman()->configmod->get("srvip") . '/provisioning/p.php/</a>';
-							echo '</div>';	
+							echo '</div>';
 							}
 								?>
 
@@ -277,7 +277,7 @@
         							<button class="btn btn-default" type="button" id='autodetectntp' onclick="epm_advanced_tab_setting_input_value_change_bt('#ntp_server', sValue = '<?php echo $_SERVER["SERVER_ADDR"]; ?>', bSaveChange = true);"><i class='fa fa-search'></i> <?php echo _("Use me!")?></button>
       							</span>
     						</div>
-							
+
 						</div>
 					</div>
 				</div>
@@ -474,7 +474,7 @@
 	<?php unset($ari_selected); ?>
 	<!--END Enable FreePBX ARI Module-->
 	<!--Enable Debug Mode-->
-	<?php 
+	<?php
 		$debug_selected = FreePBX::Endpointman()->configmod->get("debug");
 		if ($debug_selected) {
 			global $debug;

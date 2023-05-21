@@ -1,6 +1,6 @@
 <?php
 	if (!defined('FREEPBX_IS_AUTH')) { die('No direct script access allowed'); }
-	
+
 	$sql = "SELECT value FROM endpointman_global_vars WHERE var_name LIKE 'endpoint_vers'";
 	$provisioner_ver = sql($sql, 'getOne');
 	$provisioner_ver = date("d-M-Y", $provisioner_ver) . " at " . date("g:ia", $provisioner_ver);
@@ -13,7 +13,7 @@
 	<div class="alert alert-info" role="alert"><?php echo _("Download updated releases from "); ?><a href="http://wiki.provisioner.net/index.php/Releases" target="_blank">http://wiki.provisioner.net/index.php/Releases <i class='icon-globe'></i></a></div>
 	<font style="font-size: 0.8em">Local Date Last Modified: <?php echo $provisioner_ver; ?></font>
 	<br /><br />
-	
+
 	<form name="manual_upload_form_import_provisioner" enctype="multipart/form-data" method="post">
 	<div class="element-container">
 		<div class="row">
@@ -43,7 +43,7 @@
 		</div>
 	</div>
 	</form>
-	
+
 	<form name="manual_upload_form_import_brand" enctype="multipart/form-data" method="post">
 	<div class="element-container">
 		<div class="row">
@@ -80,7 +80,7 @@
 </div>
 <div class="section" data-id="ma_up_ex_brand_package">
 	<div class="alert alert-info" role="alert"><?php echo _("Learn how to create your own brand package at "); ?><a target="_blank" href="http://www.provisioner.net/adding_new_phones">http://www.provisioner.net/adding_new_phones <i class='icon-globe'></i></a></div>
-	
+
 	<div class="element-container">
 		<div class="row">
 			<div class="col-md-12">
@@ -99,7 +99,7 @@
 								<div class="input-group">
 	      							<select class="form-control selectpicker show-tick" data-style="btn-primary" data-live-search-placeholder="Search" data-size="10" data-live-search="true" name="brand_export_pack_selected" id="brand_export_pack_selected">
 										<option value=""><?php echo _('Select Brand:')?></option>
-											<?php 
+											<?php
 											foreach ($brand_ava as $row) {
 												echo '<option value="'.$row['value'].'">'.$row['text'].'</option>';
 											}
@@ -123,7 +123,7 @@
 			</div>
 		</div>
 	</div>
-	
+
 	<div class="element-container">
 		<div class="row">
 			<div class="col-md-12">
@@ -134,7 +134,7 @@
 							<i class="fa fa-question-circle fpbx-help-icon" data-for="brand_export_pack_list"></i>
 						</div>
 						<div class="col-md-9">
-							
+
 							<ul class="list-group" id="list-brands-export-item-loading">
 								<li class="list-group-item text-center bg-info">
 									<i class="fa fa-spinner fa-pulse"></i>&nbsp; <?php echo _("Loading...")?>
@@ -153,5 +153,5 @@
 			</div>
 		</div>
 	</div>
-	
+
 </div>

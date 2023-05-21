@@ -3,15 +3,15 @@ global $active_modules;
 
 if (!empty($active_modules['endpoint']['rawname'])) {
 	if (FreePBX::Endpointman()->configmod->get("disable_endpoint_warning") !== "1") {
-		include('page.epm_warning.php');  
+		include('page.epm_warning.php');
 	}
 }
 ?>
 
-<?php 
+<?php
 /*
 Endpoint Manager V2
-Copyright (C) 2009-2010  Ed Macri, John Mullinix and Andrew Nagy 
+Copyright (C) 2009-2010  Ed Macri, John Mullinix and Andrew Nagy
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
 as published by the Free Software Foundation; either version 2
