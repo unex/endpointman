@@ -200,10 +200,10 @@ switch ($sub_type) {
             $sql = 'SELECT endpointman_mac_list.id FROM endpointman_mac_list , endpointman_model_list , endpointman_brand_list , endpointman_product_list WHERE endpointman_brand_list.id = endpointman_model_list.brand AND endpointman_model_list.id = endpointman_mac_list.model AND endpointman_model_list.product_id = endpointman_product_list.id AND endpointman_brand_list.id = '.$_REQUEST['rb_brand'].' ORDER BY endpointman_product_list.cfg_dir ASC';
             $data = $endpoint->eda->sql($sql,'getAll',DB_FETCHMODE_ASSOC);
             if(!empty($data)) {
+                if(!class_exists('ProvisionerConfig')) {
+                    require_once(LOCAL_PATH.'install/setup.php');
+                }
                 foreach($data as $row) {
-                    if(!class_exists('ProvisionerConfig')) {
-                        require(PHONE_MODULES_PATH.'setup.php');
-                    }
                     $phone_info = $endpoint->get_phone_info($row['id']);
 
                     $class = "endpoint_" . $phone_info['directory'] . "_" . $phone_info['cfg_dir'] . '_phone';
