@@ -7,4 +7,4 @@
  * @package Endpoint Manager
  */
 echo "<!DOCTYPE html>";
-include('includes/popup.inc');
+include('includes/popup.inc.php');

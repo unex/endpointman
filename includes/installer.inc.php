@@ -7,7 +7,7 @@
  * @package Provisioner
  */
 
-require 'functions.inc';
+require 'functions.inc.php';
 
 $endpoint = new endpointmanager();
 

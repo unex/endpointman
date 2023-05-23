@@ -6,4 +6,4 @@
  * @license MPL / GPLv2 / LGPL
  * @package Endpoint Manager
  */
-include('includes/installer.inc');
+include('includes/installer.inc.php');

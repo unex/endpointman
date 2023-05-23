@@ -83,8 +83,8 @@ function endpointman_configpageinit($pagename) {
 	    $delete = isset($_REQUEST['epm_delete']) ? $_REQUEST['epm_delete'] : null;
 
         $doc_root = $amp_conf['AMPWEBROOT'] . "/admin/modules/endpointman/";
-        if (file_exists($doc_root . "includes/functions.inc")) {
-            require($doc_root . "includes/functions.inc");
+        if (file_exists($doc_root . "includes/functions.inc.php")) {
+            require($doc_root . "includes/functions.inc.php");
 
             $endpoint = new endpointmanager();
             ini_set('display_errors', 0);

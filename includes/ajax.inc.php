@@ -7,10 +7,10 @@
  * @package Provisioner
  */
 
-require 'functions.inc';
+require 'functions.inc.php';
 $endpoint = new endpointmanager();
 
-include 'json.inc';
+include 'json.inc.php';
 
 function in_array_recursive($needle, $haystack) {
     $it = new RecursiveIteratorIterator(new RecursiveArrayIterator($haystack));

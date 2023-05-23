@@ -7,7 +7,7 @@
  * @package Provisioner
  */
 
-include 'includes/functions.inc';
+include 'includes/functions.inc.php';
 
 $debug = NULL;
 $endpoint = new endpointmanager();

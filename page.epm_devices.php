@@ -33,7 +33,7 @@ if(file_exists('/tftpboot')) {
 } else {
 	die(_("Please create /tftpboot, even if you won't use it"));
 }
-include 'includes/functions.inc';
+include 'includes/functions.inc.php';
 global $endpoint, $debug;
 $debug = NULL;
 $endpoint = new endpointmanager();
@@ -55,5 +55,5 @@ if (isset($_REQUEST['page'])) {
 if($global_cfg['debug']) {
 	$debug .= "Request Variables: \n".print_r($_REQUEST, TRUE);
 }
-include LOCAL_PATH.'includes/devices_manager.inc';
+include LOCAL_PATH.'includes/devices_manager.inc.php';
 ?>
