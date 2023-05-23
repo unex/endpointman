@@ -2,15 +2,15 @@
 var cmeditor = null;
 
 function epm_templates_document_ready () {
-	
+
 	var arrayJs = ['assets/endpointman/js/addon/simplescrollbars.js', 'assets/endpointman/js/mode/xml.js'];
 	arrayJs.forEach(function (item, index, array) {
 		var x = document.createElement('script');
 		x.src = item;
 		document.getElementsByTagName("head")[0].appendChild(x);
 	});
-	
-	
+
+
 	$('#AddDlgModal').on('show.bs.modal', function (event) { $(this).find('input, select').val(""); });
 	$('#AddDlgModal_bt_new').on("click", function() { epm_templates_grid_add(); });
 	$('#NewProductSelect').on('change', function() { epm_templates_add_NewProductSelect_Change (this); });
@@ -26,32 +26,32 @@ function epm_templates_document_ready () {
 			$('.liquid-slider').css('visibility', 'visible');
 		}
 	});
-		
+
 	//Al iniciar la apertura de la ventana
 	$('#CfgGlobalTemplate').on('show.bs.modal', function (e) {
-		epm_template_custom_config_get_global(e);	
+		epm_template_custom_config_get_global(e);
 	});
-	
+
 	//Al finalizar la apertura de la ventana	$('#CfgGlobalTemplate').on('shown.bs.modal', function (e) { });
 	//Antes de iniciar el cierre de la ventana	$('#CfgGlobalTemplate').on('hide.bs.modal', function (e) { });
 	//Despues de Cerrar la ventana				$('#CfgGlobalTemplate').on('hidden.bs.modal', function (e) { });
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	$('#CfgEditFileTemplate').on('show.bs.modal', function (e) {         });	
-	
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	$('#CfgEditFileTemplate').on('show.bs.modal', function (e) {         });
+
 	$('#CfgEditFileTemplate').on('shown.bs.modal', function (e) {
 		if (cmeditor === null) {
 			cmeditor = CodeMirror.fromTextArea(document.getElementById("config_textarea"), {
@@ -64,24 +64,24 @@ function epm_templates_document_ready () {
 		}
 		cmeditor.setValue(document.getElementById("config_textarea").value);
 	});
-	
+
 	$('#CfgEditFileTemplate').on('hidden.bs.modal', function (e) {
 		/* DESPUES DE CERRAR: CODIGO QUE ACTUALIZA EL SELECT... */
-		
+
 		$('#edit_file_name_path').val("No Selected");
 		$('#config_textarea').val("");
 		cmeditor.setValue("");
 	});
 	$('#CfgEditFileTemplate').on('hidden.bs.modal', function (e) {        });
-	
-		
-		
-		
+
+
+
+
 	$('.files_edit_configs button').click(function(e){
 		var NameBox = e.target.parentNode.parentNode.id;
 		var NameBoxSel = "sl_" + NameBox;
 		var ValueSel = $('#' + NameBoxSel).val();
-				
+
 		var ids =  ValueSel.split("_", 1);
 		var NameFile = ValueSel.substr( ValueSel.lastIndexOf("_") + 1 , ValueSel.len);
 
@@ -89,7 +89,7 @@ function epm_templates_document_ready () {
 			$('#edit_file_name_path').text(NameFile);
 			$('#config_textarea').val("Texto 456");
 		}
-		else 
+		else
 		{
 			$('#edit_file_name_path').text("SQL:" + NameFile);
 			$('#config_textarea').val("Texto 789");
@@ -97,17 +97,17 @@ function epm_templates_document_ready () {
 		$('#CfgEditFileTemplate').modal('show');
 
 	});
-	
+
 	$('select[class~="selectpicker"][data-url]').each(function(index, value) { epm_template_update_select_files_config($(this)); });
-	
-	
-	
-	
-	
+
+
+
+
+
 }
 
 function epm_templates_windows_load (nTab = "") {
-	
+
 }
 
 function epm_templates_change_tab (nTab = "") {
@@ -141,7 +141,7 @@ function epm_template_update_select_files_config (e) {
 				select.append('<option data-icon="fa fa-files-o" value="' + val[id] + '_' + val[label] + '">' + val[label] + ' (No Change)</option>');
 			}
 		});
-		if (data.alt_configs != null) 
+		if (data.alt_configs != null)
 		{
 			select.append('<optgroup label="Modificaiones"></optgroup>');
 			var seloptgroup = select.find("optgroup");
@@ -154,7 +154,7 @@ function epm_template_update_select_files_config (e) {
 					seloptgroup.append('<option data-icon="fa fa-pencil-square-o" style="background: #5cb85c; color: #fff;" value="' + val[id] + '_' + val[label] + '">' + val[label] + '</option>');
 				}
 			});
-			
+
 		};
 		select.selectpicker('refresh');
 	});
@@ -224,17 +224,17 @@ function epm_templates_add_NewProductSelect_Change (obj)
 				fpbxToast('ERROR AJAX:' + thrownError,'ERROR (' + xhr.status + ')!','error');
 				return false;
 			},
-			success: function(data) 
+			success: function(data)
 			{
 				var options = '';
-				if (data.status == true) 
+				if (data.status == true)
 				{
-					$(data.listopt).each(function(index, itemData) 
+					$(data.listopt).each(function(index, itemData)
 					{
-						options += '<option value="' + itemData.optionValue + '">' + itemData.optionDisplay + '</option>';	
+						options += '<option value="' + itemData.optionValue + '">' + itemData.optionDisplay + '</option>';
 					});
 					$("#NewCloneModel").html(options);
-				} 
+				}
 				else {
 					options = '<option value="">'+ data.message +'</option>';
 					fpbxToast(data.message, "Error!", 'error');
@@ -245,8 +245,8 @@ function epm_templates_add_NewProductSelect_Change (obj)
 			}
 		});
 	}
-	else { 
-		$("#NewCloneModel").html(''); 
+	else {
+		$("#NewCloneModel").html('');
 		$('#NewCloneModel').selectpicker('refresh');
 	}
 }
@@ -284,12 +284,12 @@ function epm_templates_grid_del (iddel)
 	}
 }
 
-function epm_templates_grid_add() 
+function epm_templates_grid_add()
 {
 	var NameTemplate = $('#NewTemplateName').val();
 	var ProductSelec = $('#NewProductSelect').val();
 	var CloneModel = $('#NewCloneModel').val();
-	
+
 	if ((NameTemplate == "") || (ProductSelec == "") || (CloneModel == ""))
 	{
 		fpbxToast("Faltan Datos!", "Error!", 'error');
@@ -314,11 +314,11 @@ function epm_templates_grid_add()
 				return false;
 			},
 			success: function(data) {
-				if (data.status == true) 
+				if (data.status == true)
 				{
 					fpbxToast(data.message, '', 'success');
-					setTimeout (function () { window.location.href = "config.php?display=epm_templates&subpage=editor&custom=0&idsel="+data.newid; }, 500); 
-				} 
+					setTimeout (function () { window.location.href = "config.php?display=epm_templates&subpage=editor&custom=0&idsel="+data.newid; }, 500);
+				}
 				else { fpbxToast(data.message, "Error!", 'error'); }
 			}
 		});
@@ -351,18 +351,18 @@ function epm_template_custom_config_get_global(elmnt)
 			return false;
 		},
 		success: function(data) {
-			if (data.status == true) 
+			if (data.status == true)
 			{
 				epm_global_input_value_change_bt("#srvip", data.settings.srvip, false);
 				epm_global_input_value_change_bt("#server_type", data.settings.server_type, false);
 				epm_global_input_value_change_bt("#config_loc", data.settings.config_location, false);
 				epm_global_input_value_change_bt("#tz", data.settings.tz, false);
 				epm_global_input_value_change_bt("#ntp_server", data.settings.ntp, false);
-				
+
 				if (elmnt.name == "button_undo_globals") {
 					fpbxToast(data.message, '', 'success');
 				}
-			} 
+			}
 			else { fpbxToast(data.message, "Error!", 'error'); }
 		}
 	});
@@ -382,7 +382,7 @@ function epm_template_custom_config_update_global(elmnt)
 			tid : $.getUrlVar('idsel'),
 			tz: epm_global_get_value_by_form("FormCfgGlobalTemplate","tz"),
 			ntp_server: epm_global_get_value_by_form("FormCfgGlobalTemplate","ntp_server"),
-			srvip: epm_global_get_value_by_form("FormCfgGlobalTemplate","srvip"),			
+			srvip: epm_global_get_value_by_form("FormCfgGlobalTemplate","srvip"),
 			config_loc: epm_global_get_value_by_form("FormCfgGlobalTemplate","config_loc"),
 			server_type: epm_global_get_value_by_form("FormCfgGlobalTemplate","server_type")
 		},
@@ -393,13 +393,13 @@ function epm_template_custom_config_update_global(elmnt)
 			return false;
 		},
 		success: function(data) {
-			if (data.status == true) 
+			if (data.status == true)
 			{
 				fpbxToast(data.message, '', 'success');
-			} 
+			}
 			else { fpbxToast(data.message, "Error!", 'error'); }
 		}
-	});	
+	});
 }
 
 function epm_template_custom_config_reset_global(elmnt)
@@ -422,11 +422,11 @@ function epm_template_custom_config_reset_global(elmnt)
 			return false;
 		},
 		success: function(data) {
-			if (data.status == true) 
+			if (data.status == true)
 			{
 				fpbxToast(data.message, '', 'success');
 				epm_template_custom_config_get_global(elmnt);
-			} 
+			}
 			else { fpbxToast(data.message, "Error!", 'error'); }
 		}
 	});
@@ -442,54 +442,54 @@ function epm_template_custom_config_reset_global(elmnt)
 
 function epm_template_edit_select_area_list (obj)
 {
-	
+
 	var maxlines = obj.options[obj.selectedIndex].value;
 	var id = epm_global_get_value_by_form("epm_template_edit_form", "id");
-	
+
 	var silent_mode = $.getUrlVar('silent_mode');
-	if (silent_mode == true) 
+	if (silent_mode == true)
 	{
-		
+
 		alert ("true");
-		
+
 
 		if (id == 0) {
 			fpbxToast("No Device Selected to Edit!!", "Error!", 'error');
 		}
 		else {
 
-			
+
 			/*
 			model_list = 126
 			template_list = 0
 			and = new Date().getTime()
-		
+
 	    <?php if (isset($_REQUEST['silent_mode'])) { echo '<input name="silent_mode" id="silent_mode" type="hidden" value="1">'; } ?>
 		<input name="" id="id" type="hidden" value="<?php echo $dtemplate['hidden_id']; ?>">
 		<input name="custom" id="custom" type="hidden" value="<?php echo $dtemplate['hidden_custom'] ; ?>">
 
-		
+
 			// --> PHP
 			$template_editor = TRUE;
 			$sql = "UPDATE  endpointman_mac_list SET  model =  '".$_REQUEST['model_list']."' WHERE  id =".$_REQUEST['edit_id']; -> id cambiar por template_id
 			$endpoint->eda->sql($sql);
 			$endpoint->tpl->assign("silent_mode", 1);
-	
+
 			if ($_REQUEST['template_list'] == 0) {
 				$endpoint->edit_template_display($_REQUEST['edit_id'],1);
 			} else {
 				$endpoint->edit_template_display($_REQUEST['template_list'],0);
 			}
 			// <-- PHP
-		*/	
+		*/
 		}
 	}
-	else 
+	else
 	{
 		var custom = $.getUrlVar('custom');
 		window.location.href='config.php?display=epm_templates&subpage=editor&custom=' + custom + '&idsel=' + id + '&maxlines=' + maxlines
 	}
-	
+
 }
 
 
@@ -517,7 +517,7 @@ function epm_template_edit_select_area_list (obj)
 
 
 
-	
+
 	/*
 		//edit
 		//<a href="#" onclick="return popitup('config.php?type=tool&display=epm_config&amp;quietmode=1&amp;handler=file&amp;file=popup.html.php&amp;module=endpointman&amp;pop_type=alt_cfg_edit', '<?php echo $row['name']; ?>')">
@@ -533,6 +533,6 @@ function epm_template_edit_select_area_list (obj)
                 if (window.focus) {newwindow.focus()}
                 return false;
         }
-		
 
-*/	
+
+*/

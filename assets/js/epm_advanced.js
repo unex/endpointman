@@ -9,14 +9,14 @@ function epm_advanced_document_ready () {
 		x.src = item;
 		document.getElementsByTagName("head")[0].appendChild(x);
 	});
-	
-	
+
+
 	//TAB SETTING
 	$('#settings input[type=text]').change(function(){ epm_advanced_tab_setting_input_change(this); });
 	$('#settings input[type=radio]').change(function(){ epm_advanced_tab_setting_input_change(this); });
 	$('#settings select').change(function(){ epm_advanced_tab_setting_input_change(this); });
-	
-	
+
+
 	//TAB OUT_MANAGER
 	$('#AddDlgModal').on('show.bs.modal', function (event) {
 		$(this).find('input, select').val("");
@@ -41,7 +41,7 @@ function epm_advanced_select_tab_ajax(idtab = "")
 		fpbxToast('epm_advanced_select_tab_ajax -> id invalid!','JS!','warning');
 		return false;
 	}
-	
+
 	if (idtab === "poce")
 	{
 		epm_advanced_tab_poce_update_list_brand_bootnav();
@@ -72,7 +72,7 @@ function epm_advanced_select_tab_ajax(idtab = "")
 
 function close_module_actions_epm_advanced(goback, acctionname = "")
 {
-	
+
 }
 
 function end_module_actions_epm_advanced(acctionname = "")
@@ -82,7 +82,7 @@ function end_module_actions_epm_advanced(acctionname = "")
 	}
 }
 
-// END: FUNCTION GLOBAL SEC 
+// END: FUNCTION GLOBAL SEC
 
 
 
@@ -93,7 +93,7 @@ function end_module_actions_epm_advanced(acctionname = "")
 
 // INI: FUNCTION TAB UPLOAD_MANUAL
 
-function epm_advanced_tab_manual_upload_bt_explor_brand() 
+function epm_advanced_tab_manual_upload_bt_explor_brand()
 {
 	var packageid = $('#brand_export_pack_selected').val();
 	if (packageid === "") {
@@ -154,12 +154,12 @@ function epm_advanced_tab_manual_upload_list_files_brand_expor()
 						$("#list-brands-export").append($('<li/>', { 'class' : 'list-group-item item-list-brand-export'	}).text("Empty list").append($('<span/>', { 'class' : 'label label-default label-pill pull-xs-right' }).text("0")));
 					}
 					else {
-						$(data.list_brands).each(function(index, itemData) 
+						$(data.list_brands).each(function(index, itemData)
 						{
 							$("#list-brands-export").append(
 								$('<li/>', { 'class' : 'list-group-item item-list-brand-export', 'id' : 'item-list-brans-export-' + itemData.name })
 								.append(
-									$('<a/>', { 
+									$('<a/>', {
 										'data-toggle' 	: 'collapse',
 										'href'			: '#box_list_files_brand_' + itemData.name,
 										'aria-expanded'	: 'false',
@@ -184,11 +184,11 @@ function epm_advanced_tab_manual_upload_list_files_brand_expor()
 								);
 							}
 						});
-						
-						$(data.list_files).each(function(index, itemData) 
+
+						$(data.list_files).each(function(index, itemData)
 						{
 							$('#box_list_files_brand_' + itemData.brand).append(
-								$('<a/>', { 
+								$('<a/>', {
 									'href'	: 'config.php?display=epm_advanced&subpage=manual_upload&command=export_brands_availables_file&file_package=' + itemData.file,
 									'target': '_blank',
 									'class'	: 'list-group-item'
@@ -201,16 +201,16 @@ function epm_advanced_tab_manual_upload_list_files_brand_expor()
 							);
 						});
 					}
-					
+
 					//$('#manual_upload a.collapse-item').removeattr('onclick');
 					$('#manual_upload a.collapse-item').on("click", function(){
 						epm_global_html_css_name(this,"auto","active");
 						$(this).blur();
 					});
-					
+
 					//fpbxToast(data.message, '', 'success');
 					return true;
-				} 
+				}
 				else {
 					$("#list-brands-export").append( $('<li/>', { 'class' : 'list-group-item item-list-brand-export text-center bg-warning' }).text(data.message));
 					fpbxToast(data.message, data.txt.error, 'error');
@@ -222,7 +222,7 @@ function epm_advanced_tab_manual_upload_list_files_brand_expor()
 	}
 }
 
-// END: FUNCTION TAB UPLOAD_MANUAL 
+// END: FUNCTION TAB UPLOAD_MANUAL
 
 
 
@@ -232,7 +232,7 @@ function epm_advanced_tab_manual_upload_list_files_brand_expor()
 
 
 // INI: FUNCTION TAB IEDL
-function epm_advanced_tab_iedl_bt_import() 
+function epm_advanced_tab_iedl_bt_import()
 {
 	var urlStr = "config.php?display=epm_advanced&subpage=iedl&command=import";
 	var formname = "iedl_form_import_cvs";
@@ -254,12 +254,12 @@ function epm_advanced_tab_poce_update_list_brand_bootnav(forzar=false)
 	var nListO = $("#lista_brand_bootnav").children('a').get().length;
 	var nListL = $("#lista_brand_bootnav").children('a.bootnavloadingajax').get().length;
 	var nListT = nListO - nListL
-	
 
-	if (nListT > 0) {
-		if (frozar !== true) { return; }
-	}
-	
+
+	// if (nListT > 0) {
+	// 	if (frozar !== true) { return; }
+	// }
+
 	if ((nListL === 0) && (nListO > 0)) {
 		$("#lista_brand_bootnav")
 		.empty()
@@ -271,7 +271,7 @@ function epm_advanced_tab_poce_update_list_brand_bootnav(forzar=false)
 			)
 		);
 	}
-	
+
 waitingDialog.show();
 	epm_advanced_tab_poce_clear_select();
 	$.ajax({
@@ -301,13 +301,13 @@ waitingDialog.show();
 						)
 					);
 				}
-				else 
+				else
 				{
 					$(data.ldatos).each(function(index, itemData) {
 						$("#lista_brand_bootnav")
 						.append(
-							$('<a/>', { 
-								'href' 	: 'javascript:epm_advanced_tab_poce_select_product(' + itemData.id + ');', 
+							$('<a/>', {
+								'href' 	: 'javascript:epm_advanced_tab_poce_select_product(' + itemData.id + ');',
 								'class' : 'list-group-item',
 								'id'	: 'list_product_' + itemData.id,
 								'title' : itemData.name
@@ -319,12 +319,12 @@ waitingDialog.show();
 						);
 					});
 				}
-				
-				
+
+
 				$("#lista_brand_bootnav a.bootnavloadingajax").remove();
 //				fpbxToast('Load date Done!', '', 'success');
 				return true;
-			} 
+			}
 			else {
 				$("#lista_brand_bootnav a.bootnavloadingajax").text("Error get data!");
 				fpbxToast(data.message, data.txt.error, 'error');
@@ -333,7 +333,7 @@ waitingDialog.show();
 		},
 	});
 setTimeout(function () {waitingDialog.hide();}, 1000);
-	
+
 }
 
 function epm_advanced_tab_poce_clear_select()
@@ -384,34 +384,34 @@ waitingDialog.show();
 			if (bclear == true) {
 				epm_advanced_tab_poce_clear_select();
 			}
-			
+
 			if (data.status == true) {
 				epm_advanced_tab_poce_create_file_list("#select_product_list_files_config", data.file_list, data.product_select, "file");
 				epm_advanced_tab_poce_create_file_list("#select_product_list_files_template_custom", data.template_file_list, data.product_select, "tfile");
 				epm_advanced_tab_poce_create_file_list("#select_product_list_files_user_config", data.sql_file_list, data.product_select, "sql");
-				
+
 				if (bclear == true) {
 					$("#poce_NameProductSelect").text(data.product_select_info.long_name);
 				}
 //				fpbxToast('Load date Done!', '', 'success');
 				return true;
-			} 
+			}
 			else {
 				epm_advanced_tab_poce_create_file_list("#select_product_list_files_config", "Error");
 				epm_advanced_tab_poce_create_file_list("#select_product_list_files_template_custom", "Error");
 				epm_advanced_tab_poce_create_file_list("#select_product_list_files_user_config", "Error");
-				
+
 				$("#poce_NameProductSelect").text("Error get data!");
-				
+
 				fpbxToast(data.message, data.txt.error, 'error');
 				return false;
 			}
 		},
-	});	
+	});
 setTimeout(function () {waitingDialog.hide();}, 1000);
 }
 
-function epm_advanced_tab_poce_create_file_list(idname, data = "", product_select = "", typefile = "") 
+function epm_advanced_tab_poce_create_file_list(idname, data = "", product_select = "", typefile = "")
 {
 	$(idname + " div.dropdown-menu").empty();
 	if (Array.isArray(data) === false)
@@ -425,14 +425,14 @@ function epm_advanced_tab_poce_create_file_list(idname, data = "", product_selec
 		return;
 	}
 	$(idname + " span.label").text(data.length);
-	$(data).each(function(index, itemData) 
+	$(data).each(function(index, itemData)
 	{
 		$(idname + " div.dropdown-menu")
 		.append(
-			$('<a/>', { 
-				'href' 	: 'javascript:epm_advanced_tab_poce_select_file_edit("'+ product_select +'", "'+ itemData.text +'", "'+ itemData.value +'", "'+ typefile +'");', 
+			$('<a/>', {
+				'href' 	: 'javascript:epm_advanced_tab_poce_select_file_edit("'+ product_select +'", "'+ itemData.text +'", "'+ itemData.value +'", "'+ typefile +'");',
 				'class' : 'dropdown-item bt',
-				'id'	: typefile + '_' +  product_select + '_' + itemData.text +'_'+ itemData.value 
+				'id'	: typefile + '_' +  product_select + '_' + itemData.text +'_'+ itemData.value
 			})
 			.text(itemData.text)
 		);
@@ -461,7 +461,7 @@ waitingDialog.show();
 		error: function(xhr, ajaxOptions, thrownError) {
 			fpbxToast('ERROR AJAX:' + thrownError,'ERROR (' + xhr.status + ')!','error');
 			$("#poce_file_name_path").text("Error ajax!");
-			
+
 			$('#config_textarea').prop('disabled', true);
 			if (cmeditor !== null) {
 				cmeditor.setValue("");
@@ -484,33 +484,33 @@ waitingDialog.show();
 					cmeditor.setValue(data.config_data);
 					cmeditor.setOption("readOnly",false);
 				}
-				
+
 				if (data.type === "file") {
 					$("#box_bt_save button[name=button_save]").prop('disabled', false);
 					$("#box_bt_save button[name=button_delete]").prop('disabled', true);
-					
+
 					$("#box_bt_save_as button").prop('disabled', false);
 					$("#box_bt_save_as input").prop('disabled', false).val(data.save_as_name_value);
-					
+
 					$("#box_bt_share button").prop('disabled', true);
 				}
 				else if (data.type === "tfile") {
 					$("#box_bt_save button").prop('disabled', true);
 					$("#box_bt_share button").prop('disabled', true);
-				
+
 					$("#box_bt_save_as button").prop('disabled', true);
 					$("#box_bt_save_as input").prop('disabled', true).val(data.save_as_name_value);
 				}
 				else if (data.type === "sql") {
 					$("#box_bt_save button[name=button_save]").prop('disabled', false);
 					$("#box_bt_save button[name=button_delete]").prop('disabled', false);
-					
+
 					$("#box_bt_save_as button").prop('disabled', false);
 					$("#box_bt_save_as input").prop('disabled', false).val(data.save_as_name_value);
-					
+
 					$("#box_bt_share button").prop('disabled', true);
 				}
-				
+
 				$('form[name=form_config_text_sec_button] input[name=type_file]').val(data.type);
 				$('form[name=form_config_text_sec_button] input[name=sendid]').val(data.sendidt);
 				$('form[name=form_config_text_sec_button] input[name=product_select]').val(data.product_select);
@@ -519,10 +519,10 @@ waitingDialog.show();
 				$('form[name=form_config_text_sec_button] input[name=filename]').val(data.filename);
 				$('form[name=form_config_text_sec_button] input[name=location]').val(data.location);
 				$('form[name=form_config_text_sec_button] input[name=datosok]').val("true");
-				
+
 //				fpbxToast('File Load date Done!', '', 'success');
 				return true;
-			} 
+			}
 			else {
 				$("#poce_file_name_path").text("Error obteniendo datos!");
 				$('#config_textarea').prop('disabled', true);
@@ -540,32 +540,32 @@ waitingDialog.show();
 				return false;
 			}
 		},
-	});	
-setTimeout(function () {waitingDialog.hide();}, 1000);	
+	});
+setTimeout(function () {waitingDialog.hide();}, 1000);
 }
 
 function epm_advanced_tab_poce_bt_acction (command)
 {
 	if (command === "") { return; }
 	var obj_name = $(command).attr("name").toLowerCase();
-	
+
 	if (obj_name === "bt_source_full_screen")
 	{
 		cmeditor.setOption('fullScreen', !cmeditor.getOption('fullScreen'));
 		return true;
 	}
-	
+
 	if (epm_global_get_value_by_form("form_config_text_sec_button","datosok") === false)
 	{
 		fpbxToast("The form is not ready!", "Error!", 'error');
 		return false;
 	}
-	
+
 	var cfg_data = "";
 	switch(obj_name) {
     	case "button_save":
     		if (confirm("Are you sure to save your changes will be overwritten irreversibly?") === false) { return; }
-    		
+
     		cfg_data = {
     			module: "endpointman",
     			module_sec: "epm_advanced",
@@ -580,7 +580,7 @@ function epm_advanced_tab_poce_bt_acction (command)
     			config_text: cmeditor.getValue()
     		};
     		break;
-    	
+
     	case "button_save_as":
     		cfg_data = {
     			module: "endpointman",
@@ -596,10 +596,10 @@ function epm_advanced_tab_poce_bt_acction (command)
     			config_text: cmeditor.getValue()
     		};
     		break;
-    		
+
     	case "button_delete":
     		if (confirm("Are you sure you want to delete this file from the database?") === false) { return; }
-    		
+
     		cfg_data = {
     			module: "endpointman",
     			module_sec: "epm_advanced",
@@ -610,7 +610,7 @@ function epm_advanced_tab_poce_bt_acction (command)
     			sql_select: epm_global_get_value_by_form("form_config_text_sec_button","sendid"),
     		};
     		break;
-    	
+
     	case "button_share":
     		cfg_data = {
     			module: "endpointman",
@@ -625,12 +625,12 @@ function epm_advanced_tab_poce_bt_acction (command)
     			config_text : cmeditor.getValue()
     		};
     		break;
-    		
+
     	default:
     		alert ("Command not found!");
         	return false;
 	}
-	
+
 	$.ajax({
 		type: 'POST',
 		url: "ajax.php",
@@ -646,48 +646,48 @@ function epm_advanced_tab_poce_bt_acction (command)
 			if (data.status == true) {
 				switch(obj_name) {
 			    	case "button_save":
-			    		
+
 			    		epm_advanced_tab_poce_select_product(epm_global_get_value_by_form("form_config_text_sec_button","product_select"), false);
 			    		fpbxToast(data.message, 'Save!', 'success');
 			    		break;
-			    	
+
 			    	case "button_save_as":
 			    		$('form[name=form_config_text_sec_button] input[name=type_file]').val(data.type_file);
 						$('form[name=form_config_text_sec_button] input[name=sendid]').val(data.sendidt);
 						$('form[name=form_config_text_sec_button] input[name=location]').val(data.location);
-						
+
 						$("#poce_file_name_path").text(data.location);
 						$("#box_bt_save button").prop('disabled', false);
 						$("#box_bt_share button").prop('disabled', false);
 						$("#box_bt_save_as button").prop('disabled', false);
 						$("#box_bt_save_as input").prop('disabled', false);
-						
+
 						epm_advanced_tab_poce_select_product(epm_global_get_value_by_form("form_config_text_sec_button","product_select"), false);
 						fpbxToast(data.message, 'Save as!', 'success');
 			    		break;
-			    		
+
 			    	case "button_delete":
-			    		
+
 			    		epm_advanced_tab_poce_select_product(epm_global_get_value_by_form("form_config_text_sec_button","product_select"));
 			    		fpbxToast(data.message, 'Delete!', 'success');
 			    		break;
-			    	
+
 			    	case "button_share":
 			    		fpbxToast(data.message, 'Share!', 'success');
 			    		break;
-			    		
+
 			    	default:
 			    		fpbxToast(data.message, '', 'success');
 				}
 				return true;
-			} 
+			}
 			else {
 				fpbxToast(data.message, "Error!", 'error');
 				return false;
 			}
 		},
-	});	
-	
+	});
+
 }
 // END: FUNCTION TAB POCE
 
@@ -734,7 +734,7 @@ function epm_advanced_tab_oui_manager_bt_new()
 {
 	var new_oui = $("#number_new_oui").val().trim();
 	var new_brand = $("#brand_new_oui").val();
-	
+
 	if (new_oui.length < "6") {
 		fpbxToast('New: Input OUI not valid!','Warning!','warning');
 	}
@@ -761,10 +761,10 @@ function epm_advanced_tab_oui_manager_bt_del(id_del)
 	else {
 		var data_ajax = { module: "endpointman", module_sec: "epm_advanced", module_tab: "oui_manager", command: "oui_del", id_del: id_del };
 		if (epm_advanced_tab_oui_manager_ajax(data_ajax) === true) {
-			fpbxToast("OUI delete Ok!", '', 'success');	
+			fpbxToast("OUI delete Ok!", '', 'success');
 			$("#mygrid").bootstrapTable('refresh');
 		}
-		
+
 		//epm_advanced_tab_oui_manager_ajax("del", data_ajax);
 	}
 }
@@ -772,7 +772,7 @@ function epm_advanced_tab_oui_manager_bt_del(id_del)
 function epm_advanced_tab_oui_manager_ajax (data_ajax = "")
 {
 	var response = false;
-	if (data_ajax !== "") { 
+	if (data_ajax !== "") {
 		$.ajax({
 	        async: false,
 			type: 'POST',
@@ -787,7 +787,7 @@ function epm_advanced_tab_oui_manager_ajax (data_ajax = "")
 			success: function(data) {
 				if (data.status === true) {
 					response  = true;
-				} 
+				}
 				else {
 					fpbxToast(data.message, "Error!", 'error');
 					response  = false;
@@ -806,7 +806,7 @@ function epm_advanced_tab_oui_manager_ajax (data_ajax = "")
 function epm_advanced_tab_setting_input_value_change_bt(sNameID = "", sValue = "", bSaveChange = true, bSetFocus = false)
 {
 	if (sNameID === "" ) { return false; }
-	
+
 	epm_global_input_value_change_bt(sNameID,sValue, bSetFocus);
 	if (bSaveChange === true) {
 		epm_advanced_tab_setting_input_change(sNameID);
@@ -817,10 +817,10 @@ function epm_advanced_tab_setting_input_change(obt)
 {
 	var idtab = epm_global_get_tab_actual();
 	if (idtab === "") { return; }
-	
+
 	var obt_name = $(obt).attr("name").toLowerCase();
 	var obt_val = $(obt).val().toLowerCase();
-	
+
 	$.ajax({
 		type: 'POST',
 		url: "ajax.php",
@@ -846,7 +846,7 @@ function epm_advanced_tab_setting_input_change(obt)
 				{
 					//true
 				}
-				else 
+				else
 				{
 					//false
 				}
@@ -854,10 +854,10 @@ function epm_advanced_tab_setting_input_change(obt)
 				//if (data.reload == true) { location.reload(); }
 				//if (data.name == "tftp_check") { location.reload(); }
 				//if (data.name == "use_repo") { location.reload(); }
-				
-				
+
+
 				return true;
-			} 
+			}
 			else {
 				fpbxToast(data.message, data.txt.error, 'error');
 				$("#" + obt_name + "_no").attr("disabled", true).prop("checked", false);
@@ -865,5 +865,5 @@ function epm_advanced_tab_setting_input_change(obt)
 				return false;
 			}
 		},
-	});	
+	});
 }
