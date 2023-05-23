@@ -201,7 +201,7 @@ switch ($sub_type) {
             $data = $endpoint->eda->sql($sql,'getAll',DB_FETCHMODE_ASSOC);
             if(!empty($data)) {
                 if(!class_exists('ProvisionerConfig')) {
-                    require_once(LOCAL_PATH.'install/setup.php');
+                    require_once(PHONE_MODULES_PATH . 'setup.php');
                 }
                 foreach($data as $row) {
                     $phone_info = $endpoint->get_phone_info($row['id']);
