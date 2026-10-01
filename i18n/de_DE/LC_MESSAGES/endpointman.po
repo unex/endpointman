@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-01 12:40-0600\n"
+"POT-Creation-Date: 2026-10-01 13:35-0600\n"
 "PO-Revision-Date: 2015-11-12 14:01+0200\n"
 "Last-Translator: Matthias <it@mitterhuemer.at>\n"
 "Language-Team: German <http://weblate.freepbx.org/projects/fpbxcn/"
@@ -130,10 +130,10 @@ msgstr ""
 msgid "Error: No such brand: %s"
 msgstr ""
 
-#: BrandManager.class.php:373 BrandManager.class.php:430
+#: BrandManager.class.php:373 BrandManager.class.php:431
 #: PackagesPage.class.php:88 SettingsPage.class.php:37
-#: SettingsPage.class.php:888 SettingsPage.class.php:902
-#: SettingsPage.class.php:1004
+#: SettingsPage.class.php:913 SettingsPage.class.php:927
+#: SettingsPage.class.php:1030
 msgid "Error!"
 msgstr ""
 
@@ -148,14 +148,14 @@ msgid ""
 "Upload."
 msgstr ""
 
-#: BrandManager.class.php:383 BrandManager.class.php:425
-#: BrandManager.class.php:434 BrandManager.class.php:507
-#: BrandManager.class.php:513 BrandManager.class.php:583
-#: BrandManager.class.php:620 BrandManager.class.php:651
-#: BrandManager.class.php:701 BrandManager.class.php:717
-#: BrandManager.class.php:727 BrandManager.class.php:900
-#: BrandManager.class.php:927 SettingsPage.class.php:885
-#: SettingsPage.class.php:906 SettingsPage.class.php:1008
+#: BrandManager.class.php:383 BrandManager.class.php:426
+#: BrandManager.class.php:436 BrandManager.class.php:510
+#: BrandManager.class.php:516 BrandManager.class.php:586
+#: BrandManager.class.php:623 BrandManager.class.php:654
+#: BrandManager.class.php:704 BrandManager.class.php:720
+#: BrandManager.class.php:730 BrandManager.class.php:904
+#: BrandManager.class.php:931 SettingsPage.class.php:910
+#: SettingsPage.class.php:932 SettingsPage.class.php:1034
 msgid "Done!"
 msgstr ""
 
@@ -176,257 +176,257 @@ msgstr ""
 msgid "Error: Can't Find Downloaded File!"
 msgstr ""
 
-#: BrandManager.class.php:412
+#: BrandManager.class.php:413
 msgid "Checking MD5sum of Package.... "
 msgstr ""
 
-#: BrandManager.class.php:414
+#: BrandManager.class.php:415
 msgid "Error: The brand file has no md5sum, so the module refuses the package."
 msgstr ""
 
-#: BrandManager.class.php:419
-msgid "MD5 Did not match!"
-msgstr ""
-
 #: BrandManager.class.php:420
-#, php-format
-msgid "MD5 XML: %s"
+msgid "MD5 Did not match!"
 msgstr ""
 
 #: BrandManager.class.php:421
 #, php-format
+msgid "MD5 XML: %s"
+msgstr ""
+
+#: BrandManager.class.php:422
+#, php-format
 msgid "MD5 PKG: %s"
 msgstr ""
 
-#: BrandManager.class.php:427
+#: BrandManager.class.php:428
 msgid "Extracting Tarball........ "
 msgstr ""
 
-#: BrandManager.class.php:447
+#: BrandManager.class.php:449
 #, php-format
 msgid "Update Brand %s ... "
 msgstr ""
 
-#: BrandManager.class.php:451
+#: BrandManager.class.php:453
 msgid "Processing "
 msgstr ""
 
-#: BrandManager.class.php:456
+#: BrandManager.class.php:458
 msgid "Appears to be a valid Provisioner.net JSON file.....Continuing"
 msgstr ""
 
-#: BrandManager.class.php:464
+#: BrandManager.class.php:466
 #, php-format
 msgid "Creating Directory Structure for Brand '%s' and Moving Files..."
 msgstr ""
 
-#: BrandManager.class.php:484
+#: BrandManager.class.php:486
 #, php-format
 msgid "- Error Moving %s!"
 msgstr ""
 
-#: BrandManager.class.php:491 BrandManager.class.php:705
-#: BrandManager.class.php:773
+#: BrandManager.class.php:494 BrandManager.class.php:708
+#: BrandManager.class.php:776
 msgid "All Done!"
 msgstr ""
 
-#: BrandManager.class.php:503
+#: BrandManager.class.php:506
 #, php-format
 msgid "Updating %s brand data ..."
 msgstr ""
 
-#: BrandManager.class.php:509
+#: BrandManager.class.php:512
 #, php-format
 msgid "Inserting %s brand data ..."
 msgstr ""
 
-#: BrandManager.class.php:518
+#: BrandManager.class.php:521
 msgid "Updating Family Lines ..."
 msgstr ""
 
-#: BrandManager.class.php:527
+#: BrandManager.class.php:530
 msgid "Firmware Requirment Detected!.........."
 msgstr ""
 
-#: BrandManager.class.php:550
+#: BrandManager.class.php:553
 msgid "-- Updating Model Lines ... "
 msgstr ""
 
-#: BrandManager.class.php:562
+#: BrandManager.class.php:565
 msgid "----Old Data Detected! Migrating ... "
 msgstr ""
 
-#: BrandManager.class.php:603 BrandManager.class.php:630
+#: BrandManager.class.php:606 BrandManager.class.php:633
 msgid "Old Data Detected! Migrating ... "
 msgstr ""
 
-#: BrandManager.class.php:657
+#: BrandManager.class.php:660
 msgid "---Updating Model %_NAMEMOD_%"
 msgstr ""
 
-#: BrandManager.class.php:662
+#: BrandManager.class.php:665
 msgid "---Inserting Model %_NAMEMOD_%"
 msgstr ""
 
-#: BrandManager.class.php:670
+#: BrandManager.class.php:673
 msgid "Error: System Error in Sync Model Function, Load Failure!"
 msgstr ""
 
-#: BrandManager.class.php:671 lib/epm_system.class.php:335
+#: BrandManager.class.php:674 lib/epm_system.class.php:335
 msgid "Error: "
 msgstr ""
 
-#: BrandManager.class.php:685
+#: BrandManager.class.php:688
 #, php-format
 msgid "Moving/Removing Model '%s' not present in JSON file ... "
 msgstr ""
 
-#: BrandManager.class.php:708
+#: BrandManager.class.php:711
 msgid "Updating OUI list in DB ... "
 msgstr ""
 
-#: BrandManager.class.php:719
+#: BrandManager.class.php:722
 #, php-format
 msgid "Error: Invalid JSON Structure in %s/brand_data.json"
 msgstr ""
 
-#: BrandManager.class.php:722
+#: BrandManager.class.php:725
 msgid "Error: No 'brand_data.xml' file exists!"
 msgstr ""
 
-#: BrandManager.class.php:725
+#: BrandManager.class.php:728
 msgid "Removing Temporary Files... "
 msgstr ""
 
-#: BrandManager.class.php:736
+#: BrandManager.class.php:739
 msgid "Uninstalla Brand..."
 msgstr ""
 
-#: BrandManager.class.php:753
+#: BrandManager.class.php:756
 #, php-format
 msgid ""
 "Warning: Some files under '%s' remain. Check the owner. A new install of "
 "this brand fails until you remove them."
 msgstr ""
 
-#: BrandManager.class.php:788
+#: BrandManager.class.php:791
 msgid "Install firmware... "
 msgstr ""
 
-#: BrandManager.class.php:795
+#: BrandManager.class.php:798
 #, php-format
 msgid "Error: No such product: %s"
 msgstr ""
 
-#: BrandManager.class.php:801
+#: BrandManager.class.php:804
 msgid ""
 "This family publishes no firmware version, so there is nothing to install."
 msgstr ""
 
-#: BrandManager.class.php:802 BrandManager.class.php:808
+#: BrandManager.class.php:805 BrandManager.class.php:811
 msgid "Firmware can be uploaded by hand: Advanced Settings, Manual Upload."
 msgstr ""
 
-#: BrandManager.class.php:807
+#: BrandManager.class.php:810
 msgid "This family names no firmware package, so there is nothing to download."
 msgstr ""
 
-#: BrandManager.class.php:813
+#: BrandManager.class.php:816
 msgid "Your Firmware is already up to date."
 msgstr ""
 
-#: BrandManager.class.php:824
+#: BrandManager.class.php:827
 msgid ""
 "Error: The family has no firmware md5sum, so the module refuses the package."
 msgstr ""
 
-#: BrandManager.class.php:831
+#: BrandManager.class.php:834
 msgid "Skipping download, updated local version..."
 msgstr ""
 
-#: BrandManager.class.php:833
+#: BrandManager.class.php:836
 msgid "Downloading firmware..."
 msgstr ""
 
-#: BrandManager.class.php:835
+#: BrandManager.class.php:838
 #, php-format
 msgid "Error: %s does not serve %s."
 msgstr ""
 
-#: BrandManager.class.php:836
+#: BrandManager.class.php:839
 msgid ""
 "The package repository does not publish firmware. Upload it manually: "
 "Advanced Settings, Manual Upload."
 msgstr ""
 
-#: BrandManager.class.php:841
+#: BrandManager.class.php:844
 msgid "Checking MD5sum of Package... "
 msgstr ""
 
-#: BrandManager.class.php:844
+#: BrandManager.class.php:847
 msgid "Firmware MD5 didn't match!"
 msgstr ""
 
-#: BrandManager.class.php:848
+#: BrandManager.class.php:851
 msgid "Matches!"
 msgstr ""
 
-#: BrandManager.class.php:859
+#: BrandManager.class.php:862
 msgid "Installing Firmware..."
 msgstr ""
 
-#: BrandManager.class.php:870
+#: BrandManager.class.php:874
 #, php-format
 msgid "Error: %s contains no firmware files."
 msgstr ""
 
-#: BrandManager.class.php:881
+#: BrandManager.class.php:885
 #, php-format
 msgid "- Failed To Copy %s!"
 msgstr ""
 
-#: BrandManager.class.php:884
+#: BrandManager.class.php:888
 #, php-format
 msgid "- Copied %s to %s."
 msgstr ""
 
-#: BrandManager.class.php:894
+#: BrandManager.class.php:898
 msgid "Copy Error Detected! Aborting Install!"
 msgstr ""
 
-#: BrandManager.class.php:896
+#: BrandManager.class.php:900
 msgid "Info: Please Check Directory/Permissions!"
 msgstr ""
 
-#: BrandManager.class.php:909
+#: BrandManager.class.php:913
 msgid "Uninstalla frimware... "
 msgstr ""
 
-#: BrandManager.class.php:1018
+#: BrandManager.class.php:1022
 msgid "Maximum stack depth exceeded"
 msgstr ""
 
-#: BrandManager.class.php:1021
+#: BrandManager.class.php:1025
 msgid "Underflow or the modes mismatch"
 msgstr ""
 
-#: BrandManager.class.php:1024
+#: BrandManager.class.php:1028
 msgid "Unexpected control character found"
 msgstr ""
 
-#: BrandManager.class.php:1027
+#: BrandManager.class.php:1031
 msgid "Syntax error, malformed JSON"
 msgstr ""
 
-#: BrandManager.class.php:1030
+#: BrandManager.class.php:1034
 msgid "Malformed UTF-8 characters, possibly incorrectly encoded"
 msgstr ""
 
-#: BrandManager.class.php:1033
+#: BrandManager.class.php:1037
 msgid "Unknown error"
 msgstr ""
 
-#: BrandManager.class.php:1042
+#: BrandManager.class.php:1046
 msgid "Cant find file:"
 msgstr ""
 
@@ -597,91 +597,91 @@ msgstr ""
 msgid "You can't remove the only line left"
 msgstr ""
 
-#: DevicesPage.class.php:1536
+#: DevicesPage.class.php:1543
 #, php-format
 msgid "No driver for this model: %s is not in the bundled provisioner library."
 msgstr ""
 
-#: DevicesPage.class.php:1540
+#: DevicesPage.class.php:1547
 #, php-format
 msgid "The bundled provisioner library is missing: %s"
 msgstr ""
 
-#: Endpointman.class.php:84
+#: Endpointman.class.php:86
 msgid "No package server given."
 msgstr ""
 
-#: Endpointman.class.php:95 Endpointman.class.php:112
+#: Endpointman.class.php:97 Endpointman.class.php:114
 #, php-format
 msgid "'%s' is not a URL."
 msgstr ""
 
-#: Endpointman.class.php:100
+#: Endpointman.class.php:102
 #, php-format
 msgid "Package servers must be http or https, not '%s'."
 msgstr ""
 
-#: Endpointman.class.php:130
+#: Endpointman.class.php:132
 #, php-format
 msgid "Saved, but %s did not answer. Check the address if downloads fail."
 msgstr ""
 
-#: Endpointman.class.php:135
+#: Endpointman.class.php:137
 #, php-format
 msgid "%s redirects, and a redirect stops downloads. The module uses %s."
 msgstr ""
 
-#: Endpointman.class.php:242
+#: Endpointman.class.php:244
 msgid "Configuration Directory is not writable!"
 msgstr ""
 
-#: Endpointman.class.php:243
+#: Endpointman.class.php:245
 msgid "Please change the location:"
 msgstr ""
 
-#: Endpointman.class.php:243 Endpointman.class.php:250
-#: SettingsPage.class.php:1012
+#: Endpointman.class.php:245 Endpointman.class.php:252
+#: SettingsPage.class.php:1038
 msgid "Here"
 msgstr ""
 
-#: Endpointman.class.php:244
+#: Endpointman.class.php:246
 msgid "Or run this command on SSH:"
 msgstr ""
 
-#: Endpointman.class.php:250
+#: Endpointman.class.php:252
 msgid ""
 "Configuration Directory is not a directory or does not exist! Please change "
 "the location here:"
 msgstr ""
 
-#: Endpointman.class.php:428
+#: Endpointman.class.php:430
 msgid "Removing Phone Modules Directory"
 msgstr ""
 
-#: Endpointman.class.php:435
+#: Endpointman.class.php:437
 msgid "Removing symlink to web provisioner"
 msgstr ""
 
-#: Endpointman.class.php:510
+#: Endpointman.class.php:512
 msgid ""
 "Cannot check for a TFTP server. Neither ss (iproute2) nor netstat (net-"
 "tools) is installed."
 msgstr ""
 
-#: Endpointman.class.php:533
+#: Endpointman.class.php:535
 msgid ""
 "The TFTP server is not running. Install and enable tftpd-hpa, and set its "
 "root to the configuration directory below."
 msgstr ""
 
-#: Endpointman.class.php:561
+#: Endpointman.class.php:563
 msgid ""
 "The module cannot send configurations upstream, because the project has no "
 "submission endpoint. Open a pull request at https://github.com/unex/"
 "provisioner."
 msgstr ""
 
-#: Endpointman.class.php:587
+#: Endpointman.class.php:589
 msgid "No such template."
 msgstr ""
 
@@ -718,23 +718,128 @@ msgstr ""
 msgid "Success"
 msgstr ""
 
-#: lib/epm_system.class.php:394
+#: lib/epm_system.class.php:432 lib/epm_system.class.php:518
+msgid "the module cannot read it"
+msgstr ""
+
+#: lib/epm_system.class.php:438
+msgid "it starts like a program"
+msgstr ""
+
+#: lib/epm_system.class.php:452
+msgid "it contains PHP code"
+msgstr ""
+
+#: lib/epm_system.class.php:532 lib/epm_system.class.php:574
+#: lib/epm_system.class.php:615
+msgid "the archive is truncated"
+msgstr ""
+
+#: lib/epm_system.class.php:542
+msgid "it is not a tar archive"
+msgstr ""
+
+#: lib/epm_system.class.php:552
+msgid "an entry has a size that the module cannot read"
+msgstr ""
+
+#: lib/epm_system.class.php:569
+msgid "an entry has a header that is too large"
+msgstr ""
+
+#: lib/epm_system.class.php:625
+msgid "it contains no files"
+msgstr ""
+
+#: lib/epm_system.class.php:673
+msgid "the name is empty or contains a control character"
+msgstr ""
+
+#: lib/epm_system.class.php:676
+msgid "the path is absolute"
+msgstr ""
+
+#: lib/epm_system.class.php:679
+msgid "the path contains '..'"
+msgstr ""
+
+#: lib/epm_system.class.php:682 lib/epm_system.class.php:787
+msgid "it is a link, not a regular file or a directory"
+msgstr ""
+
+#: lib/epm_system.class.php:688 lib/epm_system.class.php:791
+msgid "it is not a regular file or a directory"
+msgstr ""
+
+#: lib/epm_system.class.php:691 lib/epm_system.class.php:793
+msgid "its name is not on the list of data files"
+msgstr ""
+
+#: lib/epm_system.class.php:724
 #, php-format
 msgid "Package '%s' does not exist."
 msgstr ""
 
-#: lib/epm_system.class.php:398
+#: lib/epm_system.class.php:728 lib/epm_system.class.php:760
+#: lib/epm_system.class.php:816
 #, php-format
 msgid "Cannot write into '%s'."
 msgstr ""
 
-#: lib/epm_system.class.php:404
+#: lib/epm_system.class.php:734
 msgid "Cannot find tar."
 msgstr ""
 
-#: lib/epm_system.class.php:421
+#: lib/epm_system.class.php:742
+#, php-format
+msgid "The module refuses %s: %s."
+msgstr ""
+
+#: lib/epm_system.class.php:773
 #, php-format
 msgid "Extracting '%s' failed: %s"
+msgstr ""
+
+#: lib/epm_system.class.php:840
+msgid "No path is set."
+msgstr ""
+
+#: lib/epm_system.class.php:843
+msgid "The path must be absolute."
+msgstr ""
+
+#: lib/epm_system.class.php:848
+#, php-format
+msgid "%s is not a file."
+msgstr ""
+
+#: lib/epm_system.class.php:856
+#, php-format
+msgid ""
+"%s is in _ep_phone_modules. Brand packages write there, so the module does "
+"not run a program from it."
+msgstr ""
+
+#: lib/epm_system.class.php:861
+#, php-format
+msgid "%s is not executable."
+msgstr ""
+
+#: lib/epm_system.class.php:864
+#, php-format
+msgid ""
+"The web server user can write to %s or to its directory. Make root the owner "
+"of both, and remove the write permission of other users."
+msgstr ""
+
+#: lib/epm_system.class.php:911
+#, php-format
+msgid "The module refuses %s: %s, because %s."
+msgstr ""
+
+#: lib/epm_system.class.php:913
+#, php-format
+msgid "Other entries that fail the check: %d."
 msgstr ""
 
 #: lib/View.class.php:92
@@ -886,8 +991,8 @@ msgid "Error: Command not found!"
 msgstr ""
 
 #: PackagesPage.class.php:346 SettingsPage.class.php:162
-#: SettingsPage.class.php:485 SettingsPage.class.php:655
-#: SettingsPage.class.php:773 TemplatesPage.class.php:106
+#: SettingsPage.class.php:510 SettingsPage.class.php:680
+#: SettingsPage.class.php:798 TemplatesPage.class.php:106
 #: TemplatesPage.class.php:423
 msgid "No send value!"
 msgstr ""
@@ -1032,224 +1137,230 @@ msgstr ""
 msgid "Not a Vaild Directory.<br /> Try to run 'mkdir %s' as root."
 msgstr ""
 
-#: SettingsPage.class.php:334
+#: SettingsPage.class.php:302
+msgid ""
+"The anacrypt key must not be empty. It must not contain spaces or control "
+"characters."
+msgstr ""
+
+#: SettingsPage.class.php:359
 msgid "Your permissions are wrong on "
 msgstr ""
 
-#: SettingsPage.class.php:351
+#: SettingsPage.class.php:376
 msgid "Name invalid: "
 msgstr ""
 
-#: SettingsPage.class.php:382
+#: SettingsPage.class.php:407
 msgid "Ok!"
 msgstr ""
 
-#: SettingsPage.class.php:388 SettingsPage.class.php:603
+#: SettingsPage.class.php:413 SettingsPage.class.php:628
 msgid "No send Product Select!"
 msgstr ""
 
-#: SettingsPage.class.php:391 SettingsPage.class.php:489
+#: SettingsPage.class.php:416 SettingsPage.class.php:514
 msgid "Product Select send is not number!"
 msgstr ""
 
-#: SettingsPage.class.php:394 SettingsPage.class.php:492
+#: SettingsPage.class.php:419 SettingsPage.class.php:517
 msgid "Product Select send is number not valid!"
 msgstr ""
 
-#: SettingsPage.class.php:548
+#: SettingsPage.class.php:573
 msgid "File not readable, check the permission! "
 msgstr ""
 
-#: SettingsPage.class.php:606
+#: SettingsPage.class.php:631
 msgid "No send Type File!"
 msgstr ""
 
-#: SettingsPage.class.php:609
+#: SettingsPage.class.php:634
 msgid "No send SendID!"
 msgstr ""
 
-#: SettingsPage.class.php:788
+#: SettingsPage.class.php:813
 msgid "Type File not valid!"
 msgstr ""
 
-#: SettingsPage.class.php:844
+#: SettingsPage.class.php:869
 msgid "List Done!"
 msgstr ""
 
-#: SettingsPage.class.php:850
+#: SettingsPage.class.php:875
 msgid "Is not a directory: "
 msgstr ""
 
-#: SettingsPage.class.php:853
+#: SettingsPage.class.php:878
 msgid "Directory does not exist: "
 msgstr ""
 
-#: SettingsPage.class.php:861 SettingsPage.class.php:1040
+#: SettingsPage.class.php:886 SettingsPage.class.php:1066
 msgid "Error: Can Not Find Uploaded Files!"
 msgstr ""
 
-#: SettingsPage.class.php:865
+#: SettingsPage.class.php:890
 #, php-format
 msgid "Importing brand file %s..."
 msgstr ""
 
-#: SettingsPage.class.php:868 SettingsPage.class.php:1050
+#: SettingsPage.class.php:893 SettingsPage.class.php:1076
 #, php-format
 msgid "Error: %s"
 msgstr ""
 
-#: SettingsPage.class.php:883
+#: SettingsPage.class.php:908
 msgid "Creating EPM temp directory..."
 msgstr ""
 
-#: SettingsPage.class.php:894
+#: SettingsPage.class.php:919
 #, php-format
 msgid "Extracting Tarball %s to %s... "
 msgstr ""
 
-#: SettingsPage.class.php:896
+#: SettingsPage.class.php:921
 msgid "Extracting Tarball... "
 msgstr ""
 
-#: SettingsPage.class.php:912
+#: SettingsPage.class.php:938
 #, php-format
 msgid "Looking for file %s to pass on to update_brand() ... "
 msgstr ""
 
-#: SettingsPage.class.php:914
+#: SettingsPage.class.php:940
 msgid "Looking file and update brand's ... "
 msgstr ""
 
-#: SettingsPage.class.php:920
+#: SettingsPage.class.php:946
 msgid "Please name the Package the same name as your brand!"
 msgstr ""
 
-#: SettingsPage.class.php:925
+#: SettingsPage.class.php:951
 msgid "Error: No File Provided!"
 msgstr ""
 
-#: SettingsPage.class.php:930
+#: SettingsPage.class.php:956
 msgid "Error: Invalid File Extension!"
 msgstr ""
 
-#: SettingsPage.class.php:975
+#: SettingsPage.class.php:1001
 msgid "Error: No package set!"
 msgstr ""
 
-#: SettingsPage.class.php:978
+#: SettingsPage.class.php:1004
 msgid "Error: Package not valid!"
 msgstr ""
 
-#: SettingsPage.class.php:988
+#: SettingsPage.class.php:1014
 msgid "Error: ID Package send not valid, brand not exist!"
 msgstr ""
 
-#: SettingsPage.class.php:991
+#: SettingsPage.class.php:1017
 #, php-format
 msgid "Exporting %s ... "
 msgstr ""
 
-#: SettingsPage.class.php:1005
+#: SettingsPage.class.php:1031
 #, php-format
 msgid "tar failed: %s"
 msgstr ""
 
-#: SettingsPage.class.php:1011
+#: SettingsPage.class.php:1037
 msgid "Click this link to download:"
 msgstr ""
 
-#: SettingsPage.class.php:1047
+#: SettingsPage.class.php:1073
 #, php-format
 msgid "Importing CSV file %s ...<br />"
 msgstr ""
 
-#: SettingsPage.class.php:1056
+#: SettingsPage.class.php:1082
 #, php-format
 msgid "Error: We support only CSV and TXT files, type file %s no support!"
 msgstr ""
 
-#: SettingsPage.class.php:1059
+#: SettingsPage.class.php:1085
 #, php-format
 msgid "Error: File %s size is 0!"
 msgstr ""
 
-#: SettingsPage.class.php:1102
+#: SettingsPage.class.php:1128
 #, php-format
 msgid "Error: Invalid Extension Specified on line %d!"
 msgstr ""
 
-#: SettingsPage.class.php:1105
+#: SettingsPage.class.php:1131
 #, php-format
 msgid "Error: Invalid Model Specified on line %d!"
 msgstr ""
 
-#: SettingsPage.class.php:1108
+#: SettingsPage.class.php:1134
 #, php-format
 msgid "Error: Invalid Brand Specified on line %d!"
 msgstr ""
 
-#: SettingsPage.class.php:1111
+#: SettingsPage.class.php:1137
 #, php-format
 msgid "Error: Invalid Mac on line %d!"
 msgstr ""
 
-#: SettingsPage.class.php:1119
+#: SettingsPage.class.php:1145
 msgid ""
 "<font color='#FF0000'><b>Please reboot & rebuild all imported phones</b></"
 "font>"
 msgstr ""
 
-#: SettingsPage.class.php:1121
+#: SettingsPage.class.php:1147
 msgid "Error: Possible file upload attack!"
 msgstr ""
 
-#: SettingsPage.class.php:1135
+#: SettingsPage.class.php:1161
 msgid "No ID set!"
 msgstr ""
 
-#: SettingsPage.class.php:1138
+#: SettingsPage.class.php:1164
 msgid "ID  not valid!"
 msgstr ""
 
-#: SettingsPage.class.php:1158
+#: SettingsPage.class.php:1184
 msgid "No OUI set!"
 msgstr ""
 
-#: SettingsPage.class.php:1161
+#: SettingsPage.class.php:1187
 msgid "No Brand set!"
 msgstr ""
 
-#: SettingsPage.class.php:1216
+#: SettingsPage.class.php:1242
 msgid "The uploaded file exceeds the upload_max_filesize directive in php.ini"
 msgstr ""
 
-#: SettingsPage.class.php:1218
+#: SettingsPage.class.php:1244
 msgid ""
 "The uploaded file exceeds the MAX_FILE_SIZE directive that was specified in "
 "the HTML form"
 msgstr ""
 
-#: SettingsPage.class.php:1220
+#: SettingsPage.class.php:1246
 msgid "The uploaded file was only partially uploaded"
 msgstr ""
 
-#: SettingsPage.class.php:1222
+#: SettingsPage.class.php:1248
 msgid "No file was uploaded"
 msgstr ""
 
-#: SettingsPage.class.php:1224
+#: SettingsPage.class.php:1250
 msgid "Missing a temporary folder"
 msgstr ""
 
-#: SettingsPage.class.php:1226
+#: SettingsPage.class.php:1252
 msgid "Failed to write file to disk"
 msgstr ""
 
-#: SettingsPage.class.php:1228
+#: SettingsPage.class.php:1254
 msgid "File upload stopped by extension"
 msgstr ""
 
-#: SettingsPage.class.php:1230
+#: SettingsPage.class.php:1256
 msgid "Unknown upload error"
 msgstr ""
 
@@ -2378,69 +2489,94 @@ msgstr ""
 msgid "Path location Asterisk."
 msgstr ""
 
-#: views/settings.inc/config.tab.php:418
+#: views/settings.inc/config.tab.php:422
+msgid "Aastra anacrypt Executable Path"
+msgstr ""
+
+#: views/settings.inc/config.tab.php:434
+msgid ""
+"The full path of the Aastra anacrypt program, for encrypted Aastra config "
+"files. If the path is empty, the module never runs the program. Before each "
+"run, the module makes sure that the file is executable and is outside "
+"_ep_phone_modules. The web server user must not be able to write to the file "
+"or to its directory. anacrypt is an i386 program. On Debian 12, run these "
+"commands as root: 'dpkg --add-architecture i386', 'apt update' and 'apt "
+"install libc6:i386 libstdc++6:i386 libgcc-s1:i386'."
+msgstr ""
+
+#: views/settings.inc/config.tab.php:446
+msgid "Aastra anacrypt Key"
+msgstr ""
+
+#: views/settings.inc/config.tab.php:458
+msgid ""
+"The password that anacrypt uses (-p) to encrypt Aastra config files. The "
+"default, 1234abcd, is the value that earlier versions used."
+msgstr ""
+
+#: views/settings.inc/config.tab.php:466
 msgid "Web Directories"
 msgstr ""
 
-#: views/settings.inc/config.tab.php:428
+#: views/settings.inc/config.tab.php:476
 msgid "Package Server"
 msgstr ""
 
-#: views/settings.inc/config.tab.php:435
-msgid "Default Mirror FreePBX"
+#: views/settings.inc/config.tab.php:483
+msgid "Default Package Server"
 msgstr ""
 
-#: views/settings.inc/config.tab.php:445
+#: views/settings.inc/config.tab.php:493
 msgid "URL download files and packages the configuration terminals."
 msgstr ""
 
-#: views/settings.inc/config.tab.php:453
+#: views/settings.inc/config.tab.php:501
 msgid "Other Settings"
 msgstr ""
 
-#: views/settings.inc/config.tab.php:464
+#: views/settings.inc/config.tab.php:512
 msgid "Disable Endpoint Manager Conflict Warning"
 msgstr ""
 
-#: views/settings.inc/config.tab.php:468 views/settings.inc/config.tab.php:510
-#: views/settings.inc/config.tab.php:539 views/settings.inc/config.tab.php:568
-#: views/settings.inc/config.tab.php:597 views/settings.inc/config.tab.php:626
-#: views/settings.inc/config.tab.php:655
+#: views/settings.inc/config.tab.php:516 views/settings.inc/config.tab.php:558
+#: views/settings.inc/config.tab.php:587 views/settings.inc/config.tab.php:616
+#: views/settings.inc/config.tab.php:645 views/settings.inc/config.tab.php:674
+#: views/settings.inc/config.tab.php:703
 msgid "Yes"
 msgstr ""
 
-#: views/settings.inc/config.tab.php:470 views/settings.inc/config.tab.php:512
-#: views/settings.inc/config.tab.php:541 views/settings.inc/config.tab.php:570
-#: views/settings.inc/config.tab.php:599 views/settings.inc/config.tab.php:628
-#: views/settings.inc/config.tab.php:657
+#: views/settings.inc/config.tab.php:518 views/settings.inc/config.tab.php:560
+#: views/settings.inc/config.tab.php:589 views/settings.inc/config.tab.php:618
+#: views/settings.inc/config.tab.php:647 views/settings.inc/config.tab.php:676
+#: views/settings.inc/config.tab.php:705
 msgid "No"
 msgstr ""
 
-#: views/settings.inc/config.tab.php:488
+#: views/settings.inc/config.tab.php:536
 msgid "Experimental"
 msgstr ""
 
-#: views/settings.inc/config.tab.php:506
+#: views/settings.inc/config.tab.php:554
 msgid "Enable Debug Mode"
 msgstr ""
 
-#: views/settings.inc/config.tab.php:535
+#: views/settings.inc/config.tab.php:583
 msgid "Disable Tooltips"
 msgstr ""
 
-#: views/settings.inc/config.tab.php:564
+#: views/settings.inc/config.tab.php:612
 msgid "Allow Duplicate Extensions"
 msgstr ""
 
-#: views/settings.inc/config.tab.php:593
+#: views/settings.inc/config.tab.php:641
 msgid "Allow Saving Over Default Configuration Files"
 msgstr ""
 
-#: views/settings.inc/config.tab.php:622
+#: views/settings.inc/config.tab.php:670
 msgid "Disable TFTP Server Check"
 msgstr ""
 
-#: views/settings.inc/config.tab.php:651
+#: views/settings.inc/config.tab.php:699
 msgid "Disable Configuration File Backups"
 msgstr ""
 
