@@ -405,7 +405,8 @@ class BrandManager {
 
         // The same server publishes the md5sum and the tarball. Thus the sum finds a
         // truncated or damaged download, but not a replaced one. extract_package()
-        // drops each .php file in the package, so a replaced package cannot add code.
+        // refuses a package with any file that is not data, so a replaced package
+        // cannot add code.
         $md5_xml = isset($temp['data']['brands']['md5sum']) ? $temp['data']['brands']['md5sum'] : '';
         $md5_pkg = md5_file($temp_directory . $package);
 
@@ -429,6 +430,7 @@ class BrandManager {
         if (! $this->system->extract_package($temp_directory . $package, $temp_directory, $extract_error)) {
             out(_("Error!"));
             out($extract_error['extract_package']);
+            unlink($temp_directory . $package);
             return false;
         }
         out(_("Done!"));
@@ -483,7 +485,8 @@ class BrandManager {
                             if ($stats === FALSE) {
                             	out(sprintf(_("- Error Moving %s!"), basename($file)));
                             }
-                            chmod($this->PHONE_MODULES_PATH . "endpoint/" . $directory . "/" . $dir, 0775);
+                            // Data only. No file of a package needs the execute bit.
+                            chmod($this->PHONE_MODULES_PATH . "endpoint/" . $directory . "/" . $dir, 0664);
 //echo ".";
                         }
                     }
@@ -860,6 +863,7 @@ if ($this->configmod->get('debug')) echo format_txt(_("---Inserting Model %_NAME
         $extract_error = array();
         if (! $this->system->extract_package($temp_directory . $firmware_pkg, $family_dir, $extract_error)) {
             out($extract_error['extract_package']);
+            unlink($temp_directory . $firmware_pkg);
             return false;
         }
 

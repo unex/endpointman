@@ -15,7 +15,7 @@ MODDIR   := /var/www/html/admin/modules
 
 .PHONY: help up up-live down destroy logs shell install package package-verify \
         package-release deploy module-install module-reload lint compat \
-        compat-deps stan audit codemirror i18n fix-perms
+        compat-deps stan audit test codemirror i18n fix-perms
 
 help: ## Show this help
 	@grep -hE '^[a-zA-Z_-]+:.*?## ' $(MAKEFILE_LIST) | awk 'BEGIN{FS=":.*?## "}{printf "  \033[36m%-16s\033[0m %s\n", $$1, $$2}'
@@ -137,6 +137,11 @@ stan: ## PHPStan (level 0 baseline — raise as the code improves)
 		Endpointman.class.php *.class.php lib includes views || true
 
 audit: lint compat ## Run lint + compatibility scan
+
+test: ## Run the PHP tests in docker/tests (no FreePBX needed)
+	@for t in docker/tests/*_test.php; do \
+		echo "--- $$t"; $(TOOLS) php $$t || exit 1; \
+	done
 
 ## ---- vendored assets -------------------------------------------------------
 

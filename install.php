@@ -75,6 +75,20 @@ if (!empty($stale_php)) {
     out("Done");
 }
 
+// Remove each file that a data-only package cannot contain.
+//
+// Older brand packages also put other files into endpoint/, for example the
+// Aastra program endpoint/aastra/anacrypt. extract_package() now refuses a
+// package with such a file. This step removes the copies from earlier
+// versions, with the same allowlist, and names each file that it removes.
+$not_data = FreePBX::Endpointman()->system->remove_non_data_files($PHONE_MODULES_PATH . "endpoint");
+foreach ($not_data['removed'] as $f) {
+    out("Removed " . substr($f, strlen($PHONE_MODULES_PATH)) . ", which is not a data file");
+}
+foreach ($not_data['failed'] as $f) {
+    out("<strong>Warning: cannot remove " . substr($f, strlen($PHONE_MODULES_PATH)) . ". It is not a data file. Remove it by hand.</strong>");
+}
+
 if (!file_exists($PHONE_MODULES_PATH . "temp/")) {
     mkdir($PHONE_MODULES_PATH . "temp/", 0764);
     out("Creating temp folder");

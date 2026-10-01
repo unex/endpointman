@@ -125,12 +125,18 @@ make audit           # lint and compat
 `make compat` exits non-zero when it finds a problem, so `make audit` also
 does. This is the behavior of phpcs, not a fault of the target.
 
-**Why PHPCompatibility is separate.** The `qa` image has no PHPCompatibility
-standard, and the last stable release (9.3.5, 2019) has no PHP 8.x sniffs.
-`docker/compat/composer.json` pins the `dev-develop` branch and
-`phpcs >= 4.0.2` into `docker/compat/vendor`, which git ignores.
-`make compat-deps` installs them. It runs composer with your own UID, so it
-does not leave files owned by root in your working tree.
+## Tests
+
+```sh
+make test            # run each docker/tests/*_test.php in the php service
+```
+
+The tests need Docker but not the FreePBX stack:
+
+- `extract_package_test.php` makes tarballs and gives them to
+  `epm_system::extract_package()`. It checks that a package of data files
+  extracts, and that the module refuses PHP, scripts, programs, links, `..`
+  paths and absolute paths. It also checks the cleanup of an old data tree.
 
 ## Other targets
 

@@ -895,12 +895,13 @@ class SettingsPage extends \PageBase {
 								} else {
 									outn(_("Extracting Tarball... "));
 								}
-								// extract_package() escapes the file name of the upload, checks the exit
-								// status of tar, and drops each PHP file in the tarball, as for a download.
+								// extract_package() applies the same rules as for a download. It refuses
+								// the tarball when a file in it is not data.
 								$extract_error = array();
 								if (! $this->system->extract_package($uploads_dir_file, $temp_directory, $extract_error)) {
 									out(_("Error!"));
 									out($extract_error['extract_package']);
+									@unlink($uploads_dir_file);
 									continue;
 								}
 								out(_("Done!"));
