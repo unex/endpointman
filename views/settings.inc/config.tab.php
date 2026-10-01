@@ -480,7 +480,7 @@
 							<div class="input-group">
       							<input type="text" class="form-control" placeholder="Server Packages..." id="package_server" name="package_server" value="<?php echo FreePBX::Endpointman()->configmod->get("update_server"); ?>">
       							<span class="input-group-btn">
-        							<button class="btn btn-default" type="button" id='default_package_server' onclick="epm_advanced_tab_setting_input_value_change_bt('#package_server', sValue = 'http://mirror.freepbx.org/provisioner/v3/', bSaveChange = true);"><i class='fa fa-undo'></i> <?php echo _("Default Mirror FreePBX")?></button>
+        							<button class="btn btn-default" type="button" id='default_package_server' onclick="epm_advanced_tab_setting_input_value_change_bt('#package_server', sValue = '<?php echo epm_esc(\FreePBX\modules\Endpointman::DEFAULT_UPDATE_SERVER); ?>', bSaveChange = true);"><i class='fa fa-undo'></i> <?php echo _("Default Package Server")?></button>
       							</span>
     						</div>
 						</div>

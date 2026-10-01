@@ -43,7 +43,7 @@ class Config {
 		'gmtoff'                   => '',
 		'gmthr'                    => '',
 		'config_location'          => '/tftpboot/',
-		'update_server'            => '',
+		'update_server'            => \FreePBX\modules\Endpointman::DEFAULT_UPDATE_SERVER,
 		'version'                  => '',
 		'debug'                    => '0',
 		'arp_location'             => '',

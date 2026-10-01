@@ -50,14 +50,16 @@ class Endpointman extends FreePBX_Helpers implements \BMO {
 	 * The default package server for brand packages.
 	 *
 	 * provisioner.net does not resolve, and provision.lol, the old default, is a
-	 * parked domain. `unex/provisioner` publishes the same tree to GitHub Pages
-	 * and uses the protocol that BrandManager expects.
+	 * parked domain. `unex/provisioner` publishes to GitHub Pages and uses the
+	 * protocol that BrandManager expects. /v4/ holds the packages with data
+	 * only. The root keeps the 2023 packages with PHP for FreePBX 16, and
+	 * extract_package() refuses those.
 	 *
 	 * The URL must use HTTPS. GitHub Pages answers http:// with a 301.
 	 * download_file_with_progress_bar() does not follow redirects, so an http://
 	 * URL downloads nothing.
 	 */
-	const DEFAULT_UPDATE_SERVER = 'https://unex.github.io/provisioner/';
+	const DEFAULT_UPDATE_SERVER = 'https://unex.github.io/provisioner/v4/';
 
 	/**
 	 * Normalize a package server URL, or reject it.

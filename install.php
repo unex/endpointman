@@ -262,12 +262,17 @@ $epm->configmod->save('version', $epmxmlversion);
 
 // The old default, http://provision.lol/, is a parked domain, and the
 // provisioner.net hosts do not resolve. A value that points to one of them
-// cannot work, so point it to the live backend. A URL that the admin chose
+// cannot work, so point it to the live backend.
+//
+// The root of unex.github.io/provisioner/ keeps the 2023 packages for
+// FreePBX 16. They contain PHP, and extract_package() refuses them. This
+// version reads the data-only packages under /v4/. A URL that the admin chose
 // stays as it is.
 $update_server = trim((string) $epm->configmod->get('update_server'));
 if ($update_server === ''
+    || $update_server === 'https://unex.github.io/provisioner/'
     || strpos($update_server, 'provision.lol') !== false
     || strpos($update_server, 'provisioner.net') !== false) {
-	out("Repointing dead package server at " . \FreePBX\modules\Endpointman::DEFAULT_UPDATE_SERVER);
+	out("Moving the package server from '" . $update_server . "' to " . \FreePBX\modules\Endpointman::DEFAULT_UPDATE_SERVER);
 	$epm->configmod->save('update_server', \FreePBX\modules\Endpointman::DEFAULT_UPDATE_SERVER);
 }
