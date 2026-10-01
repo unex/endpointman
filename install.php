@@ -29,104 +29,231 @@ function epm_find_exec($exec) {
     }
 }
 
-global $db;
-
 out("Endpoint Manager Installer");
 
-//define("PHONE_MODULES_PATH", $amp_conf['AMPWEBROOT'] . '/admin/modules/_ep_phone_modules/');
-//define("LOCAL_PATH", $amp_conf['AMPWEBROOT'] . '/admin/modules/endpointman/');
+// FreePBX makes the module class before it calls install(), so these
+// properties have values when this file runs.
+$PHONE_MODULES_PATH = FreePBX::Endpointman()->PHONE_MODULES_PATH;
+$LOCAL_PATH         = FreePBX::Endpointman()->LOCAL_PATH;
 
 
-if (!file_exists(PHONE_MODULES_PATH)) {
-    mkdir(PHONE_MODULES_PATH, 0764);
+if (!file_exists($PHONE_MODULES_PATH)) {
+    mkdir($PHONE_MODULES_PATH, 0764);
     out("Creating Phone Modules Directory");
 }
 
-if (!file_exists(PHONE_MODULES_PATH . "setup.php")) {
-    copy(LOCAL_PATH . "install/setup.php", PHONE_MODULES_PATH . "setup.php");
-    out("Moving Auto Provisioner Class");
+// Remove the downloaded PHP from the data tree.
+//
+// Before 17.0.0.2, the module downloaded the provisioner library into
+// _ep_phone_modules/: autoload.php and setup.php at the top,
+// endpoint/base.php, and one base.php or phone.php for each brand and family.
+// The library now ships with the module, and nothing loads from this tree.
+// Thus the old files are unused code in the web root. From this version on,
+// the tree holds only data. extract_package() keeps it so for new downloads,
+// and this step removes the files of earlier versions.
+$stale_php = array();
+foreach (array("setup.php", "autoload.php") as $f) {
+    if (file_exists($PHONE_MODULES_PATH . $f)) {
+        $stale_php[] = $PHONE_MODULES_PATH . $f;
+    }
+}
+if (is_dir($PHONE_MODULES_PATH . "endpoint")) {
+    $walk = new RecursiveIteratorIterator(
+        new RecursiveDirectoryIterator($PHONE_MODULES_PATH . "endpoint", FilesystemIterator::SKIP_DOTS)
+    );
+    foreach ($walk as $file) {
+        if ($file->isFile() && strtolower($file->getExtension()) === 'php') {
+            $stale_php[] = $file->getPathname();
+        }
+    }
+}
+if (!empty($stale_php)) {
+    outn(sprintf("Removing %d downloaded PHP file(s) from the phone modules tree..", count($stale_php)));
+    foreach ($stale_php as $f) {
+        @unlink($f);
+    }
+    out("Done");
 }
 
-if (!file_exists(PHONE_MODULES_PATH . "temp/")) {
-    mkdir(PHONE_MODULES_PATH . "temp/", 0764);
+if (!file_exists($PHONE_MODULES_PATH . "temp/")) {
+    mkdir($PHONE_MODULES_PATH . "temp/", 0764);
     out("Creating temp folder");
+}
+
+// endpoint/ holds brand data from the package server and one file of the
+// library: global_template_data.json. The drivers read it through $root_dir.
+// Copy it from the library that ships with the module. A later brand
+// download does not overwrite it.
+if (!file_exists($PHONE_MODULES_PATH . "endpoint/")) {
+    mkdir($PHONE_MODULES_PATH . "endpoint/", 0775, true);
+    out("Creating endpoint folder");
+}
+$global_template_data = $PHONE_MODULES_PATH . "endpoint/global_template_data.json";
+$shipped_template_data = $LOCAL_PATH . "lib/provisioner/endpoint/global_template_data.json";
+if (file_exists($shipped_template_data)) {
+    if (!file_exists($global_template_data) || filemtime($shipped_template_data) > filemtime($global_template_data)) {
+        copy($shipped_template_data, $global_template_data);
+        out("Installing global template data");
+    }
+} else {
+    out("<strong>Warning: lib/provisioner/endpoint/global_template_data.json is missing; configs cannot be generated.</strong>");
 }
 
 $modinfo = module_getinfo('endpointman');
 $epmxmlversion = $modinfo['endpointman']['version'];
 $epmdbversion = !empty($modinfo['endpointman']['dbversion']) ? $modinfo['endpointman']['dbversion'] : null;
 
-if (empty($epmdbversion)) {
-	out("Locating NMAP + ARP + ASTERISK Executables");
-	$nmap = epm_find_exec("nmap");
-	$arp = epm_find_exec("arp");
-	$asterisk = epm_find_exec("asterisk");
+$epm = FreePBX::Endpointman();
 
-	$sth = FreePBX::Database()->prepare('SELECT * FROM `endpointman_global_vars`');
+// --- Settings storage -------------------------------------------------------
+//
+// Before 17.0.0.2, the settings were in `endpointman_global_vars`, a table
+// with three columns and 29 fixed rows. The settings are now in the BMO
+// KVStore (`kvstore_FreePBX_modules_Endpointman`). DB_Helper makes it on
+// first use. Other FreePBX 17 modules keep their configuration there, and the
+// backup framework can see it.
+//
+// This step moves the rows and then drops the table. module.xml does not
+// declare the table, so nothing makes it again.
+
+$dropped_vars = array(
+	// Repo mode does not exist.
+	'use_repo',
+	// Nothing reads these. The .htaccess provisioning path does not exist.
+	'endpoint_vers',
+	'disable_htaccess',
+);
+
+$has_old_table = false;
+try {
+	FreePBX::Database()->query('SELECT 1 FROM `endpointman_global_vars` LIMIT 1');
+	$has_old_table = true;
+} catch (\Exception $e) {
+	// 42S02: no such table. This is a new install, or the move is complete.
+	$has_old_table = false;
+}
+
+if ($has_old_table) {
+	outn("Migrating global vars into the KVStore..");
+	$sth = FreePBX::Database()->prepare('SELECT `var_name`, `value` FROM `endpointman_global_vars`');
 	$sth->execute();
-	$defaults = $sth->fetchAll(\PDO::FETCH_ASSOC);
-	if(empty($defaults)) {
-
-		outn("Inserting data into the global vars Table..");
-		$sql = "INSERT INTO `endpointman_global_vars` (`idnum`, `var_name`, `value`) VALUES
-		(1, 'srvip', ''),
-		(2, 'tz', ''),
-		(3, 'gmtoff', ''),
-		(4, 'gmthr', ''),
-		(5, 'config_location', '/tftpboot/'),
-		(6, 'update_server', 'http://provision.lol/'),
-		(7, 'version', '" . $epmxmlversion  . "'),
-		(8, 'enable_ari', '0'),
-		(9, 'debug', '0'),
-		(10, 'arp_location', '" . $arp . "'),
-		(11, 'nmap_location', '" . $nmap . "'),
-		(12, 'asterisk_location', '" . $asterisk . "'),
-		(13, 'language', ''),
-		(14, 'check_updates', '0'),
-		(15, 'disable_htaccess', ''),
-		(16, 'endpoint_vers', '0'),
-		(17, 'disable_help', '0'),
-		(18, 'show_all_registrations', '0'),
-		(19, 'ntp', ''),
-		(20, 'server_type', 'file'),
-		(21, 'allow_hdfiles', '0'),
-		(22, 'tftp_check', '0'),
-		(23, 'nmap_search', ''),
-		(24, 'backup_check', '0'),
-		(25, 'use_repo', '0'),
-		(26, 'adminpass', '123456'),
-		(27, 'userpass', '111111'),
-		(28, 'intsrvip', ''),
-		(29, 'disable_endpoint_warning', '0')";
-
-		$db->query($sql);
-		out("Done");
+	$moved = 0;
+	foreach ($sth->fetchAll(\PDO::FETCH_ASSOC) as $row) {
+		if (in_array($row['var_name'], $dropped_vars, true)) { continue; }
+		$epm->configmod->save($row['var_name'], (string) $row['value']);
+		$moved++;
 	}
+	FreePBX::Database()->query('DROP TABLE `endpointman_global_vars`');
+	out("Done (" . $moved . " moved, table dropped)");
+}
+
+// Set each key that the move did not supply. On a new install this is each
+// key. On an upgrade it is each key that a later release added.
+//
+// Read the KVStore directly, not Config::getall(). getall() merges the
+// defaults into its result, so each key looks present, and the loop below
+// sets nothing.
+$stored = $epm->getAll();
+if (!is_array($stored)) { $stored = array(); }
+$seeded = 0;
+foreach (\FreePBX\modules\Endpointman\Config::defaults() as $key => $value) {
+	if (array_key_exists($key, $stored)) { continue; }
+	$epm->configmod->save($key, $value);
+	$seeded++;
+}
+if ($seeded) { out("Seeded " . $seeded . " default setting(s)"); }
+
+// These depend on the host, so find them. Set them only when they are empty,
+// so that a path that the admin corrected stays.
+//
+// `arp_location` holds the neighbor table tool of the host. Try `ip` from
+// iproute2 first, because Debian 12 (the base of FreePBX 17) has it and does
+// not have `arp` from net-tools. epm_system::neighbour_table() reads both
+// formats. Do not store a tool that is not on disk. An empty value lets the
+// module search PATH at run time, and a later upgrade can fill the key when
+// the package is installed.
+foreach (array('nmap_location'     => array('nmap'),
+               'arp_location'      => array('ip', 'arp'),
+               'asterisk_location' => array('asterisk')) as $key => $execs) {
+	// A stored path that is not on disk is not a correction. It is a bare name
+	// from older versions ("arp", "nmap"). file_exists() rejects it, and the
+	// settings page shows it as a path. Search again, and find `ip` on hosts that
+	// got the package later.
+	$stored_path = $epm->configmod->get($key);
+	if (($stored_path !== '') && file_exists($stored_path)) { continue; }
+	out("Locating " . strtoupper(implode('/', $execs)));
+	$found = '';
+	foreach ($execs as $exec) {
+		$path = epm_find_exec($exec);
+		if (($path !== $exec) && file_exists($path)) { $found = $path; break; }
+	}
+	$epm->configmod->save($key, $found);
+}
+
+if (empty($epmdbversion)) {
 	outn('Creating symlink to web provisioner..');
-	if(!file_exists($amp_conf['AMPWEBROOT'] . "/provisioning")) {
-		if (!symlink(LOCAL_PATH . "provisioning", $amp_conf['AMPWEBROOT'] . "/provisioning")) {
+	if (!file_exists($amp_conf['AMPWEBROOT'] . "/provisioning")) {
+		if (!symlink($LOCAL_PATH . "provisioning", $amp_conf['AMPWEBROOT'] . "/provisioning")) {
 			//out("<strong>Your permissions are wrong on ".$amp_conf['AMPWEBROOT'].", web provisioning link not created!</strong>");
 		}
 	}
 	out("Done");
 }
 
-out("Update Version Number to " . $epmxmlversion);
-$sql = "UPDATE endpointman_global_vars SET value = '" . $epmxmlversion . "' WHERE var_name = 'version'";
-$db->query($sql);
+// --- Blob columns -----------------------------------------------------------
+//
+// Eleven columns hold a structured value, not a scalar. Before 17.0.0.3,
+// they held PHP serialize() data. The module now writes JSON. This step
+// converts the stored rows, so new backups do not contain the old format.
+// epm_blob_decode() reads both formats, so a row that this step misses (for
+// example a damaged blob) still works.
 
+if ($epmdbversion < "17.0.0.3") {
+	$blob_columns = array(
+		'endpointman_model_list'    => array('id',   array('template_data')),
+		'endpointman_mac_list'      => array('id',   array('global_custom_cfg_data', 'global_user_cfg_data',
+		                                                   'global_settings_override', 'specific_settings',
+		                                                   'config_files_override')),
+		'endpointman_template_list' => array('id',   array('global_custom_cfg_data', 'global_settings_override',
+		                                                   'config_files_override')),
+		'endpointman_line_list'     => array('luid', array('custom_cfg_data', 'user_cfg_data')),
+	);
 
-if ($epmdbversion < "14.0.0.1"){
-$sql = "UPDATE endpointman_global_vars SET value = 'http://provision.lol/' WHERE var_name = 'update_server'";
-$db->query($sql);
+	outn("Converting serialized blob columns to JSON..");
+	$converted = 0;
+	$skipped = 0;
+	foreach ($blob_columns as $table => $spec) {
+		list($pk, $columns) = $spec;
+		foreach ($columns as $column) {
+			$sth = FreePBX::Database()->prepare(
+				"SELECT `$pk`, `$column` FROM `$table` WHERE `$column` IS NOT NULL AND `$column` != ''"
+			);
+			$sth->execute();
+			$upd = FreePBX::Database()->prepare("UPDATE `$table` SET `$column` = ? WHERE `$pk` = ?");
+			foreach ($sth->fetchAll(\PDO::FETCH_NUM) as $row) {
+				$first = substr(ltrim((string) $row[1]), 0, 1);
+				if ($first === '{' || $first === '[') { continue; }   // already JSON
+				$value = epm_blob_decode($row[1], null);
+				if ($value === null) { $skipped++; continue; }        // unreadable; leave it alone
+				$upd->execute(array(epm_blob_encode($value), $row[0]));
+				$converted++;
+			}
+		}
+	}
+	out("Done (" . $converted . " converted" . ($skipped ? ", " . $skipped . " unreadable and left as-is" : "") . ")");
 }
 
-if ($epmdbversion < "14.0.1.4"){
-		$sql = "INSERT INTO `endpointman_global_vars` (`idnum`, `var_name`, `value`) VALUES
-		(26, 'adminpass', '123456'),
-		(27, 'userpass', '111111'),
-		(28, 'intsrvip', ''),
-		(29, 'disable_endpoint_warning', '0')";
-		$db->query($sql);
-		out("Done");
-	}
+out("Update Version Number to " . $epmxmlversion);
+$epm->configmod->save('version', $epmxmlversion);
+
+// The old default, http://provision.lol/, is a parked domain, and the
+// provisioner.net hosts do not resolve. A value that points to one of them
+// cannot work, so point it to the live backend. A URL that the admin chose
+// stays as it is.
+$update_server = trim((string) $epm->configmod->get('update_server'));
+if ($update_server === ''
+    || strpos($update_server, 'provision.lol') !== false
+    || strpos($update_server, 'provisioner.net') !== false) {
+	out("Repointing dead package server at " . \FreePBX\modules\Endpointman::DEFAULT_UPDATE_SERVER);
+	$epm->configmod->save('update_server', \FreePBX\modules\Endpointman::DEFAULT_UPDATE_SERVER);
+}

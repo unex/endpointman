@@ -2,27 +2,31 @@
 	<rawname>endpointman</rawname>
 	<repo>unsupported</repo>
 	<name>OSS PBX End Point Manager</name>
-	<version>16.0.0.1</version>
+	<version>17.0.0.8</version>
 	<type>setup</type>
 	<category>Settings</category>
 	<license>GPLv3+</license>
 	<licenselink>http://www.gnu.org/licenses/gpl-3.0.txt</licenselink>
 	<menuitems>
-		<epm_devices needsenginedb="yes" sort="1" hidden="true">Device List</epm_devices>
-		<epm_templates needsenginedb="yes" sort="2" hidden="true">Template Manager</epm_templates>
-		<epm_config needsenginedb="yes" sort="3" hidden="true">Package Manager</epm_config>
-		<epm_advanced needsenginedb="yes" sort="4" hidden="true">Advanced Settings</epm_advanced>
-		<epm_placeholders needsenginedb="yes" sort="4" hidden="true">Config File Placeholders</epm_placeholders>
-		<epm_oss needsenginedb="yes" sort="0">OSS Endpoint Manager</epm_oss>
+		<endpointman needsenginedb="yes">OSS Endpoint Manager</endpointman>
 	</menuitems>
 	<description>
-		OSS PBX End Point Manager is the free supported PBX Endpoint Manager for FreePBX.
-		It is ***NOT*** supported by Sangoma. If you are looking for a supported endpoint manager please look into the Commercial Endpoint Manager by Sangoma Technologies, Inc
-		The front end gui is hosted at: https://github.com/FreePBX/endpointman
-		The backend configurator is hosted at: https://github.com/provisioner/Provisioner
-		Pull Requests can be made to either of these and are encouraged.
+		OSS PBX End Point Manager is the endpoint manager for FreePBX that the community maintains.
+		Sangoma does ***NOT*** support it. For a supported endpoint manager, see the Commercial Endpoint Manager of Sangoma Technologies, Inc.
+		This fork is for FreePBX 17 on PHP 8.2 and Asterisk 21 or later.
+		The module is at: https://github.com/unex/endpointman
+		The phone drivers and packages are at: https://github.com/unex/provisioner
+		Pull requests to both repositories are welcome.
 	</description>
 	<changelog>
+		*17.0.0.8* A new install can download brands, because the install gives the brand data directories to the web server user. Check for Updates reports a missing brand list and does not stop with an error. Config generation works for families that copy files, for example Polycom. Add Selected Phones works. HTTP provisioning answers HEAD requests, which Polycom phones send before a log upload. Tested on FreePBX 17 with a Polycom VVX 310
+		*17.0.0.7* The About page, the README and this description point to unex/endpointman and unex/provisioner
+		*17.0.0.6* SECURITY: A config file in the alt-config editor cannot close its textarea and run script. The old escape also cut the file on save. A line display name cannot add an attribute to the device specific settings popup. Each view escapes its data, and the bootstrap-table grids escape their cells. Both popups can save again. They loaded a jQuery that FreePBX 17 does not have. The TFTP check and device discovery use iproute2 (ss, ip neigh) before net-tools, and they report when neither is installed. Discovery does not fail on an unknown OUI. The message box of the devices page shows again. Removed unused assets, views and functions. Removed etc/sip_notify_endpointman.conf, which Asterisk never included. The first reload after an upgrade prints one "grep: /etc/asterisk/sip_notify_endpointman.conf: No such file" line from the old symlink. Removed a duplicate declaration of the endpointman_custom_configs table
+		*17.0.0.5* The Save button of the template editor works, and the action bar shows it. Template srvip and ntp overrides apply. The time zone setting applies. HTTPS provisioning refuses plain HTTP, and a trusted_proxies setting supports TLS proxies. fwconsole endpointman --rebuild does not leave files owned by root. The views are plain PHP without RainTPL. Bootstrap tabs replace liquid-slider. CodeMirror is an unmodified 5.65.21. Font Awesome 4 uses local fonts, with no plain HTTP fetch from netdna.bootstrapcdn.com. The translation catalog is new. The registration state comes from AMI, not from the asterisk CLI, so extensions that are not numeric and IPv6 contacts show. The pickers of the Add dialog work. The release tarball comes from git archive
+		*17.0.0.4* Backup and restore through the FreePBX Backup module: eight tables, the settings and the downloaded phone modules. fwconsole endpointman replaces the old emportal CLI
+		*17.0.0.3* The settings move from endpointman_global_vars into the FreePBX KVStore, and the upgrade drops the table. The upgrade converts the eleven serialized blob columns to JSON. A new install of an installed brand works, and templates with a line loop open. The /provisioning HTTP endpoint works again, and an IP allowlist controls it (provision_acl, default localhost and the private ranges)
+		*17.0.0.2* The package server is https://unex.github.io/provisioner/, and the upgrade moves old settings off the dead hosts. The 62 provisioner driver files ship with the module. Downloaded packages hold only data, and the module runs no PHP from a download. The package manager installs brands, and a phone config generates from start to end
+		*17.0.0.1* FreePBX 17, PHP 8.2 and Asterisk 21 or later. Removed chan_sip support. The registration state comes from PJSIP only. The module installs on FreePBX 17. Templates and placeholders are registered views. Removed old code from before BMO. Each SQL statement that can contain request data is a prepared statement, and the ajax endpoint checks each command. The config generator runs again on PHP 8
 		*16.0.0.1* fix array type bug
 		*16.0.0* Updates for PHP 7.4 and FreePBX 16
 		*14.0.3* Support for PHP 7
@@ -94,14 +98,6 @@
 			<field name="product_id" type="string" length="11"/>
 			<field name="data" type="blob" notnull="false"/>
 		</table>
-		<table name="endpointman_global_vars">
-			<field name="idnum" type="integer" primarykey="true" autoincrement="true"/>
-			<field name="var_name" type="string" length="25"/>
-			<field name="value" type="text"/>
-			<key name="var_name" type="unique">
-				<column name="var_name"/>
-			</key>
-		</table>
 		<table name="endpointman_line_list">
 			<field name="luid" type="integer" primarykey="true" autoincrement="true"/>
 			<field name="ipei" type="string" length="15" default=""/>
@@ -168,21 +164,20 @@
 			<field name="config_files_override" type="text" notnull="false"/>
 			<field name="global_settings_override" type="blob" notnull="false"/>
 		</table>
-		<table name="endpointman_custom_configs">
-			<field name="id" type="integer" primarykey="true" autoincrement="true"/>
-			<field name="name" type="string" length="255"/>
-			<field name="original_name" type="string" length="255"/>
-			<field name="product_id" type="string" length="11"/>
-			<field name="data" type="blob" notnull="false"/>
-		</table>
-</database>
+	</database>
 	<depends>
-		<version>14.0</version>
-		<phpversion>5.3.0</phpversion>
+		<version>17.0</version>
+		<phpversion>8.2.0</phpversion>
 	</depends>
 	<supported>
-		<version>14.0</version>
+		<version>17.0</version>
 	</supported>
+	<console>
+		<command>
+			<name>endpointman</name>
+			<alias>epm</alias>
+		</command>
+	</console>
 	<hooks>
 		<framework namespace="FreePBX\Console\Command" class="Chown">
 			<method namespace="FreePBX\modules" class="Endpointman" callingMethod="fwcChownFiles">chownFreepbx</method>
