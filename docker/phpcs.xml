@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+<ruleset name="endpointman-php82">
+    <description>PHP 8.2 compatibility scan for the endpointman module.</description>
+
+    <!-- There is no <file> here. phpcs reads a ruleset <file> path
+         relative to the directory of the RULESET, so "<file>.</file>" means
+         docker/ and scans nothing. `make compat` gives the path on the
+         command line. -->
+
+    <!-- Third-party and non-PHP trees -->
+    <exclude-pattern>*/vendor/*</exclude-pattern>
+    <exclude-pattern>*/build/*</exclude-pattern>
+    <exclude-pattern>*/node_modules/*</exclude-pattern>
+    <exclude-pattern>*/i18n/*</exclude-pattern>
+    <exclude-pattern>*/assets/*</exclude-pattern>
+
+    <arg name="extensions" value="php"/>
+    <arg name="colors"/>
+    <arg value="sp"/>
+
+    <!-- The module must run on PHP 7.4 (FreePBX 16) and on PHP 8.2
+         (FreePBX 17), so the range must include both. "8.2-" alone reports
+         only the changes AFTER 8.2 and misses each 8.0 and 8.1 break, for
+         example the strftime() deprecation in SettingsPage.class.php. -->
+    <config name="testVersion" value="7.4-8.2"/>
+    <rule ref="PHPCompatibility"/>
+</ruleset>

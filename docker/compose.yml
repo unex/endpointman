@@ -1,0 +1,65 @@
+# Local development environment for the endpointman module.
+#
+# This is a development stack, not a PBX. It does not include RTP, fail2ban,
+# postfix, iptables NAT or the static-IP network of upstream
+# (escomputers/freepbx-docker). An admin GUI module does not need them, and
+# they all need root on the host.
+#
+# The default is PACKAGE mode, without a bind mount. You build a real module
+# tarball, and the FreePBX installer unpacks it, as for a user. For the fast
+# bind-mount loop, see docker/compose.live.yml.
+#
+# See docker/README.md.
+
+name: endpointman-dev
+
+services:
+  db:
+    image: mariadb:10.11
+    environment:
+      MARIADB_ROOT_PASSWORD: freepbx
+      MARIADB_USER: freepbxuser
+      MARIADB_PASSWORD: freepbx
+    volumes:
+      - db_data:/var/lib/mysql
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+
+  freepbx:
+    image: escomputers/freepbx:17-nofail2ban
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "8080:80"
+    volumes:
+      # FreePBX installs into /var and /etc. These volumes keep that state.
+      - fpbx_var:/var
+      - fpbx_etc:/etc
+
+  # ---- tooling (no FreePBX, no DB) ------------------------------------------
+  # Run with: docker compose --profile tools run --rm <service> ...
+
+  php:
+    image: php:8.2-cli
+    profiles: ["tools"]
+    volumes:
+      - ../:/app
+    working_dir: /app
+    entrypoint: ["php"]
+
+  qa:
+    image: jakzal/phpqa:1.122.10-php8.2
+    profiles: ["tools"]
+    volumes:
+      - ../:/project
+    working_dir: /project
+
+volumes:
+  db_data:
+  fpbx_var:
+  fpbx_etc:

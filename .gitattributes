@@ -1,5 +1,12 @@
-amp_conf/htdocs/admin/assets/js/pbxlib.js	merge=ours
 module.xml	merge=ours
 *.po	merge=merge-gettext-po
-*.pot merge=merge-gettext-po
-*.mo merge=ours
+*.pot	merge=merge-gettext-po
+*.mo	merge=ours
+
+# The development harness is not part of the module. `make package` skips it
+# through docker/package-exclude.txt. These lines make `make package-release`,
+# which builds from `git archive`, produce the same file list. `make
+# package-release` fails if the two lists disagree.
+/.gitignore		export-ignore
+/Makefile		export-ignore
+/docker/		export-ignore

@@ -1,0 +1,20 @@
+# LIVE mode override. It bind-mounts the repository into the modules
+# directory for a fast edit and reload loop. Use it with:
+#
+#   make up-live
+#
+# Differences from the default package mode:
+#   - FreePBX sees the full working tree (.git, docker/, Makefile, scratch
+#     files), which does NOT ship. Packaging errors thus stay hidden.
+#   - FreePBX changes the owner of module directories. On a bind mount, this
+#     changes the owner of the real working tree. Run `make fix-perms` to
+#     recover.
+#
+# Test with `make deploy` (package mode) before you trust a result.
+
+services:
+  freepbx:
+    volumes:
+      - fpbx_var:/var
+      - fpbx_etc:/etc
+      - ../:/var/www/html/admin/modules/endpointman

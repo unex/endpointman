@@ -1,0 +1,28 @@
+{
+    "_comment": [
+        "Pinned toolchain for `make compat`. Installed into docker/compat/vendor",
+        "(gitignored) and run instead of the jakzal/phpqa image's own phpcs.",
+        "",
+        "Two reasons this cannot just use the image's tooling:",
+        "",
+        "1. The image ships PHP_CodeSniffer 4.0.1 and no PHPCompatibility standard",
+        "   at all, so `phpcs --standard=PHPCompatibility` fails with",
+        "   'Referenced sniff PHPCompatibility does not exist'.",
+        "2. PHPCompatibility's last stable release (9.3.5, Dec 2019) contains no",
+        "   PHP 8.0/8.1/8.2 sniffs whatsoever - it does not even know strftime()",
+        "   was deprecated. Scanning this module with it yields 1 warning and",
+        "   misses every real finding. Only the 10.x dev-develop branch covers",
+        "   the target platform, and it requires phpcs >= 4.0.2."
+    ],
+    "require": {
+        "squizlabs/php_codesniffer": "^4.0.2",
+        "phpcompatibility/php-compatibility": "dev-develop"
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true,
+    "config": {
+        "allow-plugins": {
+            "dealerdirect/phpcodesniffer-composer-installer": true
+        }
+    }
+}

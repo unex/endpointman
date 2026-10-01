@@ -1,2 +1,5 @@
-templates/freepbx/compiled/*
 .vscode
+.claude/
+build/
+docker/compat/vendor/
+docker/compat/composer.lock

@@ -1,0 +1,12 @@
+.git
+.gitignore
+.vscode
+.claude
+build
+docker
+Makefile
+MODERNIZATION.md
+*.tgz
+*.swp
+.DS_Store
+.env
