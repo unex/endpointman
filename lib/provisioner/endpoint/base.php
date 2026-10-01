@@ -132,10 +132,52 @@ abstract class endpoint_base {
     }
 
     /**
-     * 
+     *
      */
     public function reboot() {
-        
+
+    }
+
+    // Local patch: the module sets these two values before a reboot. The
+    // drivers send NOTIFY over AMI and do not start a shell.
+    public $ami = null;       // FreePBX AMI connection, an object with send_request()
+    public $device_ip = '';   // Registered address of the first line, or ''
+
+    /**
+     * Send a NOTIFY from pjsip_notify.conf to the endpoint of the first line.
+     *
+     * AMI sends each field as a "Key: value" line, so the endpoint name must
+     * not contain a line break or other special characters.
+     *
+     * @param string $option a section name in pjsip_notify.conf
+     * @return bool true when Asterisk accepted the request
+     */
+    protected function send_notify($option) {
+        $ext = isset($this->settings['line'][0]['username']) ? (string) $this->settings['line'][0]['username'] : '';
+        if (!preg_match('/^[A-Za-z0-9_.+-]+$/', $ext) || !preg_match('/^[A-Za-z0-9_-]+$/', $option)) {
+            return false;
+        }
+        if (!is_object($this->ami) || !method_exists($this->ami, 'send_request')) {
+            return false;
+        }
+        $res = $this->ami->send_request('PJSIPNotify', array('Endpoint' => $ext, 'Option' => $option));
+        return is_array($res) && isset($res['Response']) && $res['Response'] === 'Success';
+    }
+
+    /**
+     * Get the registered address of the phone in the host form of a URL, or ''
+     * when it is not known. An IPv6 address gets brackets.
+     *
+     * @return string
+     */
+    protected function device_address() {
+        if (filter_var($this->device_ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4) !== false) {
+            return $this->device_ip;
+        }
+        if (filter_var($this->device_ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6) !== false) {
+            return '[' . $this->device_ip . ']';
+        }
+        return '';
     }
 
     public function __toString() {

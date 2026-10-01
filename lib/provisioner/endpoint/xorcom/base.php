@@ -12,13 +12,7 @@ abstract class endpoint_xorcom_base extends endpoint_base {
     public $brand_name = 'xorcom';
 
     function reboot() {
-        if (($this->engine == "asterisk") AND ($this->system == "unix")) {
-            if ($this->settings['line'][0]['tech'] == "pjsip") {
-                exec($this->engine_location . " -rx 'pjsip send notify reboot-yealink endpoint " . $this->settings['line'][0]['username'] . "'");
-            } else {
-                exec($this->engine_location . " -rx 'sip notify reboot-yealink " . $this->settings['line'][0]['username'] . "'");
-            }
-        }
+        $this->send_notify('reboot-yealink');
     }
 
     function prepare_for_generateconfig() {

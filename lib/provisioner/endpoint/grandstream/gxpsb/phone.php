@@ -48,10 +48,13 @@ class endpoint_grandstream_gxpsb_phone extends endpoint_grandstream_base {
 
     function reboot($device_ip = "") {
         if (($this->engine == "asterisk") AND ($this->system == "unix")) {
-            if(!$device_ip){
-                exec($this->engine_location . " -rx 'sip show peers like " . $this->settings['line'][0]['username'] . "'", $output);
-                preg_match("/\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\b/", $output[1], $matches);
-                $device_ip = $matches[0];
+            // Local patch: the registered address comes from the module over AMI,
+            // not from `sip show peers` in a shell.
+            if (!$device_ip) {
+                $device_ip = $this->device_address();
+            }
+            if ($device_ip === '') {
+                return;
             }
             
             $pass = (isset($this->options['admin_pass']) ? $this->options['admin_pass'] : 'admin');

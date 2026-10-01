@@ -255,6 +255,7 @@ switch ($sub_type) {
                     $provisioner_lib->family_line = $phone_info['cfg_dir'];
 
                     $provisioner_lib->settings['line'][0] = array('username' => $phone_info['line'][1]['ext'], 'authname' => $phone_info['line'][1]['ext'], 'tech' => $phone_info['line'][1]['tech']);
+                    $endpoint->attach_reboot_context($provisioner_lib);
                     $provisioner_lib->reboot();
                     unset($provisioner_lib);
                 }

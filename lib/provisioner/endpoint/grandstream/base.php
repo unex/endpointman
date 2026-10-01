@@ -13,9 +13,10 @@ class endpoint_grandstream_base extends endpoint_base {
 
     function reboot() {
         if (($this->engine == "asterisk") AND ($this->system == "unix")) {
-            exec($this->engine_location . " -rx 'sip show peers like " . $this->settings['line'][0]['username'] . "'", $output);
-            if (preg_match("/\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\b/", $output[1], $matches)) {
-                $ip = $matches[0];
+            // Local patch: the registered address comes from the module over AMI,
+            // not from `sip show peers` in a shell.
+            $ip = $this->device_address();
+            if ($ip !== '') {
                 $pass = (isset($this->settings['admin_pass']) ? $this->settings['admin_pass'] : 'admin');
 
                 if (function_exists('curl_init')) {
@@ -52,14 +53,10 @@ class endpoint_grandstream_base extends endpoint_base {
         foreach ($list as $key => $data) {
             file_put_contents($temporary_directory_location . "/" . $key, $data);
 
-            if (file_exists("/usr/src/GS_CFG_GEN/bin/encode.sh")) {
-                exec("/usr/src/GS_CFG_GEN/bin/encode.sh " . $this->mac . " " . $temporary_directory_location . "/" . $this->mac . ".cfg " . $temporary_directory_location . "/cfg" . $this->mac);
-                $contents = file_get_contents($temporary_directory_location . "/cfg" . $this->mac);
-                unlink($temporary_directory_location . "/cfg" . $this->mac);
-            } else {
-                $params = $this->parse_gs_config($temporary_directory_location . "/" . $key);
-                $contents = $this->gs_config_out($this->mac, $params);
-            }
+            // Local patch: always use the PHP encoder below. The old code ran
+            // /usr/src/GS_CFG_GEN/bin/encode.sh in a shell when it existed.
+            $params = $this->parse_gs_config($temporary_directory_location . "/" . $key);
+            $contents = $this->gs_config_out($this->mac, $params);
 
             $files["cfg" . $this->mac] = $contents;
             unlink($temporary_directory_location . "/" . $key);

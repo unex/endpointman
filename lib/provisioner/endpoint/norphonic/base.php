@@ -21,11 +21,18 @@ class endpoint_norphonic_base extends endpoint_base {
     function reboot() {
         if (($this->engine == "asterisk") AND ($this->system == "unix")) {
             if ($this->family_line == "traphone") {
-                exec($this->engine_location . " -rx 'sip show peers like " . $this->settings['line'][0]['username'] . "'", $output);
-                if (preg_match("/\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\b/", $output[1], $matches)) {
-                    $ip = $matches[0];
-                    //This is lame. I need to do this in php not over the command line. etc, I AM THE LAME.
-                    exec("curl -u phoneadmin:blank http://" . $ip . "/cgi-bin/syscmd.cgi?sys_restart=Restart+phone+software");
+                // Local patch: the registered address comes from the module over AMI,
+                // not from `sip show peers` in a shell.
+                $ip = $this->device_address();
+                if ($ip !== '') {
+                    if (function_exists('curl_init')) {
+                        $ch = curl_init('http://' . $ip . '/cgi-bin/syscmd.cgi?sys_restart=Restart+phone+software');
+                        curl_setopt($ch, CURLOPT_USERPWD, 'phoneadmin:blank');
+                        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+                        curl_setopt($ch, CURLOPT_TIMEOUT, 10);
+                        curl_exec($ch);
+                        curl_close($ch);
+                    }
                 }
             }
         }

@@ -13,13 +13,7 @@ class endpoint_aastra_base extends endpoint_base {
     public $brand_name = 'aastra';
 
     function reboot() {
-        if (($this->engine == "asterisk") AND ($this->system == "unix")) {
-            if ($this->settings['line'][0]['tech'] == "pjsip") {
-                exec($this->engine_location . " -rx 'pjsip send notify aastra-check-cfg endpoint " . $this->settings['line'][0]['username'] . "'");
-            } else {
-                exec($this->engine_location . " -rx 'sip notify aastra-check-cfg " . $this->settings['line'][0]['username'] . "'");
-            }
-        }
+        $this->send_notify('aastra-check-cfg');
     }
 
     function prepare_for_generateconfig() {

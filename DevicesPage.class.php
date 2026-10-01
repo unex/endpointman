@@ -1077,6 +1077,7 @@ class DevicesPage extends \PageBase {
         }
 
         if ($reboot) {
+            $this->attach_reboot_context($provisioner_lib);
             $provisioner_lib->reboot();
         }
     }
@@ -1609,6 +1610,26 @@ class DevicesPage extends \PageBase {
         }
         return FALSE;
     }
+
+    /**
+     * Give a driver what it needs to reboot a phone: the AMI connection and
+     * the registered address of its first line. The drivers send NOTIFY over
+     * AMI and never start a shell.
+     *
+     * @param object $provisioner_lib the driver object
+     * @return void
+     */
+    public function attach_reboot_context($provisioner_lib) {
+        $provisioner_lib->ami = $this->freepbx->astman;
+        $ext = isset($provisioner_lib->settings['line'][0]['username']) ? (string) $provisioner_lib->settings['line'][0]['username'] : '';
+        if ($this->registration_cache === null) {
+            $this->registration_cache = $this->registration_status();
+        }
+        $provisioner_lib->device_ip = isset($this->registration_cache[$ext]['ip']) ? $this->registration_cache[$ext]['ip'] : '';
+    }
+
+    /** @var array|null registration_status() result, read once for each request */
+    private $registration_cache = null;
 
     /**
      * Get the registration state of each registered extension, keyed by

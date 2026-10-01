@@ -83,6 +83,11 @@ These changes differ from the last drivers that upstream published:
 | `endpoint/base.php` | Checks the result of `arraysearchrecursive()` before it uses it as an index. The function returns FALSE when a config file uses a variable that the family does not define. An index on FALSE is a PHP 8 warning, and FreePBX turns it into an exception. |
 | `endpoint/aastra/base.php` | Runs `anacrypt` only from the path in the `anacrypt_location` setting, with the key in `anacrypt_key`. Upstream ran the program from the data tree, where a brand package can put a file. `epm_system::anacrypt_problem()` checks the path before each run: absolute, outside `_ep_phone_modules/`, executable, and not writable by the web server user. The program runs in a private temp directory, and the driver escapes each argument. `DevicesPage::prepare_configs()` sets the two values as properties, not in `$settings`, so a template cannot print them. |
 | `endpoint/cisco/{linksysata,spa,spa5xx}/phone.php` | `htmlentities($x, ENT_QUOTES \| ENT_SUBSTITUTE \| ENT_HTML401)`. This sets the flags that PHP 8.1 made the default, as `make compat` requires. |
+| `endpoint/base.php` and the `reboot()` of each brand | The drivers do not start a shell. `send_notify()` sends `PJSIPNotify` over the AMI connection of FreePBX, with an option from `pjsip_notify.conf`. `device_address()` gives the registered address of the phone, which `DevicesPage::attach_reboot_context()` reads over AMI. Upstream ran `asterisk -rx` and `sip show peers` in a shell, with the extension in the command line. The `chan_sip` branches are removed, because Asterisk 21 has no `chan_sip`. |
+| `endpoint/norphonic/base.php` | Sends the restart request with PHP curl, not with the `curl` command. |
+| `endpoint/grandstream/base.php` | Always uses the PHP config encoder. Upstream ran `/usr/src/GS_CFG_GEN/bin/encode.sh` when it existed. |
+| `endpoint/cisco/base.php` | Does not run `/tftpboot/cfgfmt.linux` for the ATA 18x. That directory is writable by the web server. |
+| `endpoint/snom/3xxEM/phone.php` | Does not read `database show SIP`. That chan_sip data does not exist on Asterisk 21, so the function keys stay as the template sets them. |
 
 `autoload.php` does **not** come from upstream. It is written for this
 layout. It finds classes only in this directory, and it refuses a class name

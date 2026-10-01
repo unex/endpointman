@@ -66,9 +66,10 @@ class endpoint_grandstream_gxphd_phone extends endpoint_grandstream_base {
 
     function reboot() {
         if (($this->engine == "asterisk") AND ($this->system == "unix")) {
-            exec($this->engine_location . " -rx 'sip show peers like " . $this->settings['line'][0]['username'] . "'", $output);
-            if (preg_match("/\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\b/", $output, $matches)) {
-                $ip = $matches[0];
+            // Local patch: the registered address comes from the module over AMI,
+            // not from `sip show peers` in a shell.
+            $ip = $this->device_address();
+            if ($ip !== '') {
                 $pass = (isset($this->options['admin_pass']) ? $this->options['admin_pass'] : 'admin');
 
                 if (function_exists('curl_init')) {

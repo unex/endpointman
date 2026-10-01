@@ -22,13 +22,7 @@ abstract class endpoint_polycom_base extends endpoint_base {
     }
 
     function reboot() {
-        if (($this->engine == "asterisk") AND ($this->system == "unix")) {
-            if ($this->settings['line'][0]['tech'] == "pjsip") {
-                exec($this->engine_location . " -rx 'pjsip send notify polycom-check-cfg endpoint " . $this->settings['line'][0]['username'] . "'");
-            } else {
-                exec($this->engine_location . " -rx 'sip notify polycom-check-cfg " . $this->settings['line'][0]['username'] . "'");
-            }
-        }
+        $this->send_notify('polycom-check-cfg');
     }
 
 }
