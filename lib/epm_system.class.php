@@ -64,18 +64,30 @@ class epm_system {
      * @version 2.11
      */
     function rmrf($dir) {
-        if (file_exists($dir)) {
-            $iterator = new \RecursiveDirectoryIterator($dir);
-            foreach (new \RecursiveIteratorIterator($iterator, \RecursiveIteratorIterator::CHILD_FIRST) as $file) {
-                if ($file->isDir()) {
-                    @rmdir($file->getPathname());
-                } else {
-                    @unlink($file->getPathname());
-                }
-            }
-            //Remove parent path as the last step
-            @rmdir($dir);
+        if (!file_exists($dir)) {
+            return true;
         }
+
+        // SKIP_DOTS: without it, the iterator returns "." and ".." for each
+        // directory. rmdir() on these gives a warning for each entry, and FreePBX
+        // turns each warning into an exception.
+        $iterator = new \RecursiveDirectoryIterator($dir, \FilesystemIterator::SKIP_DOTS);
+        $ok = true;
+        foreach (new \RecursiveIteratorIterator($iterator, \RecursiveIteratorIterator::CHILD_FIRST) as $file) {
+            if ($file->isDir()) {
+                $ok = @rmdir($file->getPathname()) && $ok;
+            } else {
+                $ok = @unlink($file->getPathname()) && $ok;
+            }
+        }
+        //Remove parent path as the last step
+        $ok = @rmdir($dir) && $ok;
+
+        // Return the error. Do not hide it. If the web server cannot delete the files
+        // of a brand, a removal must not report success. Otherwise the next install
+        // fails on the old directory with an error about the package server, not
+        // about permissions.
+        return $ok;
     }
 
     /**
@@ -95,6 +107,91 @@ class epm_system {
         } else {
             return('');
         }
+    }
+
+    /**
+    * Find out if a process listens on a UDP port.
+    *
+    * Use `ss` from iproute2 first, and `netstat` when `ss` is not available.
+    * Debian 12, and thus FreePBX 17, does not install net-tools.
+    *
+    * Both tools print the local address and then whitespace: `0.0.0.0:69   `
+    * from ss, `0.0.0.0:69` from netstat. Thus one pattern reads both.
+    *
+    * @param int $port UDP port to look for
+    * @return bool|null TRUE listening, FALSE not, NULL when neither tool is
+    *                   installed
+    * @package epm_system
+    */
+    function udp_port_listening($port) {
+        foreach (array('ss' => '-luan', 'netstat' => '-luan --numeric-ports') as $exec => $args) {
+            $bin = $this->find_exec($exec);
+            if ($bin === '') {
+                continue;
+            }
+            $out = shell_exec(escapeshellcmd($bin) . ' ' . $args . ' 2>/dev/null');
+            // NULL means that the command did not run. Only a string is an answer.
+            if (!is_string($out)) {
+                continue;
+            }
+            return (bool) preg_match('/:' . ((int) $port) . '\s/', $out);
+        }
+        return NULL;
+    }
+
+    /**
+    * Get the IPv4 neighbor table of the host, as a map of IP address to MAC
+    * address.
+    *
+    * Use `ip neigh show` from iproute2 first, and `arp -an` when `ip` is not
+    * available. Debian 12 does not install net-tools. The lines of the two tools
+    * have the same two values in a different order:
+    *
+    *   ip:   192.168.1.5 dev eth0 lladdr 00:15:65:aa:bb:cc REACHABLE
+    *   arp:  ? (192.168.1.5) at 00:15:65:aa:bb:cc [ether] on eth0
+    *
+    * Thus the function reads the first IPv4 address and the first MAC of each
+    * line. A line without a MAC (arp <incomplete>, ip FAILED) has no device, so
+    * the function skips it.
+    *
+    * @param string $exec Configured path to use first, if it is executable
+    * @return array|null ip => mac, empty when the table is empty, NULL when
+    *                    neither `ip` nor `arp` is installed
+    * @package epm_system
+    */
+    function neighbour_table($exec = '') {
+        $candidates = array();
+        if (($exec !== '') && file_exists($exec) && is_executable($exec)) {
+            $candidates[] = $exec;
+        }
+        foreach (array('ip', 'arp') as $name) {
+            $bin = $this->find_exec($name);
+            if ($bin !== '') {
+                $candidates[] = $bin;
+            }
+        }
+
+        foreach ($candidates as $bin) {
+            $args = (basename($bin) === 'ip') ? 'neigh show' : '-an';
+            $out = shell_exec(escapeshellcmd($bin) . ' ' . $args . ' 2>/dev/null');
+            if (!is_string($out)) {
+                continue;
+            }
+            $table = array();
+            foreach (explode("\n", $out) as $line) {
+                if (!preg_match('/(\d{1,3}(?:\.\d{1,3}){3})/', $line, $ip)) {
+                    continue;
+                }
+                if (!preg_match('/([0-9a-f]{2}(?::[0-9a-f]{2}){5})/i', $line, $mac)) {
+                    continue;
+                }
+                $table[$ip[1]] = strtolower($mac[1]);
+            }
+            // The first tool that runs gives the answer, also when its table is empty.
+            // An empty neighbor table is a valid result, not a failure.
+            return $table;
+        }
+        return NULL;
     }
 
     /**
@@ -152,18 +249,52 @@ class epm_system {
     */
     function download_file_with_progress_bar($url_file, $destination_file, &$error = array()) {
 	    set_time_limit(0);
+
+	    // The progress bar watches a file that wget fills in the background. Without
+	    // wget there is nothing to watch. FreePBX 17 does not require wget, and
+	    // minimal Debian images do not have it. Thus use the plain download, which
+	    // gets the same bytes without the bar.
+	    $wget = $this->find_exec('wget');
+	    if ($wget === '') {
+		    dbug("wget not found; falling back to download_file() for " . $url_file);
+		    return $this->download_file($url_file, $destination_file, $error);
+	    }
+
 	    $headers = get_headers($url_file, 1);
-	    $size = $headers['Content-Length'];
+	    if ($headers === false) {
+		    $error['download_file'] = "Unable to read the headers of ".$url_file;
+		    return false;
+	    }
+	    // With $associative = true, get_headers() returns an array for a header that
+	    // is in more than one response, for example after a redirect. Use the last
+	    // value, which is from the URL that served the file. Without Content-Length,
+	    // $size stays 0 and the bar shows 0% until the end. A division by zero is a
+	    // fatal error in PHP 8.
+	    $status = is_array($headers[0]) ? end($headers[0]) : $headers[0];
+	    $size = $headers['Content-Length'] ?? 0;
+	    $size = (int) (is_array($size) ? end($size) : $size);
 	    $randnumid = sprintf("%08d", mt_rand(1,99999999));
 
 	    $dir = dirname($destination_file);
 	    if(!file_exists($dir)) {
-		    mkdir($dir);
+		    mkdir($dir, 0775, true);
+	    }
+	    // wget runs in the background and sends its output to /dev/null. A
+	    // permission failure thus leaves no record, and the poll loop below never
+	    // sees the file. The caller then reports "Can't Find Downloaded File!" and
+	    // points to the package server, not to the directory. Check the directory
+	    // here, while a useful message is still possible.
+	    if (!is_writable($dir)) {
+		    $error['download_file'] = sprintf(_("The web server cannot write to '%s', so it cannot download %s. Check the owner. 'fwconsole chown' sets the correct owner."), $dir, basename($destination_file));
+		    return false;
 	    }
 
-	    if (preg_match('/200/', $headers[0])) {
-		    dbug("wget --no-cache " . $url_file . " -O " . $destination_file);
-		    $pid = $this->run_in_background("wget --no-cache " . $url_file . " -O " . $destination_file);
+	    if (preg_match('/200/', $status)) {
+		    // Escape both arguments. $url_file contains the package server that the
+		    // admin sets, and run_in_background() sends the full string to a shell.
+		    $cmd = escapeshellcmd($wget) . " --no-cache " . escapeshellarg($url_file) . " -O " . escapeshellarg($destination_file);
+		    dbug($cmd);
+		    $pid = $this->run_in_background($cmd);
 
 		    echo sprintf("<div>"._("Downloading %s ...")."</div>", basename($destination_file));
 		    echo sprintf("<div id='DivProgressBar_%d' class='progress' style='width:100%%'>", $randnumid);
@@ -171,7 +302,8 @@ class epm_system {
 		    echo "</div>";
 		    usleep('300');
 		    while ($this->is_process_running($pid)) {
-			    $out = 100 * round(filesize($destination_file) / $size, 2);
+			    $done = file_exists($destination_file) ? filesize($destination_file) : 0;
+			    $out  = $size > 0 ? 100 * round($done / $size, 2) : 0;
 ?>
 			    <script type="text/javascript">
 			    $('#DivProgressBar_<?php echo $randnumid; ?> .progress-bar')
@@ -181,8 +313,11 @@ class epm_system {
 			    </script>
 <?php
 			    usleep('500');
-			    ob_end_flush();
-			    //ob_flush();
+			    // fwconsole has no output buffer, and a flush of an absent buffer gives a
+			    // warning.
+			    if (ob_get_level() > 0) {
+				    ob_end_flush();
+			    }
 			    flush();
 			    ob_start();
 			    clearstatcache(); // make sure PHP actually checks dest. file size
@@ -197,7 +332,7 @@ class epm_system {
 
 		    echo sprintf("<div>"._("Downloading %s ...")."</div>", basename($destination_file));
 		    echo "<div class='progress' style='width:100%'>";
-		    echo "<div class='progress-bar progress-bar-danger progress-bar-striped' role='progressbar' aria-valuenow='100' aria-valuemin='0' aria-valuemax='100' style='width:100%'>0% ("._("Error: ").$headers[0]."!)</div>";
+		    echo "<div class='progress-bar progress-bar-danger progress-bar-striped' role='progressbar' aria-valuenow='100' aria-valuemin='0' aria-valuemax='100' style='width:100%'>0% ("._("Error: ").$status."!)</div>";
 		    echo "</div>";
 
 		    return false;
@@ -237,6 +372,59 @@ class epm_system {
     }
 
     /**
+    * Extract a downloaded package.
+    *
+    * The function escapes its arguments and checks the result of tar.
+    *
+    * By default, the function does not extract code. Brand tarballs contain the
+    * `base.php` and `phone.php` files of the provisioner library next to the
+    * templates. The module ships its own copies (see `provisioner/`) and loads
+    * only those. Thus a package cannot put PHP where the module runs it, and the
+    * package server supplies only data.
+    *
+    * @param string $archive     tarball to unpack
+    * @param string $destination directory to unpack into
+    * @param array  $error       set on failure
+    * @param bool   $allow_code  true to extract PHP too (no caller uses this)
+    * @return bool
+    * @package epm_system
+    */
+    function extract_package($archive, $destination, &$error = array(), $allow_code = false) {
+        if (!file_exists($archive)) {
+            $error['extract_package'] = sprintf(_("Package '%s' does not exist."), $archive);
+            return false;
+        }
+        if (!is_dir($destination) || !is_writable($destination)) {
+            $error['extract_package'] = sprintf(_("Cannot write into '%s'."), $destination);
+            return false;
+        }
+
+        $tar = $this->find_exec('tar');
+        if ($tar === '') {
+            $error['extract_package'] = _("Cannot find tar.");
+            return false;
+        }
+
+        $exclude = '';
+        if (!$allow_code) {
+            foreach (array('*.php', '*.phar', '*.phtml', '*.php3', '*.php4', '*.php5', '*.php7', '*.phps', '*.inc') as $glob) {
+                $exclude .= ' --exclude=' . escapeshellarg($glob);
+            }
+        }
+
+        $cmd = escapeshellcmd($tar) . ' -xf ' . escapeshellarg($archive)
+             . $exclude . ' -C ' . escapeshellarg($destination) . ' 2>&1';
+        exec($cmd, $output, $status);
+        dbug($cmd . ' -> ' . $status);
+
+        if ($status !== 0) {
+            $error['extract_package'] = sprintf(_("Extracting '%s' failed: %s"), basename($archive), implode(' ', $output));
+            return false;
+        }
+        return true;
+    }
+
+    /**
     * Send process to run in background
     * @version 2.11
     * @param string $command the command to run
@@ -262,20 +450,15 @@ class epm_system {
 
 
 
+	/**
+	 * Get the directory for downloads.
+	 *
+	 * sys_get_temp_dir() gives the answer. The method stays because six callers
+	 * use it.
+	 *
+	 * @return string temp directory, no trailing slash
+	 */
 	function sys_get_temp_dir() {
-        if (!empty($_ENV['TMP'])) {
-            return realpath($_ENV['TMP']);
-        }
-        if (!empty($_ENV['TMPDIR'])) {
-            return realpath($_ENV['TMPDIR']);
-        }
-        if (!empty($_ENV['TEMP'])) {
-            return realpath($_ENV['TEMP']);
-        }
-        $tempfile = tempnam(uniqid(rand(), TRUE), '');
-        if (file_exists($tempfile)) {
-            unlink($tempfile);
-            return realpath(dirname($tempfile));
-        }
+        return rtrim(\sys_get_temp_dir(), DIRECTORY_SEPARATOR);
     }
 }
