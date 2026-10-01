@@ -15,7 +15,7 @@
 		Sangoma does ***NOT*** support it. For a supported endpoint manager, see the Commercial Endpoint Manager of Sangoma Technologies, Inc.
 		This fork is for FreePBX 17 on PHP 8.2 and Asterisk 21 or later.
 		The module is at: https://github.com/unex/endpointman
-		The phone drivers and packages are at: https://github.com/unex/provisioner
+		The phone data packages are at: https://github.com/unex/provisioner. The phone drivers ship with the module
 		Pull requests to both repositories are welcome.
 	</description>
 	<changelog>

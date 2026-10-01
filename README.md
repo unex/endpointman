@@ -24,9 +24,14 @@ manager, see the commercial module of Sangoma.
 - **This repository** is the front end: the FreePBX module, its pages, the
   template editor and the config generator.
 - **[unex/provisioner](https://github.com/unex/provisioner)** is the back end:
-  the phone definitions and templates for each brand. The module downloads
-  them from `https://unex.github.io/provisioner/` as data. The module never
-  runs PHP from a download.
+  the phone definitions and templates for each brand. Its package server,
+  `https://unex.github.io/provisioner/v4/`, publishes only data files. The
+  phone drivers ship with this module, in `lib/provisioner/`.
+
+The module refuses a brand package that holds any file that is not data: a
+program, a script, PHP, a link, or a file name that is not on its allowlist.
+The message names the file. A manual upload follows the same rules.
+`lib/provisioner/README.md` gives the full list.
 
 ## Install
 
@@ -43,6 +48,12 @@ You can also upload the tarball in **Admin → Module Admin → Upload modules**
 The module shows under **Settings → OSS Endpoint Manager**. The tarball is not
 signed, so the FreePBX dashboard shows an "unsigned module" notice. This is
 normal.
+
+An upgrade from 17.0.0.8 or earlier changes the package server from
+`https://unex.github.io/provisioner/` to the `/v4/` URL. A package server
+that you set yourself does not change. The upgrade also removes the old
+driver files and the Aastra program `anacrypt` from `_ep_phone_modules/`, and
+names each file that it removes.
 
 An upgrade from 16.x converts the stored settings and blob columns. The first
 `fwconsole reload` after the upgrade can print one line:
