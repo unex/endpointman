@@ -7,7 +7,7 @@
 			</div>
 			
 			<table id="mygrid"
-				data-url="ajax.php?module=endpointman&amp;module_sec=epm_templates&amp;module_tab=manager&amp;command=list_current_template"
+				data-url="ajax.php?module=endpointman&amp;view=templates&amp;command=list_current_template"
 				data-cache="false"
 				data-cookie="true"
 				data-cookie-id-table="template_custom_table"
@@ -22,9 +22,9 @@
 				class="table table-striped">
 				<thead>
 					<tr>
-						<th data-field="name" data-sortable="true"><?php echo _("Template Name")?></th>
-						<th data-field="model_class" data-sortable="true"><?php echo _("Model Classification")?></th>
-						<th data-field="model_clone" data-sortable="true"><?php echo _("Model Clone")?></th>
+						<th data-field="name" data-sortable="true" data-escape="true"><?php echo _("Template Name")?></th>
+						<th data-field="model_class" data-sortable="true" data-escape="true"><?php echo _("Model Classification")?></th>
+						<th data-field="model_clone" data-sortable="true" data-escape="true"><?php echo _("Model Clone")?></th>
 						<th data-field="enabled" data-sortable="true" data-formatter="epm_templates_grid_FormatThEnabled"><?php echo _("Enabled")?></th>
 						<th data-field="id" data-formatter="epm_templates_grid_FormatThAction"><?php echo _("Action")?></th>
 					</tr>

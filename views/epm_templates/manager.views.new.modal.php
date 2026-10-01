@@ -43,9 +43,9 @@
 											<option value=""><?php echo _("Select Product:")?></option>
 											<?php
 											$sql = "SELECT DISTINCT endpointman_product_list.* FROM endpointman_product_list, endpointman_model_list WHERE endpointman_product_list.id = endpointman_model_list.product_id AND endpointman_model_list.hidden = 0 AND endpointman_model_list.enabled = 1 AND endpointman_product_list.hidden != 1 AND endpointman_product_list.cfg_dir !=  ''";
-											$template_list = sql($sql, 'getAll', DB_FETCHMODE_ASSOC);
+											$template_list = epm_sql($sql, 'getAll');
 											foreach($template_list as $row) {
-												echo '<option value="'.$row['id'].'">'.$row['short_name'].'</option>';
+												echo '<option value="'.epm_esc($row['id']).'">'.epm_esc($row['short_name']).'</option>';
 											}
 											unset ($template_list);
 											unset ($sql);

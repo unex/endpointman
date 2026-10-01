@@ -41,7 +41,7 @@
 							<div class="input-group">
       							<input type="text" class="form-control" placeholder="<?php echo _("Server PBX..."); ?>" id="srvip" name="srvip" value="">
       							<span class="input-group-btn">
-        							<button class="btn btn-default" type="button" id='autodetect' onclick="epm_global_input_value_change_bt('#srvip', sValue = '<?php echo $_SERVER["SERVER_ADDR"]; ?>');"><i class='fa fa-search'></i> <?php echo _("Use me!")?></button>
+        							<button class="btn btn-default" type="button" id='autodetect' onclick="epm_global_input_value_change_bt('#srvip', sValue = '<?php echo epm_esc($_SERVER["SERVER_ADDR"]); ?>');"><i class='fa fa-search'></i> <?php echo _("Use me!")?></button>
       							</span>
     						</div>
 						</div>
@@ -73,7 +73,7 @@
                                 <option value="https" disabled><?php echo _("Web (HTTPS)")?></option>
 							</select>
 							<div class="alert alert-info" role="alert" id="server_type_alert">
-								<strong><?php echo _("Updated!"); ?></strong><?php echo _(" - Point your phones to: "); ?><a href="http://<?php echo $_SERVER['SERVER_ADDR']; ?>/provisioning/p.php/" class="alert-link" target="_blank">http://<?php echo $_SERVER['SERVER_ADDR']; ?>/provisioning/p.php/</a>.
+								<strong><?php echo _("Updated!"); ?></strong><?php echo _(" - Point your phones to: "); ?><a href="http://<?php echo epm_esc($_SERVER['SERVER_ADDR']); ?>/provisioning/p.php/" class="alert-link" target="_blank">http://<?php echo epm_esc($_SERVER['SERVER_ADDR']); ?>/provisioning/p.php/</a>.
 							</div>
 						</div>
 					</div>
@@ -140,7 +140,7 @@
 								?>
 								</select>
       							<span class="input-group-btn">
-        							<button class="btn btn-default" type="button" id='tzphp' onclick="epm_global_input_value_change_bt('#tz', sValue = '<?php echo FreePBX::Endpointman()->config->get('PHPTIMEZONE'); ?>');"><i class="fa fa-clock-o"></i> <?php echo _("TimeZone PBX")?></button>
+        							<button class="btn btn-default" type="button" id='tzphp' onclick="epm_global_input_value_change_bt('#tz', sValue = '<?php echo epm_esc(FreePBX::Endpointman()->config->get('PHPTIMEZONE')); ?>');"><i class="fa fa-clock-o"></i> <?php echo _("TimeZone PBX")?></button>
       							</span>
     						</div>
 						</div>
@@ -169,7 +169,7 @@
 							<div class="input-group">
       							<input type="text" class="form-control" placeholder="<?php echo _("Server NTP..."); ?>" id="ntp_server" name="ntp_server" value="">
       							<span class="input-group-btn">
-        							<button class="btn btn-default" type="button" id='autodetectntp' onclick="epm_global_input_value_change_bt('#ntp_server', sValue = '<?php echo $_SERVER["SERVER_ADDR"]; ?>');"><i class='fa fa-search'></i> <?php echo _("Use me!")?></button>
+        							<button class="btn btn-default" type="button" id='autodetectntp' onclick="epm_global_input_value_change_bt('#ntp_server', sValue = '<?php echo epm_esc($_SERVER["SERVER_ADDR"]); ?>');"><i class='fa fa-search'></i> <?php echo _("Use me!")?></button>
       							</span>
     						</div>
 							

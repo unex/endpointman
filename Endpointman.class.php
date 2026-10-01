@@ -10,8 +10,9 @@
 
 namespace FreePBX\modules;
 
-function format_txt($texto = "", $css_class = "", $remplace_txt = array())
-{
+use FreePBX_Helpers;
+
+function format_txt($texto = "", $css_class = "", $remplace_txt = array()) {
 	if (count($remplace_txt) > 0)
 	{
 		foreach ($remplace_txt as $clave => $valor) {
@@ -21,8 +22,7 @@ function format_txt($texto = "", $css_class = "", $remplace_txt = array())
 	return '<p ' . ($css_class != '' ? 'class="' . $css_class . '"' : '') . '>'.$texto.'</p>';
 }
 
-function generate_xml_from_array ($array, $node_name, &$tab = -1)
-{
+function generate_xml_from_array ($array, $node_name, &$tab = -1) {
 	$tab++;
 	$xml ="";
 	if (is_array($array) || is_object($array)) {
@@ -44,7 +44,99 @@ function generate_xml_from_array ($array, $node_name, &$tab = -1)
 }
 
 
-class Endpointman implements \BMO {
+class Endpointman extends FreePBX_Helpers implements \BMO {
+
+	/**
+	 * The default package server for brand packages.
+	 *
+	 * provisioner.net does not resolve, and provision.lol, the old default, is a
+	 * parked domain. `unex/provisioner` publishes the same tree to GitHub Pages
+	 * and uses the protocol that BrandManager expects.
+	 *
+	 * The URL must use HTTPS. GitHub Pages answers http:// with a 301.
+	 * download_file_with_progress_bar() does not follow redirects, so an http://
+	 * URL downloads nothing.
+	 */
+	const DEFAULT_UPDATE_SERVER = 'https://unex.github.io/provisioner/';
+
+	/**
+	 * Normalize a package server URL, or reject it.
+	 *
+	 * Each caller in BrandManager adds a file name to the end of this value.
+	 * download_file_with_progress_bar() reads the HTTP status line and does not
+	 * follow redirects. Thus the value must end in a slash, and it must be the
+	 * URL that serves the file, not a URL that redirects.
+	 *
+	 * This function tests an http:// URL before it stores it. If the server
+	 * answers with a 301 to https://, the function stores the https:// URL and
+	 * tells the caller. A LAN mirror that answers 200 on plain HTTP stays as it
+	 * is. If the server does not answer, the function keeps the value, because
+	 * the admin can set up a mirror before it runs.
+	 *
+	 * @param string $url   the value that the admin typed
+	 * @param string $error set to the reason on failure, or to a note about a
+	 *                      change that the function made
+	 * @return string|false the URL to store, or false if it is not usable
+	 */
+	public static function normalizeUpdateServer($url, &$error = null) {
+		$url = trim((string) $url);
+		if ($url === '') {
+			$error = _("No package server given.");
+			return false;
+		}
+
+		// Admins often type a bare host. Add the https:// scheme.
+		if (!preg_match('#^[a-z][a-z0-9+.-]*://#i', $url)) {
+			$url = 'https://' . $url;
+		}
+
+		$parts = parse_url($url);
+		if ($parts === false || empty($parts['host'])) {
+			$error = sprintf(_("'%s' is not a URL."), $url);
+			return false;
+		}
+		$scheme = strtolower($parts['scheme'] ?? '');
+		if ($scheme !== 'http' && $scheme !== 'https') {
+			$error = sprintf(_("Package servers must be http or https, not '%s'."), $scheme);
+			return false;
+		}
+
+		$path = $parts['path'] ?? '/';
+		$out  = 'https://' . $parts['host']
+		      . (isset($parts['port']) ? ':' . $parts['port'] : '')
+		      . rtrim($path, '/') . '/';
+
+		// parse_url() accepts almost any text as a host, also text with spaces. Thus
+		// check the full URL.
+		if (filter_var($out, FILTER_VALIDATE_URL) === false) {
+			$error = sprintf(_("'%s' is not a URL."), $url);
+			return false;
+		}
+
+		if ($scheme !== 'http') {
+			return $out;
+		}
+
+		// Ask the server what it does with http:// before you store the URL. Limit
+		// the time of the probe. This runs inside the save of the admin, and
+		// get_headers() otherwise waits for default_socket_timeout (60 seconds) when
+		// the address does not answer.
+		$plain = 'http://' . substr($out, strlen('https://'));
+		$context = stream_context_create(array(
+			'http' => array('method' => 'HEAD', 'timeout' => 5, 'follow_location' => 0),
+		));
+		$headers = @get_headers($plain . 'master.json', 1, $context);
+		if ($headers === false) {
+			$error = sprintf(_("Saved, but %s did not answer. Check the address if downloads fail."), $plain);
+			return $plain;
+		}
+		$status = is_array($headers[0]) ? end($headers[0]) : $headers[0];
+		if (preg_match('/30[1278]/', $status)) {
+			$error = sprintf(_("%s redirects, and a redirect stops downloads. The module uses %s."), $plain, $out);
+			return $out;
+		}
+		return $plain;
+	}
 
 	//public $epm_config;
 
@@ -68,20 +160,20 @@ class Endpointman implements \BMO {
 		if ($freepbx == null) {
 			throw new \Exception("Not given a FreePBX Object");
 		}
-		require_once('lib/json.class.php');
+		require_once(__DIR__ . '/lib/sql.inc.php');
+		require_once(__DIR__ . '/lib/blob.inc.php');
+		require_once(__DIR__ . '/lib/acl.inc.php');
+		require_once(__DIR__ . '/lib/esc.inc.php');
 		require_once('lib/Config.class.php');
 		require_once('lib/epm_system.class.php');
-		require_once('lib/datetimezone.class.php');
 		require_once('lib/epm_data_abstraction.class.php');
-		//require_once("lib/RainTPL.class.php");
 
 		$this->freepbx = $freepbx;
 		$this->db = $freepbx->Database;
 		$this->config = $freepbx->Config;
-		$this->configmod = new Endpointman\Config();
+		$this->configmod = new Endpointman\Config($this);
 		$this->system = new epm_system();
-		$this->eda = new epm_data_abstraction($this->config, $this->configmod);
-
+		$this->eda = new epm_data_abstraction($this);
 
 		$this->configmod->set('disable_epm', FALSE);
 		$this->eda->global_cfg = $this->configmod->getall();
@@ -91,22 +183,27 @@ class Endpointman implements \BMO {
         $this->message = array();
 
 
-		$this->configmod->set('tz', $this->config->get('PHPTIMEZONE'));
-		date_default_timezone_set($this->configmod->get('tz'));
+		// The time zone of the phones. The admin sets it on the settings page.
+		// PHPTIMEZONE fills it only while it is empty. FreePBX sets the default time
+		// zone of PHP (View::setTimezone), not this module.
+		if ($this->configmod->get('tz') === '') {
+			$this->configmod->set('tz', $this->config->get('PHPTIMEZONE'));
+		}
 
 		$this->UPDATE_PATH = $this->configmod->get('update_server');
         $this->MODULES_PATH = $this->config->get('AMPWEBROOT') . '/admin/modules/';
 
-define("UPDATE_PATH", $this->UPDATE_PATH);
-define("MODULES_PATH", $this->MODULES_PATH);
-
+		// define("UPDATE_PATH", $this->UPDATE_PATH);
+		// define("MODULES_PATH", $this->MODULES_PATH);
 
         //Determine if local path is correct!
         if (file_exists($this->MODULES_PATH . "endpointman/")) {
             $this->LOCAL_PATH = $this->MODULES_PATH . "endpointman/";
-define("LOCAL_PATH", $this->LOCAL_PATH);
+
+		// define("LOCAL_PATH", $this->LOCAL_PATH);
+
         } else {
-            die("Can't Load Local Endpoint Manager Directory!");
+            throw new \Exception("Can't Load Local Endpoint Manager Directory: " . $this->MODULES_PATH . "endpointman/");
         }
 
         //Define the location of phone modules, keeping it outside of the module directory so that when the user updates endpointmanager they don't lose all of their phones
@@ -121,10 +218,11 @@ define("LOCAL_PATH", $this->LOCAL_PATH);
                 unlink($this->PHONE_MODULES_PATH . "setup.php");
             }
             if (!file_exists($this->MODULES_PATH . "_ep_phone_modules/")) {
-                die('Endpoint Manager can not create the modules folder!');
+                throw new \Exception("Endpoint Manager can not create the modules folder: " . $this->PHONE_MODULES_PATH);
             }
         }
-define("PHONE_MODULES_PATH", $this->PHONE_MODULES_PATH);
+
+		// define("PHONE_MODULES_PATH", $this->PHONE_MODULES_PATH);
 
         //Define error reporting
         if (($this->configmod->get('debug')) AND (!isset($_REQUEST['quietmode']))) {
@@ -142,181 +240,173 @@ define("PHONE_MODULES_PATH", $this->PHONE_MODULES_PATH);
                     $user = exec('whoami');
                     $group = exec("groups");
                     $this->error['config_location'] = _("Configuration Directory is not writable!") . "<br />" .
-                            _("Please change the location:") . "<a href='config.php?display=epm_advanced'>" . _("Here") . "</a><br />" .
+                            _("Please change the location:") . "<a href='config.php?display=endpointman&view=settings'>" . _("Here") . "</a><br />" .
                             _("Or run this command on SSH:") . "<br />" .
 							"'chown -hR root: " . $group . " " . $config_location . "'<br />" .
 							"'chmod g+w " . $config_location . "'";
 					$this->configmod->set('disable_epm', TRUE);
                 }
             } else {
-                $this->error['config_location'] = _("Configuration Directory is not a directory or does not exist! Please change the location here:") . "<a href='config.php?display=epm_advanced'>" . _("Here") . "</a>";
+                $this->error['config_location'] = _("Configuration Directory is not a directory or does not exist! Please change the location here:") . "<a href='config.php?display=endpointman&view=settings'>" . _("Here") . "</a>";
 				$this->configmod->set('disable_epm', TRUE);
             }
         }
 
-        //$this->tpl = new RainTPL(LOCAL_PATH . '_old/templates/freepbx', LOCAL_PATH . '_old/templates/freepbx/compiled', '/admin/assets/endpointman/images');
-		//$this->tpl = new RainTPL('/admin/assets/endpointman/images');
+        // Start the view layer. The views are plain PHP files in views/tpl/, and
+        // nothing is compiled or cached. The pages call assign() in one place and
+        // draw() in another, so the class keeps that API.
+        require_once($this->LOCAL_PATH . 'lib/View.class.php');
+        $this->tpl = new \Endpointman\View($this->LOCAL_PATH . 'views/tpl');
+        if (!empty($this->configmod->get('disable_help'))) {
+            $this->tpl->assign("disable_help", 1);
+        }
 
 
-		require_once('Endpointman_Config.class.php');
-		$this->epm_config = new Endpointman_Config($freepbx, $this->configmod, $this->system);
 
-		require_once('Endpointman_Advanced.class.php');
-		$this->epm_advanced = new Endpointman_Advanced($freepbx, $this->configmod, $this->epm_config);
+		// require_once('Endpointman_Config.class.php');
+		// $this->epm_config = new Endpointman_Config($freepbx, $this->configmod, $this->system);
 
-		require_once('Endpointman_Templates.class.php');
-		$this->epm_templates = new Endpointman_Templates($freepbx, $this->configmod, $this->epm_config, $this->eda);
+		require_once('BrandManager.class.php');
 
-		require_once('Endpointman_Devices.class.php');
-		$this->epm_devices = new Endpointman_Devices($freepbx, $this->configmod);
+		$this -> brandmanager = new \BrandManager($this);
 
-		require_once('Endpointman_Devices.class.php');
-		$this->epm_oss = new Endpointman_Devices($freepbx, $this->configmod);
+		require_once('AboutPage.class.php');
+		require_once('SettingsPage.class.php');
+		require_once('DevicesPage.class.php');
+		require_once('PackagesPage.class.php');
+		require_once('TemplatesPage.class.php');
+		require_once('PlaceholdersPage.class.php');
 
-		//require_once('Endpointman_Devices.class.php');
-		$this->epm_placeholders = new Endpointman_Devices($freepbx, $this->configmod);
+		// The keys are the ?view= values. views/bootnav.php lists the same set.
+		$this -> pages = array(
+			"about" => new AboutPage($this),
+			"settings" => new SettingsPage($this),
+			"devices" => new DevicesPage($this),
+			"packages" => new PackagesPage($this),
+			"templates" => new TemplatesPage($this),
+			"placeholders" => new PlaceholdersPage($this),
+		);
 
 	}
 
+	/**
+	 * Find the page object for a ?view= value.
+	 *
+	 * $name comes from $_REQUEST, so do not trust it. An unknown view gets the
+	 * "about" page, not null. doConfigPageInit() runs before showPage(), so a
+	 * null here causes a 500 before the page shows.
+	 *
+	 * @param string $name value of ?view=, possibly empty or unknown
+	 * @return object the matching page object, or the "about" page
+	 */
+	function _get_page($name) {
+		if (!is_string($name) || !isset($this -> pages[$name])) {
+			return $this -> pages["about"];
+		}
+		return $this -> pages[$name];
+	}
+
+	// Use 'rdir', not 'dir'. FreePBX applies 'dir' only to the directory itself.
+	// install.php runs as root under `fwconsole ma install` and creates
+	// endpoint/ and temp/ in _ep_phone_modules. With 'dir', these directories
+	// stay owned by root, and the web server cannot download a brand.
 	public function chownFreepbx() {
 		$webroot = $this->config->get('AMPWEBROOT');
 		$modulesdir = $webroot . '/admin/modules/';
 		$files = array();
-		$files[] = array('type' => 'dir',
+		$files[] = array('type' => 'rdir',
 						'path' => $modulesdir . '/_ep_phone_modules/',
 						'perms' => 0755);
-		$files[] = array('type' => 'file',
-						'path' => $modulesdir . '/_ep_phone_modules/setup.php',
-						'perms' => 0755);
-		$files[] = array('type' => 'dir',
+		$files[] = array('type' => 'rdir',
 						'path' => '/tftpboot',
 						'perms' => 0755);
 		return $files;
 	}
 
+	/**
+	 * This returns html to the main page
+	 *
+	 * @return string html
+	 */
+	public function showPage() {
+		$view = $this -> getReq("view", "");
+		return $this -> _get_page($view) -> showPage();
+	}
+
+	/**
+	 * Authorize one ajax command.
+	 *
+	 * FreePBX's Ajax::doRequest() asks the module object, not the page object.
+	 * This method sends the question to the page that runs the handler. Each
+	 * page has its own allowlist. If the page does not know the command, the
+	 * method returns false and doRequest() sends 403 before ajaxHandler() runs.
+	 *
+	 * $req is the $command of ajax.php, so the view comes from the request. It
+	 * must be the same view that ajaxHandler() uses. Otherwise the check
+	 * protects a different page from the page that runs.
+	 *
+	 * @param string $req     value of ?command=
+	 * @param array  $setting authenticate/allowremote/changesession, by reference
+	 * @return bool true to allow the command
+	 */
 	public function ajaxRequest($req, &$setting) {
-		//AVISO!!!!!!!!!!!!!!!!!!!!!!!!!!
-		//PERMITE TODO!!!!!!!!!!!!!!!!!!!
-		$setting['authenticate'] = true;
-		$setting['allowremote'] = true;
-		return true;
-
-		$module_sec = isset($_REQUEST['module_sec'])? trim($_REQUEST['module_sec']) : '';
-		if ($module_sec == "") { return false; }
-
-		switch($module_sec)
-		{
-			case "epm_devices":
-				return $this->epm_devices->ajaxRequest(trim($req), $setting);
-				break;
-
-			case "epm_oss":
-				return $this->epm_oss->ajaxRequest(trim($req), $setting);
-				break;
-
-			case "epm_placeholders":
-				return $this->epm_placeholders->ajaxRequest(trim($req), $setting);
-				break;
-
-			case "epm_config":
-				return $this->epm_config->ajaxRequest(trim($req), $setting);
-				break;
-
-			case "epm_advanced":
-				return $this->epm_advanced->ajaxRequest(trim($req), $setting);
-				break;
-
-			case "epm_templates":
-				return $this->epm_templates->ajaxRequest(trim($req), $setting);
-				break;
-		}
-        return false;
+		$view = $this -> getReq("view", "");
+		return $this -> _get_page($view) -> ajaxRequest($req, $setting);
     }
 
     public function ajaxHandler() {
+		$view = $this -> getReq("view", "");
+		$command = $this -> getReq("command", "");
 
-		$module_sec = isset($_REQUEST['module_sec'])? trim($_REQUEST['module_sec']) : '';
-		$module_tab = isset($_REQUEST['module_tab'])? trim($_REQUEST['module_tab']) : '';
-		$command = isset($_REQUEST['command'])? trim($_REQUEST['command']) : '';
-
-		if ($command == "") {
-			return array("status" => false, "message" => _("No command was sent!"));
-		}
-
-		$arrVal['mod_sec'] = array("epm_devices", "epm_oss", "epm_placeholders", "epm_templates", "epm_config", "epm_advanced");
-		if (! in_array($module_sec, $arrVal['mod_sec'])) {
-			return array("status" => false, "message" => _("Invalid section module!"));
-		}
-
-		switch ($module_sec)
-		{
-			case "epm_devices":
-				return $this->epm_devices->ajaxHandler($module_tab, $command);
-				break;
-
-			case "epm_oss":
-				return $this->epm_oss->ajaxHandler($module_tab, $command);
-				break;
-			case "epm_placeholders":
-				return $this->epm_placeholders->ajaxHandler($module_tab, $command);
-				break;
-
-			case "epm_templates":
-				return $this->epm_templates->ajaxHandler($module_tab, $command);
-				break;
-
-			case "epm_config":
-				return $this->epm_config->ajaxHandler($module_tab, $command);
-				break;
-
-			case "epm_advanced":
-				return $this->epm_advanced->ajaxHandler($module_tab, $command);
-				break;
-		}
-		return false;
+		return $this -> _get_page($view) -> ajaxHandler($command);
     }
+
+	/**
+	 * Get the action bar buttons for the current page.
+	 *
+	 * config.php:854 calls getActionBar() on the module object, not on the page
+	 * object. This method sends the call to the page. Without it, no page shows
+	 * an action bar, and the template editor has no Save button.
+	 *
+	 * FreePBX expects an array. It reads any other value as "no buttons", so a
+	 * page can return "".
+	 *
+	 * @param array $request $_REQUEST, as config.php passes it
+	 * @return array|string buttons keyed by submit/duplicate/reset/delete
+	 */
+	public function getActionBar($request) {
+		$view = $this -> getReq("view", "");
+		return $this -> _get_page($view) -> getActionBar($request);
+	}
+
+	/**
+	 * Get the right navigation for the current page.
+	 *
+	 * config.php:888 also calls this on the module object. Only three pages
+	 * define it, so check for the method first. An undefined method here stops
+	 * the footer after the page shows.
+	 *
+	 * @param array $request $_REQUEST, as config.php passes it
+	 * @return string html, or '' for a page with no side navigation
+	 */
+	public function getRightNav($request) {
+		$view = $this -> getReq("view", "");
+		$page = $this -> _get_page($view);
+		if (!method_exists($page, 'getRightNav')) {
+			return '';
+		}
+		return $page -> getRightNav($request);
+	}
 
 	public static function myDialplanHooks() {
 		return true;
 	}
 
 	public function doConfigPageInit($page) {
-		//TODO: Pendiente revisar y eliminar moule_tab.
-		$module_tab = isset($_REQUEST['module_tab'])? trim($_REQUEST['module_tab']) : '';
-		if ($module_tab == "") {
-			$module_tab = isset($_REQUEST['subpage'])? trim($_REQUEST['subpage']) : '';
-		}
-		$command = isset($_REQUEST['command'])? trim($_REQUEST['command']) : '';
+		$view = $this -> getReq("view", "");
+		$command = $this -> getReq("command", "");
 
-
-		$arrVal['mod_sec'] = array("epm_devices","epm_oss", "epm_placeholders", "epm_templates", "epm_config", "epm_advanced");
-		if (! in_array($page, $arrVal['mod_sec'])) {
-			die(_("Invalid section module!"));
-		}
-
-		switch ($page)
-		{
-			case "epm_devices":
-				$this->epm_devices->doConfigPageInit($module_tab, $command);
-				break;
-			case "epm_oss":
-				$this->epm_oss->doConfigPageInit($module_tab, $command);
-				break;
-			case "epm_placeholders":
-				$this->epm_placeholders->doConfigPageInit($module_tab, $command);
-				break;
-			case "epm_templates":
-				$this->epm_templates->doConfigPageInit($module_tab, $command);
-				break;
-
-			case "epm_config":
-				$this->epm_config->doConfigPageInit($module_tab, $command);
-				break;
-
-			case "epm_advanced":
-				$this->epm_advanced->doConfigPageInit($module_tab, $command);
-				break;
-		}
+		return $this -> _get_page($view) -> doConfigPageInit($command);
 	}
 
 	public function doGeneralPost() {
@@ -326,122 +416,8 @@ define("PHONE_MODULES_PATH", $this->PHONE_MODULES_PATH);
 		needreload();
 	}
 
-	public function myShowPage() {
-		if (! isset($_REQUEST['display']))
-			return $this->pagedata;
+	public function getActiveModules() {}
 
-		switch ($_REQUEST['display'])
-		{
-			case "epm_devices":
-				$this->epm_devices->myShowPage($this->pagedata);
-				break;
-			case "epm_oss":
-				return $this->epm_oss->myShowPage($this->pagedata);
-				break;
-			case "epm_placeholders":
-				return $this->epm_placeholders->myShowPage($this->pagedata);
-				break;
-			case "epm_templates":
-				$this->epm_templates->myShowPage($this->pagedata);
-				return $this->pagedata;
-				break;
-
-			case "epm_config":
-				$this->epm_config->myShowPage($this->pagedata);
-				break;
-
-			case "epm_advanced":
-				$this->epm_advanced->myShowPage($this->pagedata);
-				break;
-		}
-
-		if(! empty($this->pagedata)) {
-			foreach($this->pagedata as &$page) {
-				ob_start();
-				include($page['page']);
-				$page['content'] = ob_get_contents();
-				ob_end_clean();
-			}
-			return $this->pagedata;
-		}
-	}
-
-	public function getActiveModules() {
-
-	}
-
-	//http://wiki.freepbx.org/display/FOP/Adding+Floating+Right+Nav+to+Your+Module
-	public function getRightNav($request) {
-		if (! isset($_REQUEST['display']))
-			return '';
-		else {
-			//return load_view(dirname(__FILE__).'/views/rnav.php',array());
-			return load_view(dirname(__FILE__) . '/views/rnav.php', $var);
-		}
-		switch($_REQUEST['display'])
-		{
-			case "epm_devices":
-				return load_view(dirname(__FILE__) . '/views/rnav.php', $var);
-				break;
-			case "epm_oss":
-				return load_view(dirname(__FILE__) . '/views/rnav.php', $var);
-				break;
-			case "epm_placeholders":
-				return load_view(dirname(__FILE__) . '/views/rnav.php', $var);
-				break;
-
-			case "epm_config":
-				return load_view(dirname(__FILE__) . '/views/rnav.php', $var);
-				break;
-
-			case "epm_advanced":
-				return load_view(dirname(__FILE__) . '/views/rnav.php', $var);
-				break;
-
-			case "epm_templates":
-				return load_view(dirname(__FILE__) . '/views/rnav.php', $var);
-				break;
-
-			default:
-		        return '';
-
-		}
-	}
-
-	//http://wiki.freepbx.org/pages/viewpage.action?pageId=29753755
-	public function getActionBar($request) {
-			if (! isset($_REQUEST['display']))
-			return '';
-
-		switch($_REQUEST['display'])
-		{
-			case "epm_devices":
-				return $this->epm_devices->getActionBar($request);
-				break;
-
-			case "epm_oss":
-				return $this->epm_oss->getActionBar($request);
-				break;
-			case "epm_placeholders":
-				return $this->epm_placeholders->getActionBar($request);
-				break;
-			case "epm_config":
-				return $this->epm_config->getActionBar($request);
-				break;
-
-			case "epm_advanced":
-				return $this->epm_advanced->getActionBar($request);
-				break;
-
-			case "epm_templates":
-				return $this->epm_templates->getActionBar($request);
-				break;
-
-			default:
-		        return '';
-
-		}
-	}
 
 	public function install() {
 
@@ -466,53 +442,12 @@ define("PHONE_MODULES_PATH", $this->PHONE_MODULES_PATH);
 		return true;
 	}
 
-	public function backup() {
-	}
-
-    public function restore($backup) {
-	}
+	// The backup and restore support is in Backup.php and Restore.php in this
+	// directory. Backup.class.php::getModules() looks for these files. The old
+	// backup() and restore() hooks of FreePBX 13 are not used.
 
 
-	private function epm_config_manual_install($install_type = "", $package ="")
-	{
-		if ($install_type == "") {
-			throw new \Exception("Not send install_type!");
-		}
-
-		switch($install_type) {
-			case "export_brand":
-
-				break;
-
-			case "upload_master_xml":
-				if (file_exists($this->PHONE_MODULES_PATH."temp/master.xml")) {
-					$handle = fopen($this->PHONE_MODULES_PATH."temp/master.xml", "rb");
-					$contents = stream_get_contents($handle);
-					fclose($handle);
-					@$a = simplexml_load_string($contents);
-					if($a===FALSE) {
-						echo "Not a valid xml file";
-						break;
-					} else {
-						rename($this->PHONE_MODULES_PATH."temp/master.xml", $this->PHONE_MODULES_PATH."master.xml");
-						echo "Move Successful<br />";
-						$this->update_check();
-						echo "Updating Brands<br />";
-					}
-				} else {
-				}
-				break;
-
-			case "upload_provisioner":
-
-				break;
-
-			case "upload_brand":
-
-				break;
-		}
-	}
-
+	// Manual upload is in SettingsPage (Advanced Settings, Manual Upload).
 
      /**
      * Returns list of Brands that are installed and not hidden and that have at least one model enabled under them
@@ -521,6 +456,7 @@ define("PHONE_MODULES_PATH", $this->PHONE_MODULES_PATH);
      */
     function brands_available($selected = NULL, $show_blank=TRUE) {
         $data = $this->eda->all_active_brands();
+        $temp = array();
         if ($show_blank) {
             $temp[0]['value'] = "";
             $temp[0]['text'] = "";
@@ -542,8 +478,8 @@ define("PHONE_MODULES_PATH", $this->PHONE_MODULES_PATH);
     }
 
 	function listTZ($selected) {
-        require_once('lib/datetimezone.class.php');
         $data = \DateTimeZone::listIdentifiers();
+        $temp = array();
         $i = 0;
         foreach ($data as $key => $row) {
             $temp[$i]['value'] = $row;
@@ -559,30 +495,20 @@ define("PHONE_MODULES_PATH", $this->PHONE_MODULES_PATH);
         return($temp);
     }
 
-    function has_git() {
-        exec('which git', $output);
-
-        $git = file_exists($line = trim(current($output))) ? $line : 'git';
-
-        unset($output);
-
-        exec($git . ' --version', $output);
-
-        preg_match('#^(git version)#', current($output), $matches);
-
-        return!empty($matches[0]) ? $git : false;
-        echo!empty($matches[0]) ? 'installed' : 'nope';
-    }
-
     function tftp_check() {
         //create a simple block here incase people have strange issues going on as we will kill http
         //by running this if the server isn't really running!
-        $sql = 'SELECT value FROM endpointman_global_vars WHERE var_name = \'tftp_check\'';
-        if (sql($sql, 'getOne') != 1) {
-            $sql = 'UPDATE endpointman_global_vars SET value = \'1\' WHERE var_name = \'tftp_check\'';
-            sql($sql);
-            $subject = shell_exec("netstat -luan --numeric-ports");
-            if (preg_match('/:69\s/i', $subject)) {
+        if ($this->configmod->get('tftp_check') != 1) {
+            $this->configmod->save('tftp_check', '1');
+            // udp_port_listening() uses `ss`, or `netstat` when `ss` is not available.
+            // Debian 12 has no net-tools. NULL means that neither tool is installed. This
+            // is not the same as "nothing is listening", so report it. In both cases,
+            // skip the fetch below, because the check prevents a fetch when no server
+            // runs.
+            $listening = $this->system->udp_port_listening(69);
+            if ($listening === NULL) {
+                $this->error['tftp_check'] = _('Cannot check for a TFTP server. Neither ss (iproute2) nor netstat (net-tools) is installed.');
+            } elseif ($listening) {
                 $rand = md5(rand(10, 2000));
                 if (file_put_contents($this->configmod->get('config_location') . 'TEST', $rand)) {
                     if ($this->system->tftp_fetch('127.0.0.1', 'TEST') != $rand) {
@@ -590,7 +516,7 @@ define("PHONE_MODULES_PATH", $this->PHONE_MODULES_PATH);
                     }
                     unlink($this->configmod->get('config_location') . 'TEST');
                 } else {
-                    $this->error['tftp_check'] = 'Unable to write to ' . $this->configmod->get('config_location');
+                    $this->error['tftp_check'] = 'Unable to write to ' . epm_esc($this->configmod->get('config_location'));
                 }
             } else {
                 $dis = FALSE;
@@ -602,11 +528,12 @@ define("PHONE_MODULES_PATH", $this->PHONE_MODULES_PATH);
                     }
                 }
                 if (!$dis) {
-                    $this->error['tftp_check'] = 'TFTP Server is not running. <br />See here for instructions on how to install one: <a href="http://wiki.provisioner.net/index.php/Tftp" target="_blank">http://wiki.provisioner.net/index.php/Tftp</a>';
+                    // wiki.provisioner.net does not resolve. Point to Debian's tftpd-hpa, which
+                    // FreePBX 17 uses.
+                    $this->error['tftp_check'] = _('The TFTP server is not running. Install and enable tftpd-hpa, and set its root to the configuration directory below.');
                 }
             }
-            $sql = 'UPDATE endpointman_global_vars SET value = \'0\' WHERE var_name = \'tftp_check\'';
-            sql($sql);
+            $this->configmod->save('tftp_check', '0');
         } else {
             $this->error['tftp_check'] = 'TFTP Server check failed on last past. Skipping';
         }
@@ -614,39 +541,25 @@ define("PHONE_MODULES_PATH", $this->PHONE_MODULES_PATH);
 
 
     /**
-     * Used to send sample configurations to provisioner.net
-     * NOTE: The user has to explicitly click a link that states they are sending the configuration to the project
-     * We don't take configs on our own accord!!
-     * @param <type> $brand Brand Directory
-     * @param <type> $product Product Directory
-     * @param <type> $orig_name The file's original name we are sending
-     * @param <type> $data The config file's data
+     * Send sample configurations upstream. This always refuses.
+     *
+     * There is no place to send them. The old endpoint was on provisioner.net,
+     * which does not resolve. provision.lol replaced it in the old defaults, but
+     * it is a parked domain. A POST of a phone config would go to the owner of
+     * that domain.
+     *
+     * Two callers in includes/popup.inc.php read the return value, so the method
+     * stays. Put a new submission endpoint here if the project gets one.
+     *
+     * @param string $brand     Brand Directory
+     * @param string $product   Product Directory
+     * @param string $orig_name The original name of the file to send
+     * @param string $data      The data of the config file
+     * @return false
     */
     function submit_config($brand, $product, $orig_name, $data) {
-    	$posturl = 'http://www.provisioner.net/submit_config.php';
-
-    	$fp = fopen($this->LOCAL_PATH . 'data.txt', 'w');
-    	fwrite($fp, $data);
-    	fclose($fp);
-    	$file_name_with_full_path = $this->LOCAL_PATH . "data.txt";
-
-    	$postvars = array('brand' => $brand, 'product' => $product, 'origname' => htmlentities(addslashes($orig_name)), 'file_contents' => '@' . $file_name_with_full_path);
-
-    	$ch = curl_init($posturl);
-    	curl_setopt($ch, CURLOPT_POST, 1);
-    	curl_setopt($ch, CURLOPT_POSTFIELDS, $postvars);
-    	curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
-    	curl_setopt($ch, CURLOPT_HEADER, 0);  // DO NOT RETURN HTTP HEADERS
-    	curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);  // RETURN THE CONTENTS OF THE CALL, probably not needed
-    	$Rec_Data = curl_exec($ch);
-
-    	ob_start();
-    	header("Content-Type: text/html");
-    	$Final_Out = ob_get_clean();
-    	curl_close($ch);
-    	unlink($file_name_with_full_path);
-
-    	return($Final_Out);
+    	$this->error['submit_config'] = _("The module cannot send configurations upstream, because the project has no submission endpoint. Open a pull request at https://github.com/unex/provisioner.");
+    	return false;
     }
 
     /**
@@ -661,17 +574,26 @@ define("PHONE_MODULES_PATH", $this->PHONE_MODULES_PATH);
         //This function is reversed. Not sure why
 
         if ($custom != "0") {
-            $sql = "SELECT endpointman_model_list.max_lines, endpointman_product_list.config_files, endpointman_mac_list.*, endpointman_product_list.id as product_id, endpointman_product_list.long_name, endpointman_model_list.template_data, endpointman_product_list.cfg_dir, endpointman_brand_list.directory FROM endpointman_brand_list, endpointman_mac_list, endpointman_model_list, endpointman_product_list WHERE endpointman_mac_list.id=" . $id . " AND endpointman_mac_list.model = endpointman_model_list.id AND endpointman_model_list.brand = endpointman_brand_list.id AND endpointman_model_list.product_id = endpointman_product_list.id";
+            $sql = 'SELECT endpointman_model_list.max_lines, endpointman_product_list.config_files, endpointman_mac_list.*, endpointman_product_list.id as product_id, endpointman_product_list.long_name, endpointman_model_list.template_data, endpointman_product_list.cfg_dir, endpointman_brand_list.directory FROM endpointman_brand_list, endpointman_mac_list, endpointman_model_list, endpointman_product_list WHERE endpointman_mac_list.id=? AND endpointman_mac_list.model = endpointman_model_list.id AND endpointman_model_list.brand = endpointman_brand_list.id AND endpointman_model_list.product_id = endpointman_product_list.id';
+            $sql_p = array($id);
         } else {
-            $sql = "SELECT endpointman_model_list.max_lines, endpointman_brand_list.directory, endpointman_product_list.cfg_dir, endpointman_product_list.config_files, endpointman_product_list.long_name, endpointman_model_list.template_data, endpointman_model_list.id as model_id, endpointman_template_list.* FROM endpointman_brand_list, endpointman_product_list, endpointman_model_list, endpointman_template_list WHERE endpointman_product_list.id = endpointman_template_list.product_id AND endpointman_brand_list.id = endpointman_product_list.brand AND endpointman_template_list.model_id = endpointman_model_list.id AND endpointman_template_list.id = " . $id;
+            $sql = 'SELECT endpointman_model_list.max_lines, endpointman_brand_list.directory, endpointman_product_list.cfg_dir, endpointman_product_list.config_files, endpointman_product_list.long_name, endpointman_model_list.template_data, endpointman_model_list.id as model_id, endpointman_template_list.* FROM endpointman_brand_list, endpointman_product_list, endpointman_model_list, endpointman_template_list WHERE endpointman_product_list.id = endpointman_template_list.product_id AND endpointman_brand_list.id = endpointman_product_list.brand AND endpointman_template_list.model_id = endpointman_model_list.id AND endpointman_template_list.id = ?';
+            $sql_p = array($id);
         }
 
         //Load template data
-        $row = sql($sql, 'getRow', DB_FETCHMODE_ASSOC);
+        $row = epm_sql($sql, 'getRow', $sql_p);
+        if (empty($row)) {
+            $this->error['save_template'] = _("No such template.");
+            return false;
+        }
 
-        $cfg_data = unserialize($row['template_data']);
-        $count = count($cfg_data);
+        $cfg_data = epm_blob_decode($row['template_data'], array());
+        if (!isset($cfg_data['data']) || !is_array($cfg_data['data'])) {
+            $cfg_data['data'] = array();
+        }
 
+        $custom_cfg_data = array();
         $custom_cfg_data_ari = array();
 
         foreach ($cfg_data['data'] as $cats) {
@@ -734,7 +656,13 @@ define("PHONE_MODULES_PATH", $this->PHONE_MODULES_PATH);
             }
         }
 
+        // The editor numbers its config_files[] selects by the position in the
+        // sorted file list. edit_template_display_files_list() sorts it with asort().
+        // Use the same order here. Otherwise a product with unsorted files stores the
+        // override under the wrong file.
         $config_files = explode(",", $row['config_files']);
+        asort($config_files);
+        $config_files = array_values($config_files);
 
         $i = 0;
         while ($i < count($config_files)) {
@@ -756,21 +684,23 @@ define("PHONE_MODULES_PATH", $this->PHONE_MODULES_PATH);
         if (!isset($config_files_selected)) {
             $config_files_selected = "";
         } else {
-            $config_files_selected = serialize($config_files_selected);
+            $config_files_selected = epm_blob_encode($config_files_selected);
         }
         $custom_cfg_data_temp['data'] = $custom_cfg_data;
         $custom_cfg_data_temp['ari'] = $custom_cfg_data_ari;
 
-        $save = serialize($custom_cfg_data_temp);
+        $save = epm_blob_encode($custom_cfg_data_temp);
         if ($custom == "0") {
-            $sql = 'UPDATE endpointman_template_list SET config_files_override = \'' . addslashes($config_files_selected) . '\', global_custom_cfg_data = \'' . addslashes($save) . '\' WHERE id =' . $id;
+            $sql = 'UPDATE endpointman_template_list SET config_files_override = ?, global_custom_cfg_data = ? WHERE id =?';
+            $sql_p = array($config_files_selected, $save, $id);
             $location = "template_manager";
 			//print_r($sql);
         } else {
-            $sql = 'UPDATE endpointman_mac_list SET config_files_override = \'' . addslashes($config_files_selected) . '\', template_id = 0, global_custom_cfg_data = \'' . addslashes($save) . '\' WHERE id =' . $id;
+            $sql = 'UPDATE endpointman_mac_list SET config_files_override = ?, template_id = 0, global_custom_cfg_data = ? WHERE id =?';
+            $sql_p = array($config_files_selected, $save, $id);
             $location = "devices_manager";
         }
-        sql($sql);
+        epm_sql($sql, 'query', $sql_p);
 
         $phone_info = array();
 
