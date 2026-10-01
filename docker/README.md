@@ -137,6 +137,16 @@ The tests need Docker but not the FreePBX stack:
   `epm_system::extract_package()`. It checks that a package of data files
   extracts, and that the module refuses PHP, scripts, programs, links, `..`
   paths and absolute paths. It also checks the cleanup of an old data tree.
+- `anacrypt_test.php` checks `epm_system::anacrypt_problem()` and the
+  Aastra driver with a shell script in place of `anacrypt`. It makes its
+  files as root and runs the checks as `www-data`.
+
+**Why PHPCompatibility is separate.** The `qa` image has no PHPCompatibility
+standard, and the last stable release (9.3.5, 2019) has no PHP 8.x sniffs.
+`docker/compat/composer.json` pins the `dev-develop` branch and
+`phpcs >= 4.0.2` into `docker/compat/vendor`, which git ignores.
+`make compat-deps` installs them. It runs composer with your own UID, so it
+does not leave files owned by root in your working tree.
 
 ## Other targets
 

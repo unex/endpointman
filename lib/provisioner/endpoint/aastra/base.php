@@ -27,63 +27,104 @@ class endpoint_aastra_base extends endpoint_base {
         parent::prepare_for_generateconfig();
     }
 
-    function enable_encryption() {
-        if (is_executable($this->root_dir . $this->modules_path . $this->brand_name . "/anacrypt")) {
-            if (!file_exists($this->root_dir . $this->modules_path . $this->brand_name . "/security.tuz")) {
-                exec($this->root_dir . $this->modules_path . $this->brand_name . "/anacrypt -i -p 1234abcd");
-                rename("security.tuz", $this->root_dir . $this->modules_path . $this->brand_name . "/security.tuz");
-                if (!file_exists($this->root_dir . $this->modules_path . $this->brand_name . "/security.tuz")) {
-                    return(FALSE);
-                } else {
-                    return(TRUE);
-                }
-            } else {
-                return(TRUE);
-            }
-        } else {
-            return(FALSE);
+    /**
+     * The anacrypt program and its key. DevicesPage::prepare_configs() sets
+     * them from the module settings. They are not in $settings, so a template
+     * cannot print them.
+     */
+    public $anacrypt_location = '';
+    public $anacrypt_key = '';
+
+    /**
+     * Get the anacrypt program that the admin set, or FALSE.
+     *
+     * Upstream ran anacrypt from the data tree, where a brand package can put
+     * a file. This version runs only the program in the module setting, and
+     * only when epm_system::anacrypt_problem() accepts it.
+     */
+    protected function anacrypt_program() {
+        if (($this->anacrypt_location === '') || ($this->anacrypt_key === '')) {
+            return FALSE;
         }
+        if (!class_exists('FreePBX\modules\epm_system')) {
+            return FALSE;
+        }
+        if (\FreePBX\modules\epm_system::anacrypt_problem($this->anacrypt_location, $this->root_dir) !== '') {
+            return FALSE;
+        }
+        return $this->anacrypt_location;
+    }
+
+    /**
+     * Run anacrypt in $cwd, where it writes its output files.
+     *
+     * @return bool TRUE when the program exits with 0
+     */
+    protected function run_anacrypt($program, $args, $cwd) {
+        $cmd = escapeshellarg($program);
+        foreach ($args as $arg) {
+            $cmd .= ' ' . escapeshellarg($arg);
+        }
+        $null = array('file', '/dev/null', 'w');
+        $proc = proc_open($cmd, array(0 => array('file', '/dev/null', 'r'), 1 => $null, 2 => $null), $pipes, $cwd);
+        if (!is_resource($proc)) {
+            return FALSE;
+        }
+        return (proc_close($proc) === 0);
+    }
+
+    function enable_encryption() {
+        return ($this->anacrypt_program() !== FALSE);
     }
 
     function disable_encryption() {
+        // Upstream kept security.tuz in the data tree.
         if (file_exists($this->root_dir . $this->modules_path . $this->brand_name . "/security.tuz")) {
             unlink($this->root_dir . $this->modules_path . $this->brand_name . "/security.tuz");
         }
     }
 
+    /**
+     * Encrypt config files with anacrypt.
+     *
+     * The program runs in a private directory, not in the data tree. The
+     * result holds security.tuz and one .tuz file for each input file.
+     *
+     * @param array $returned_array file name => content
+     * @return array|false file name => encrypted content
+     */
     function encrypt_files($returned_array) {
-        if (is_executable($this->root_dir . $this->modules_path . $this->brand_name . "/anacrypt")) {
-            if (file_exists($this->root_dir . $this->modules_path . $this->brand_name . "/security.tuz")) {
-                foreach ($returned_array as $key => $data) {
-                    mkdir($this->root_dir . $this->modules_path . $this->brand_name . "/secure_temp");
+        $program = $this->anacrypt_program();
+        if ($program === FALSE) {
+            return FALSE;
+        }
+        $work = rtrim(sys_get_temp_dir(), '/') . '/epm_anacrypt_' . bin2hex(random_bytes(8));
+        if (!@mkdir($work, 0700)) {
+            return FALSE;
+        }
 
-                    $file = $this->root_dir . $this->modules_path . $this->brand_name . "/secure_temp/" . $key;
-                    $fp = fopen($file, 'w');
-                    fwrite($fp, $data);
-                    fclose($fp);
-
-                    exec($this->root_dir . $this->modules_path . $this->brand_name . "/anacrypt " . $file . " -p 1234abcd");
-
-                    if (file_exists($this->mac . ".tuz")) {
-                        rename($this->mac . ".tuz", $this->root_dir . $this->modules_path . $this->brand_name . "/" . $this->mac . ".tuz");
-                        $handle = fopen($this->root_dir . $this->modules_path . $this->brand_name . "/" . $this->mac . ".tuz", "rb");
-                        $contents = stream_get_contents($handle);
-                        fclose($handle);
-                        unlink($this->root_dir . $this->modules_path . $this->brand_name . "/" . $this->mac . ".tuz");
-                        $encrypted_array[$this->mac . '.tuz'] = $contents;
-                    } elseif (file_exists("aastra.tuz")) {
-                        rename("aastra.tuz", $this->root_dir . $this->modules_path . $this->brand_name . "/aastra.tuz");
-                        $handle = fopen($this->root_dir . $this->modules_path . $this->brand_name . "/aastra.tuz", "rb");
-                        $contents = stream_get_contents($handle);
-                        fclose($handle);
-                        //unlink($this->root_dir. $this->modules_path . $this->brand_name . "/aastra.tuz");
-                        $encrypted_array['aastra.tuz'] = $contents;
+        $encrypted_array = FALSE;
+        if ($this->run_anacrypt($program, array('-i', '-p', $this->anacrypt_key), $work) && file_exists($work . '/security.tuz')) {
+            $encrypted_array = array('security.tuz' => file_get_contents($work . '/security.tuz'));
+            foreach ($returned_array as $key => $data) {
+                $name = basename(str_replace('$mac', $this->mac, $key));
+                file_put_contents($work . '/' . $name, $data);
+                $this->run_anacrypt($program, array($name, '-p', $this->anacrypt_key), $work);
+                foreach (array($this->mac . '.tuz', 'aastra.tuz') as $out) {
+                    if (file_exists($work . '/' . $out)) {
+                        $encrypted_array[$out] = file_get_contents($work . '/' . $out);
+                        unlink($work . '/' . $out);
+                        break;
                     }
-                    unlink($this->root_dir . $this->modules_path . $this->brand_name . "/secure_temp/" . $key);
                 }
-                return($encrypted_array);
             }
         }
+
+        foreach (glob($work . '/*') ?: array() as $file) {
+            unlink($file);
+        }
+        rmdir($work);
+        return $encrypted_array;
     }
 
 	function aastra_timezone_conversion() {

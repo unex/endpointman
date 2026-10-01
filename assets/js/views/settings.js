@@ -810,8 +810,10 @@ function epm_advanced_tab_setting_input_change(obt)
     var idtab = epm_global_get_tab_actual();
     if (idtab === "") { return; }
 
+    // Send the value as typed. Paths and keys are case-sensitive, and the server
+    // makes the yes/no values lower case itself.
     var obt_name = $(obt).attr("name").toLowerCase();
-    var obt_val = $(obt).val().toLowerCase();
+    var obt_val = $(obt).val();
 
     $.ajax({
         type: 'POST',

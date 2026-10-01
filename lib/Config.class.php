@@ -49,6 +49,11 @@ class Config {
 		'arp_location'             => '',
 		'nmap_location'            => '',
 		'asterisk_location'        => '',
+		// The Aastra program that encrypts config files, and its key (-p). The
+		// admin installs the program. Empty means that the module never runs it.
+		// See epm_system::anacrypt_problem().
+		'anacrypt_location'        => '',
+		'anacrypt_key'             => '1234abcd',
 		'language'                 => '',
 		'check_updates'            => '0',
 		'disable_help'             => '0',

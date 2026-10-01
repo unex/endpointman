@@ -822,6 +822,51 @@ class epm_system {
     }
 
     /**
+    * Check the Aastra anacrypt program before the module runs it.
+    *
+    * The program runs as the web server user. Thus it must come from the
+    * admin, not from a brand package, and the web server user must not be
+    * able to replace it. The settings page calls this function when the admin
+    * saves the path, and the Aastra driver calls it before each run.
+    *
+    * @param string $path     the path that the admin set
+    * @param string $data_dir the data tree, _ep_phone_modules/
+    * @return string the reason, or '' when the module can run the program
+    * @package epm_system
+    */
+    public static function anacrypt_problem($path, $data_dir) {
+        $path = (string) $path;
+        if ($path === '') {
+            return _("No path is set.");
+        }
+        if ($path[0] !== '/') {
+            return _("The path must be absolute.");
+        }
+        $real = realpath($path);
+        $dir  = realpath(dirname($path));
+        if ($real === false || $dir === false || !is_file($real)) {
+            return sprintf(_("%s is not a file."), $path);
+        }
+
+        // Check the path as typed and the target of a symlink.
+        $data = realpath($data_dir);
+        $data = rtrim(($data === false) ? (string) $data_dir : $data, '/') . '/';
+        foreach (array($dir . '/' . basename($path), $real) as $candidate) {
+            if (strpos($candidate, $data) === 0) {
+                return sprintf(_("%s is in _ep_phone_modules. Brand packages write there, so the module does not run a program from it."), $path);
+            }
+        }
+
+        if (!is_executable($real)) {
+            return sprintf(_("%s is not executable."), $path);
+        }
+        if (is_writable($real) || is_writable(dirname($real)) || is_writable($dir)) {
+            return sprintf(_("The web server user can write to %s or to its directory. Make root the owner of both, and remove the write permission of other users."), $path);
+        }
+        return '';
+    }
+
+    /**
     * Remove each file under $dir that a brand package cannot contain.
     *
     * install.php uses this for the data tree of earlier versions. Their

@@ -281,6 +281,31 @@ class SettingsPage extends \PageBase {
 				$save_val = $dget['value'];
 				break;
 
+			case "anacrypt_loc":
+				// Empty is valid and turns the program off. A path must pass the same check
+				// that the Aastra driver makes before each run.
+				$dget['value'] = trim($dget['value']);
+				if ($dget['value'] !== '') {
+					$anacrypt_problem = \FreePBX\modules\epm_system::anacrypt_problem($dget['value'], $this->PHONE_MODULES_PATH);
+					if ($anacrypt_problem !== '') {
+						$retarr = array("status" => false, "message" => $anacrypt_problem);
+						break;
+					}
+				}
+				$save_key = 'anacrypt_location';
+				$save_val = $dget['value'];
+				break;
+
+			case "anacrypt_key":
+				$dget['value'] = trim($dget['value']);
+				if (($dget['value'] === '') || preg_match('/[\x00-\x20\x7f]/', $dget['value'])) {
+					$retarr = array("status" => false, "message" => _("The anacrypt key must not be empty. It must not contain spaces or control characters."));
+					break;
+				}
+				$save_key = 'anacrypt_key';
+				$save_val = $dget['value'];
+				break;
+
 			case "package_server":
 				// Validate the value. Do not store it as typed. A value without a trailing
 				// slash makes URLs like ".../provisionermaster.json", and an http:// value

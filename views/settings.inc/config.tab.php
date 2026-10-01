@@ -412,6 +412,54 @@
 		</div>
 	</div>
 	<!--END Asterisk Executable Path-->
+	<!--Aastra anacrypt Path-->
+	<div class="element-container">
+		<div class="row">
+			<div class="col-md-12">
+				<div class="row">
+					<div class="form-group">
+						<div class="col-md-3">
+							<label class="control-label" for="anacrypt_loc"><?php echo _("Aastra anacrypt Executable Path")?></label>
+							<i class="fa fa-question-circle fpbx-help-icon" data-for="anacrypt_loc"></i>
+						</div>
+						<div class="col-md-9">
+							<input type="text" class="form-control" id="anacrypt_loc" name="anacrypt_loc" value="<?php echo epm_esc(FreePBX::Endpointman()->configmod->get("anacrypt_location")); ?>">
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="row">
+			<div class="col-md-12">
+				<span class="help-block fpbx-help-block" id="anacrypt_loc-help"><?php echo _("The full path of the Aastra anacrypt program, for encrypted Aastra config files. If the path is empty, the module never runs the program. Before each run, the module makes sure that the file is executable and is outside _ep_phone_modules. The web server user must not be able to write to the file or to its directory. anacrypt is an i386 program. On Debian 12, run these commands as root: 'dpkg --add-architecture i386', 'apt update' and 'apt install libc6:i386 libstdc++6:i386 libgcc-s1:i386'."); ?></span>
+			</div>
+		</div>
+	</div>
+	<!--END Aastra anacrypt Path-->
+	<!--Aastra anacrypt Key-->
+	<div class="element-container">
+		<div class="row">
+			<div class="col-md-12">
+				<div class="row">
+					<div class="form-group">
+						<div class="col-md-3">
+							<label class="control-label" for="anacrypt_key"><?php echo _("Aastra anacrypt Key")?></label>
+							<i class="fa fa-question-circle fpbx-help-icon" data-for="anacrypt_key"></i>
+						</div>
+						<div class="col-md-9">
+							<input type="text" class="form-control" id="anacrypt_key" name="anacrypt_key" value="<?php echo epm_esc(FreePBX::Endpointman()->configmod->get("anacrypt_key")); ?>">
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="row">
+			<div class="col-md-12">
+				<span class="help-block fpbx-help-block" id="anacrypt_key-help"><?php echo _("The password that anacrypt uses (-p) to encrypt Aastra config files. The default, 1234abcd, is the value that earlier versions used."); ?></span>
+			</div>
+		</div>
+	</div>
+	<!--END Aastra anacrypt Key-->
 </div>
 
 <div class="section-title" data-for="setting_web_directories">

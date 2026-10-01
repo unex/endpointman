@@ -54,12 +54,13 @@ lists, template data and config templates are all data.
 
 ## Local patches
 
-The library needs these changes to run on PHP 8.2:
+These changes differ from the last drivers that upstream published:
 
 | File | Change |
 | --- | --- |
 | `endpoint/base.php` | Declares `public $processor_info`. The class reads the property and checks it with `isset()` in three places, but upstream does not declare it. An assignment is then a PHP 8.2 deprecation. |
 | `endpoint/base.php` | Checks the result of `arraysearchrecursive()` before it uses it as an index. The function returns FALSE when a config file uses a variable that the family does not define. An index on FALSE is a PHP 8 warning, and FreePBX turns it into an exception. |
+| `endpoint/aastra/base.php` | Runs `anacrypt` only from the path in the `anacrypt_location` setting, with the key in `anacrypt_key`. Upstream ran the program from the data tree, where a brand package can put a file. `epm_system::anacrypt_problem()` checks the path before each run: absolute, outside `_ep_phone_modules/`, executable, and not writable by the web server user. The program runs in a private temp directory, and the driver escapes each argument. `DevicesPage::prepare_configs()` sets the two values as properties, not in `$settings`, so a template cannot print them. |
 | `endpoint/cisco/{linksysata,spa,spa5xx}/phone.php` | `htmlentities($x, ENT_QUOTES \| ENT_SUBSTITUTE \| ENT_HTML401)`. This sets the flags that PHP 8.1 made the default, as `make compat` requires. |
 
 `autoload.php` does **not** come from upstream. It is written for this

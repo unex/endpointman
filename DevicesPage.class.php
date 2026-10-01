@@ -1145,6 +1145,13 @@ class DevicesPage extends \PageBase {
                 $provisioner_lib->engine_location = !empty($this->global_cfg['asterisk_location']) ? $this->global_cfg['asterisk_location'] : 'asterisk';
                 $provisioner_lib->system = 'unix';
 
+                // Only the Aastra driver has these properties. The driver checks the path
+                // again before it runs the program.
+                if (property_exists($provisioner_lib, 'anacrypt_location')) {
+                    $provisioner_lib->anacrypt_location = (string) $this->global_cfg['anacrypt_location'];
+                    $provisioner_lib->anacrypt_key = (string) $this->global_cfg['anacrypt_key'];
+                }
+
                 //have to because of versions less than php5.3
                 $provisioner_lib->brand_name = $phone_info['directory'];
                 $provisioner_lib->family_line = $phone_info['cfg_dir'];

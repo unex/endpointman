@@ -138,6 +138,8 @@ stan: ## PHPStan (level 0 baseline — raise as the code improves)
 
 audit: lint compat ## Run lint + compatibility scan
 
+# The anacrypt test starts as root, makes its files, and then runs the checks
+# as www-data. The php service runs as root, so it can do both.
 test: ## Run the PHP tests in docker/tests (no FreePBX needed)
 	@for t in docker/tests/*_test.php; do \
 		echo "--- $$t"; $(TOOLS) php $$t || exit 1; \
