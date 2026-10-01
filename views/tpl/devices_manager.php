@@ -122,9 +122,6 @@
             })
         })
     })
-    /* The .rowGroup<master_id> rows of the "Current Managed Extensions"
-       table have style="display:none;" at the <tr> below. No code on this
-       page shows them. */
     function addTableRow(jQtable){
         jQtable.each(function(){
             var $table = $(this);
@@ -204,7 +201,7 @@
 
 <h3><?php echo ($mode != 'EDIT') ? _('Add') : _('Edit'); ?> <?php echo _('Device')?></h3>
 <form name="adding" id="adding" action='config.php?display=endpointman&view=devices' method='POST' />
-<table id="devList" data-toolbar="#toolbar-all" data-pagination="false" data-show-columns="false" data-show-toggle="false" data-search="false" data-show-refresh="false" data-detail-formatter="device" data-minimum-count-columns="1" data-show-pagination-switch="false" data-id-field="id" data-page-list="[5,10, 25, 50, 100, ALL]" data-show-footer="false" data-side-pagination="device" class="table table-striped table-hover">
+<table id="devAdd" data-toolbar="#toolbar-all" data-pagination="false" data-show-columns="false" data-show-toggle="false" data-search="false" data-show-refresh="false" data-detail-formatter="device" data-minimum-count-columns="1" data-show-pagination-switch="false" data-id-field="id" data-page-list="[5,10, 25, 50, 100, ALL]" data-show-footer="false" data-side-pagination="device" class="table table-striped table-hover">
   <thead>
     <tr>
         <th width="13%" align='center'><?php echo _('MAC Address')?></th>
@@ -426,7 +423,7 @@
 <?php         // Merge the device row and the line row. Line values win, and
               // most cells read from the merged row.
               $row = array_merge($device, $line); ?>
-        <tr class="rowGroup<?php echo epm_esc($line['master_id']); ?> toggle_all" id="<?php echo epm_esc($line['master_id']); ?>" style="display:none;">
+        <tr>
             <td align='center' width="7%"><i class="fa fa-power-off fa-lg <?php if ($row['status']['status'] === TRUE) { echo "green"; } else { echo "red"; } ?>" title="<?php echo epm_esc($row['status']['ip']);?>:<?php echo epm_esc($row['status']['port']);?>"></i><input type="checkbox" class="device" name="selected[]" value="<?php echo epm_esc($row['ext']);?>"></td>
             <td align='center' width='13%'><?php echo epm_esc($row['mac']);?></td>
             <td align='center' width='13%'><?php echo epm_esc($row['ipei']);?></td>
