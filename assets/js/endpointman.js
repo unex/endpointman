@@ -1,47 +1,51 @@
 "use strict";
 var box = null;
 
-$(document).ready(function() {
-	var displayActual = epm_global_getDisplayActual();
+/*
+ * Each page hook has the name of the old FreePBX display of its page:
+ * epm_advanced for the settings page, epm_templates for the templates page.
+ * All pages now use display=endpointman&view=<view>, so the dispatcher below
+ * maps the view to the hook prefix.
+ *
+ * A view that is not in this map has no hooks. The scripts of those pages do
+ * their own binding.
+ */
+var epmViewHooks = {
+	'devices': 'epm_devices',
+	'templates': 'epm_templates',
+	'settings': 'epm_advanced'
+};
 
+function epm_global_getHookPrefix () {
+	var view = $.getUrlVar('view');
+	if ((typeof view === 'undefined') || (view === null)) { return ''; }
+	view = String(view).replace('#', '');
+	return epmViewHooks.hasOwnProperty(view) ? epmViewHooks[view] : '';
+}
+
+function epm_global_call_hook (name, arg) {
+	var prefix = epm_global_getHookPrefix();
+	if (prefix === '') { return false; }
+	var func = prefix + name;
+	if (typeof window[func] !== 'function') { return false; }
+	window[func](arg);
+	return true;
+}
+
+$(document).ready(function() {
 	$('ul[role=tablist] li a').on("click", function(){
 		var tabclick =  $(this).attr('aria-controls');
-		if (tabclick !== "") {
-			if (displayActual !== "") {
-				var func = displayActual + "_change_tab";
-				if (typeof window[func] === 'function') {
-					setTimeout(function () { window[func](tabclick); }, 500);
-				}
-			}
+		if ((tabclick !== "") && (typeof tabclick !== 'undefined')) {
+			setTimeout(function () { epm_global_call_hook("_change_tab", tabclick); }, 500);
 		}
 	});
 
-	if (displayActual !== "") {
-		var func = displayActual + "_document_ready";
-		if (typeof window[func] === 'function') {
-			window[func]();
-		}
-	}
-
+	epm_global_call_hook("_document_ready");
 });
 
-$(window).load(function() {
-	var displayActual = epm_global_getDisplayActual();
-	if (displayActual !== "") {
-		var func = displayActual + "_windows_load";
-		if (typeof window[func] === 'function') {
-			window[func](epm_global_get_tab_actual());
-		}
-	}
+$(window).on("load", function() {
+	epm_global_call_hook("_windows_load", epm_global_get_tab_actual());
 });
-
-
-function epm_global_getDisplayActual ()
-{
-	var displayActual = $.getUrlVar('display');
-	displayActual = displayActual.replace("#", "");
-	return displayActual;
-}
 
 
 function epm_global_html_find_hide_and_remove(name = "", tDelay = 1, bSlow = false) {
@@ -80,11 +84,12 @@ function epm_global_html_css_name(name, bStatus, classname)
 
 function epm_global_get_tab_actual()
 {
-	var sTab = "";
-	$("ul[role=tablist] li.active a").each(function() {
-		sTab = $(this).attr('aria-controls');
-	});
-	return sTab;
+	/*
+	 * Read the active pane, not the tab. FreePBX 17 serves Bootstrap 4, which
+	 * puts the active class on the <a> and not on the <li>. The pane has the
+	 * class in both versions, and aria-controls points to its id.
+	 */
+	return $(".tab-content > .tab-pane.active").first().attr('id') || "";
 }
 
 function epm_global_get_value_by_form(sform, snameopt, formtype = "name")
@@ -194,9 +199,9 @@ function close_module_actions(goback, acctionname = "")
 		box.dialog("destroy").remove();
 	}
 
-	var displayActual = epm_global_getDisplayActual();
-	if (displayActual !== "") {
-		var func = 'close_module_actions_'+displayActual;
+	var prefix = epm_global_getHookPrefix();
+	if (prefix !== "") {
+		var func = 'close_module_actions_'+prefix;
 		if (typeof window[func] === 'function') {
 			window[func](goback, acctionname);
 		}
@@ -209,9 +214,9 @@ function close_module_actions(goback, acctionname = "")
 
 function end_module_actions(acctionname = "")
 {
-	var displayActual = epm_global_getDisplayActual();
-	if (displayActual !== "") {
-		var func = 'end_module_actions_'+displayActual;
+	var prefix = epm_global_getHookPrefix();
+	if (prefix !== "") {
+		var func = 'end_module_actions_'+prefix;
 		if (typeof window[func] === 'function') {
 			window[func](acctionname);
 		}

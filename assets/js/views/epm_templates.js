@@ -11,21 +11,22 @@ function epm_templates_document_ready () {
 	});
 
 
-	$('#AddDlgModal').on('show.bs.modal', function (event) { $(this).find('input, select').val(""); });
+	// Reset the Add dialog every time it opens.
+	//
+	// Clearing the values is not sufficient. Both selects are bootstrap-select
+	// pickers. A picker draws its own button and reads the <select> again only
+	// on 'refresh'. Without the refresh, the dialog shows the product of the last
+	// time while the value is "", and Save reports "Faltan Datos!" for a field
+	// that looks filled. Also empty the clone list. It comes from the selected
+	// product, so old models in it do not belong to the next product.
+	$('#AddDlgModal').on('show.bs.modal', function (event) {
+		$(this).find('input').val("");
+		$('#NewProductSelect').val("");
+		$('#NewCloneModel').html("");
+		$(this).find('select.selectpicker').selectpicker('refresh');
+	});
 	$('#AddDlgModal_bt_new').on("click", function() { epm_templates_grid_add(); });
 	$('#NewProductSelect').on('change', function() { epm_templates_add_NewProductSelect_Change (this); });
-
-	//http://kevinbatdorf.github.io/liquidslider/examples/page1.html#right
-	$('#main-slider').liquidSlider({
-		includeTitle:false,
-		continuous:false,
-		slideEaseFunction: "easeInOutCubic",
-		preloader:true,
-		onload: function() {
-			this.alignNavigation();
-			$('.liquid-slider').css('visibility', 'visible');
-		}
-	});
 
 	//Al iniciar la apertura de la ventana
 	$('#CfgGlobalTemplate').on('show.bs.modal', function (e) {
@@ -77,26 +78,33 @@ function epm_templates_document_ready () {
 
 
 
-	$('.files_edit_configs button').click(function(e){
-		var NameBox = e.target.parentNode.parentNode.id;
-		var NameBoxSel = "sl_" + NameBox;
-		var ValueSel = $('#' + NameBoxSel).val();
-
-		var ids =  ValueSel.split("_", 1);
-		var NameFile = ValueSel.substr( ValueSel.lastIndexOf("_") + 1 , ValueSel.len);
-
-		if (ids[0] == "0"){
-			$('#edit_file_name_path').text(NameFile);
-			$('#config_textarea').val("Texto 456");
+	// Open the config file editor popup for the file that the select next to
+	// the button names. The value of the select is "<id>_<name>", the `value`
+	// that the popup parses. 0 means the stock file. Any other id means a
+	// saved alternative in endpointman_custom_configs.
+	//
+	// The #CfgEditFileTemplate modal is not finished. It stays in the page
+	// until it is finished or removed.
+	$('.files_edit_configs button').click(function (e) {
+		var value = $(this).closest('.files_edit_configs').find('select').val();
+		if (!value) {
+			return false;
 		}
-		else
-		{
-			$('#edit_file_name_path').text("SQL:" + NameFile);
-			$('#config_textarea').val("Texto 789");
-		}
-		$('#CfgEditFileTemplate').modal('show');
-
+		var url = 'config.php?display=endpointman&quietmode=1&handler=file'
+			+ '&file=popup.html.php&module=endpointman&pop_type=alt_cfg_edit'
+			+ '&custom=' + encodeURIComponent($('#custom').val())
+			+ '&tid=' + encodeURIComponent($('#id').val())
+			+ '&value=' + encodeURIComponent(value)
+			+ '&rand=' + new Date().getTime();
+		var popup = window.open(url, 'epm_alt_cfg', 'height=710,width=800,scrollbars=yes,location=no');
+		if (window.focus && popup) { popup.focus(); }
+		return false;
 	});
+
+	// The popup calls opener.Reload() after saving.
+	window.Reload = function () {
+		window.location.reload();
+	};
 
 	$('select[class~="selectpicker"][data-url]').each(function(index, value) { epm_template_update_select_files_config($(this)); });
 
@@ -173,9 +181,17 @@ function epm_template_update_select_files_config (e) {
 
 
 
-$("#table-all-side").on('click-row.bs.table',function(e,row,elem){
-	window.location = '?display=epm_templates&subpage=editor&custom='+row['custom']+'&idsel='+row['id'];
-})
+// A click on a row of the side navigation list of the editor opens that
+// template.
+//
+// Use a delegated handler. #table-all-side is the right navigation, which
+// config.php writes into the footer, after this script runs. A direct
+// $("#table-all-side").on(...) thus binds to an empty set. A handler on
+// document also works before bootstrap-table starts the table, because the
+// event bubbles.
+$(document).on('click-row.bs.table', '#table-all-side', function (e, row, elem) {
+	window.location = '?display=endpointman&view=templates&subpage=editor&custom='+row['custom']+'&idsel='+row['id'];
+});
 
 function epm_templates_grid_FormatThEnabled(value, row, index){
 	var html = '';
@@ -190,7 +206,7 @@ function epm_templates_grid_FormatThEnabled(value, row, index){
 
 function epm_templates_grid_FormatThAction(value, row, index){
 	var html = '';
-	html += '<a href="?display=epm_templates&subpage=editor&custom='+row.custom+'&idsel='+value+'">';
+	html += '<a href="?display=endpointman&view=templates&subpage=editor&custom='+row.custom+'&idsel='+value+'">';
 	html += '<i class="fa fa-edit"></i>';
 	html += '</a>&nbsp;';
 	if (row.custom == "0"){
@@ -213,8 +229,7 @@ function epm_templates_add_NewProductSelect_Change (obj)
 			url: "ajax.php",
 			data: {
 				module: "endpointman",
-				module_sec: "epm_templates",
-				module_tab: "manager",
+				view: "templates",
 				command: "model_clone",
 				id : $(obj).val()
 			},
@@ -233,15 +248,18 @@ function epm_templates_add_NewProductSelect_Change (obj)
 					{
 						options += '<option value="' + itemData.optionValue + '">' + itemData.optionDisplay + '</option>';
 					});
-					$("#NewCloneModel").html(options);
 				}
 				else {
 					options = '<option value="">'+ data.message +'</option>';
 					fpbxToast(data.message, "Error!", 'error');
 				}
+				// Refresh, then select the first model through the picker, not through the
+				// `selected` attribute of the option. The attribute selects the model in the
+				// <select>, but the button of the picker continues to show "Nothing
+				// selected". 'val' sets the value and draws the button again.
 				$("#NewCloneModel").html(options);
-				$('#NewCloneModel option:first').attr('selected', 'selected');
 				$('#NewCloneModel').selectpicker('refresh');
+				$('#NewCloneModel').selectpicker('val', $('#NewCloneModel option:first').val());
 			}
 		});
 	}
@@ -264,8 +282,7 @@ function epm_templates_grid_del (iddel)
 			url: "ajax.php",
 			data: {
 				module: "endpointman",
-				module_sec: "epm_templates",
-				module_tab: "manager",
+				view: "templates",
 				command: "del_template",
 				idsel : iddel
 			},
@@ -290,7 +307,11 @@ function epm_templates_grid_add()
 	var ProductSelec = $('#NewProductSelect').val();
 	var CloneModel = $('#NewCloneModel').val();
 
-	if ((NameTemplate == "") || (ProductSelec == "") || (CloneModel == ""))
+	// Use `!x`, not `x == ""`. An empty <select> has no selected option, so
+	// .val() gives null, and null == "" is false. Without this test, a missing
+	// clone model goes to the server, which then reports a different error
+	// ("Value send is not number!").
+	if (!NameTemplate || !ProductSelec || !CloneModel)
 	{
 		fpbxToast("Faltan Datos!", "Error!", 'error');
 	}
@@ -300,8 +321,7 @@ function epm_templates_grid_add()
 			url: "ajax.php",
 			data: {
 				module: "endpointman",
-				module_sec: "epm_templates",
-				module_tab: "manager",
+				view: "templates",
 				command: "add_template",
 				newnametemplate : NameTemplate,
 				newproductselec : ProductSelec,
@@ -317,7 +337,7 @@ function epm_templates_grid_add()
 				if (data.status == true)
 				{
 					fpbxToast(data.message, '', 'success');
-					setTimeout (function () { window.location.href = "config.php?display=epm_templates&subpage=editor&custom=0&idsel="+data.newid; }, 500);
+					setTimeout (function () { window.location.href = "config.php?display=endpointman&view=templates&subpage=editor&custom=0&idsel="+data.newid; }, 500);
 				}
 				else { fpbxToast(data.message, "Error!", 'error'); }
 			}
@@ -338,8 +358,7 @@ function epm_template_custom_config_get_global(elmnt)
 		url: "ajax.php",
 		data: {
 			module: "endpointman",
-			module_sec: "epm_templates",
-			module_tab: "editor",
+			view: "templates",
 			command: "custom_config_get_gloabl",
 			custom : $.getUrlVar('custom'),
 			tid : $.getUrlVar('idsel')
@@ -375,8 +394,7 @@ function epm_template_custom_config_update_global(elmnt)
 		url: "ajax.php",
 		data: {
 			module: "endpointman",
-			module_sec: "epm_templates",
-			module_tab: "editor",
+			view: "templates",
 			command: "custom_config_update_gloabl",
 			custom : $.getUrlVar('custom'),
 			tid : $.getUrlVar('idsel'),
@@ -409,8 +427,7 @@ function epm_template_custom_config_reset_global(elmnt)
 		url: "ajax.php",
 		data: {
 			module: "endpointman",
-			module_sec: "epm_templates",
-			module_tab: "editor",
+			view: "templates",
 			command: "custom_config_reset_gloabl",
 			custom : $.getUrlVar('custom'),
 			tid : $.getUrlVar('idsel')
@@ -487,7 +504,7 @@ function epm_template_edit_select_area_list (obj)
 	else
 	{
 		var custom = $.getUrlVar('custom');
-		window.location.href='config.php?display=epm_templates&subpage=editor&custom=' + custom + '&idsel=' + id + '&maxlines=' + maxlines
+		window.location.href='config.php?display=endpointman&view=templates&subpage=editor&custom=' + custom + '&idsel=' + id + '&maxlines=' + maxlines
 	}
 
 }

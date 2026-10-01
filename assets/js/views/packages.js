@@ -1,7 +1,7 @@
 "use strict";
 var v_sTimerUpdateAjax = "";
 
-function epm_config_document_ready () {
+$(document).on("ready", function() {
 
 	//funcion prar  buscar en la lista modelos.
 	$('#search').keyup(function(){
@@ -60,7 +60,7 @@ function epm_config_document_ready () {
 			default:
 				type_send = "";
 		}
-		var url = "ajax.php?module=endpointman&module_sec=epm_config&command=saveconfig&typesavecfg=hidden&idtype=" + type_send + "&value=0&idbt=" + id;
+		var url = "ajax.php?module=endpointman&view=packages&command=saveconfig&typesavecfg=hidden&idtype=" + type_send + "&value=0&idbt=" + id;
 		$.getJSON(url, function(data)
 		{
 			if (data.status == true) {
@@ -80,18 +80,12 @@ function epm_config_document_ready () {
 		epm_config_list_brand_model_hide_ajax_load($(this));
 	});
 
-
-
-
-}
-
-
-function epm_config_windows_load (nTab = "") {
 	epm_config_select_tab_ajax();
+
 	$("#epm_config_manager_all_list_box").children("div").hide("slow", function () {
 		$(this).remove();
 	});
-}
+});
 
 
 
@@ -110,7 +104,7 @@ function epm_config_manager_ajax_hide (e)
 {
 	var id = e.getAttribute('data-id');
 	var idtype  = e.getAttribute('data-label');
-	var url = "ajax.php?module=endpointman&module_sec=epm_config&command=saveconfig&typesavecfg=hidden&idtype=" + idtype + "&value=1&idbt=" + id;
+	var url = "ajax.php?module=endpointman&view=packages&command=saveconfig&typesavecfg=hidden&idtype=" + idtype + "&value=1&idbt=" + id;
 	$.getJSON(url, function(data)
 	{
 		if (data.status == true) {
@@ -193,15 +187,15 @@ function end_module_actions_epm_config(acctionname = "")
 }
 
 
-function epm_config_select_tab_ajax()
-{
+function epm_config_select_tab_ajax() {
 	clearTimeout(v_sTimerUpdateAjax);
 
 	epm_global_html_find_show_hide("#epm_config_manager_list_loading", true, 0, true);
 
 	waitingDialog.show();
-	var $tmp = epm_config_LoadContenidoAjax();
-	if ($tmp = "false") {
+	var tmp = epm_config_LoadContenidoAjax();
+	console.log(tmp)
+	if (tmp = "false") {
 		setTimeout(function () {waitingDialog.hide();}, 3000);
 		epm_global_html_find_show_hide("#epm_config_manager_list_loading", false, 3000, true);
 	}
@@ -219,7 +213,7 @@ function epm_config_LoadContenidoAjax()
 		url: "ajax.php",
 		data: {
 			module: "endpointman",
-			module_sec: "epm_config",
+			view: "packages",
 			command: "list_all_brand"
 		},
 		dataType: 'json',
@@ -258,7 +252,7 @@ function ItemsLevel(prefijo = "", id = 0)
 function epm_config_bt_update_check_click()
 {
 	clearTimeout(v_sTimerUpdateAjax);
-	var urlStr = "config.php?display=epm_config&command=check_for_updates";
+	var urlStr = "config.php?display=endpointman&view=packages&command=check_for_updates";
 	epm_global_dialog_action("bt_update_chkeck", urlStr, null, "Update Package Info", "", { "Close": function() { $(this).dialog("close"); } });
 }
 
@@ -949,7 +943,7 @@ function epm_config_tab_manager_bt_enable_disable_change(obt, idtype, idbt, iL2)
 		url: "ajax.php",
 		data: {
 			module: "endpointman",
-			module_sec: "epm_config",
+			view: "packages",
 			command: "saveconfig",
 			typesavecfg:  "enabled",
 			value: obt_val,
@@ -990,7 +984,9 @@ function epm_config_tab_manager_bt(opt, idfw, command)
 	if ((opt == "") || (idfw == "") || (command == "")) { return false; }
 	clearTimeout(v_sTimerUpdateAjax);
 
-	var urlStr = "config.php?display=epm_config&module_tab=manager&command=" + command + "&command_sub=" + opt + "&idfw=" + idfw;
+	// Use ?view=, which the dispatcher reads (Endpointman::doConfigPageInit), as
+	// the Check for Update button above does.
+	var urlStr = "config.php?display=endpointman&view=packages&command=" + command + "&command_sub=" + opt + "&idfw=" + idfw;
 	epm_global_dialog_action("manager_bt", urlStr, null, "Status", 'epm_config_tab_manager_bt_dialog', { "Close": function() { $(this).dialog("close"); } });
 }
 

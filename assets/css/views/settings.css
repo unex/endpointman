@@ -22,7 +22,7 @@
 	border-top-right-radius: 4px;
 	border-bottom-right-radius: 4px;
 	border-bottom-left-radius: 4px;
-	
+
 	box-shadow: 4px 4px 2px #00dddd;
    -webkit-box-shadow: 4px 4px 2px #00dddd;
    -moz-box-shadow: 4px 4px 2px #00dddd;
@@ -39,12 +39,12 @@
 }
 
 
-#poce .dropdown-menu {
+/* #poce_tab .dropdown-menu {
 	width: 100%;
 	background-color: #d7ebf9;
 }
 
-#poce .dropdown-item
+#poce_tab .dropdown-item
 {
   display: block;
   width: 100%;
@@ -58,7 +58,7 @@
   color: #373a3c;
   text-align: inherit;
   white-space: nowrap;
-  
+
   background-color: transparent;
   background-image: none;
   background-repeat: repeat;
@@ -67,17 +67,17 @@
   background-clip: border-box;
   background-origin: padding-box;
   background-size: auto auto;
-  
+
   border-top-width: 0px;
   border-right-width: 0px;
   border-bottom-width: 0px;
   border-left-width: 0px;
-  
+
   border-top-style: none;
   border-right-style: none;
   border-bottom-style: none;
   border-left-style: none;
-  
+
   border-image-source: none;
   border-image-slice: 100% 100% 100% 100%;
   border-image-width: 1 1 1 1;
@@ -85,7 +85,7 @@
   border-image-repeat: stretch stretch;
 }
 
-#poce .dropdown-item:focus, #poce .dropdown-item:hover
+#poce_tab .dropdown-item:focus, #poce_tab .dropdown-item:hover
 {
   color: #2b2d2f;
   text-decoration-line: none;
@@ -93,15 +93,15 @@
   background-color: #f5f5f5;
 }
 
-#poce .dropdown-item:focus, #poce .dropdown-item:hover
+#poce_tab .dropdown-item:focus, #poce_tab .dropdown-item:hover
 {
   color: #2b2d2f;
   text-decoration-line: none;
   text-decoration-style: solid;
   background-color: #f5f5f5;
-}
+} */
 
-#poce > #config_textarea {
+#poce_tab > #config_textarea {
 	width: 100%;
 	-ms-overflow-style: none;
 	overflow: hidden;
@@ -110,7 +110,7 @@
 
 #box_bt_save, #box_bt_save_as, #box_bt_share {
 	margin-bottom: 10px;
-	
+
 }
 
 
@@ -127,7 +127,7 @@
   padding-right: 0px;
   padding-bottom: 0px;
   padding-left: 0px;
-  
+
   border-top-width: 1px;
   border-right-width: 1px;
   border-bottom-width: 1px;
@@ -149,7 +149,7 @@
   border-top-right-radius: 3px;
   border-bottom-right-radius: 3px;
   border-bottom-left-radius: 3px;
-  
+
   margin-top: 5px;
   margin-bottom: 10px;
   background-color: #FFFFCC;
@@ -175,3 +175,19 @@
   box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.1) inset, 0px 0px 8px rgba(82, 168, 236, 0.6);
 }
 */
+
+/*
+ * The fullscreen editor belongs to this page. views/settings.js loads the
+ * fullscreen addon of CodeMirror and binds F11 and Esc on the Product
+ * Configuration Editor tab.
+ *
+ * The upstream addon stylesheet pins .CodeMirror-fullscreen to all four
+ * edges, so the editor covers the FreePBX navbar. This override moves it
+ * below the navbar. `make codemirror` does not change this file.
+ */
+.CodeMirror-fullscreen {
+	top: 45px;
+	left: 10px;
+	right: 10px;
+	bottom: 10px;
+}
