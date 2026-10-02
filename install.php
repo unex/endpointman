@@ -29,7 +29,7 @@ function epm_find_exec($exec) {
     }
 }
 
-out("Endpoint Manager Installer");
+out("Installing OSS Endpoint Manager");
 
 // FreePBX makes the module class before it calls install(), so these
 // properties have values when this file runs.
@@ -39,7 +39,7 @@ $LOCAL_PATH         = FreePBX::Endpointman()->LOCAL_PATH;
 
 if (!file_exists($PHONE_MODULES_PATH)) {
     mkdir($PHONE_MODULES_PATH, 0764);
-    out("Creating Phone Modules Directory");
+    out("Making the phone modules directory");
 }
 
 // Remove the downloaded PHP from the data tree.
@@ -83,15 +83,15 @@ if (!empty($stale_php)) {
 // versions, with the same allowlist, and names each file that it removes.
 $not_data = FreePBX::Endpointman()->system->remove_non_data_files($PHONE_MODULES_PATH . "endpoint");
 foreach ($not_data['removed'] as $f) {
-    out("Removed " . substr($f, strlen($PHONE_MODULES_PATH)) . ", which is not a data file");
+    out("Removed " . substr($f, strlen($PHONE_MODULES_PATH)) . ", because it is not a data file");
 }
 foreach ($not_data['failed'] as $f) {
-    out("<strong>Warning: cannot remove " . substr($f, strlen($PHONE_MODULES_PATH)) . ". It is not a data file. Remove it by hand.</strong>");
+    out("<strong>Warning: Cannot remove " . substr($f, strlen($PHONE_MODULES_PATH)) . ". It is not a data file. Remove it yourself.</strong>");
 }
 
 if (!file_exists($PHONE_MODULES_PATH . "temp/")) {
     mkdir($PHONE_MODULES_PATH . "temp/", 0764);
-    out("Creating temp folder");
+    out("Making the temp directory");
 }
 
 // endpoint/ holds brand data from the package server and one file of the
@@ -100,17 +100,17 @@ if (!file_exists($PHONE_MODULES_PATH . "temp/")) {
 // download does not overwrite it.
 if (!file_exists($PHONE_MODULES_PATH . "endpoint/")) {
     mkdir($PHONE_MODULES_PATH . "endpoint/", 0775, true);
-    out("Creating endpoint folder");
+    out("Making the endpoint directory");
 }
 $global_template_data = $PHONE_MODULES_PATH . "endpoint/global_template_data.json";
 $shipped_template_data = $LOCAL_PATH . "lib/provisioner/endpoint/global_template_data.json";
 if (file_exists($shipped_template_data)) {
     if (!file_exists($global_template_data) || filemtime($shipped_template_data) > filemtime($global_template_data)) {
         copy($shipped_template_data, $global_template_data);
-        out("Installing global template data");
+        out("Installing the global template data");
     }
 } else {
-    out("<strong>Warning: lib/provisioner/endpoint/global_template_data.json is missing; configs cannot be generated.</strong>");
+    out("<strong>Warning: lib/provisioner/endpoint/global_template_data.json is missing. The module cannot write configs.</strong>");
 }
 
 $modinfo = module_getinfo('endpointman');
@@ -148,7 +148,7 @@ try {
 }
 
 if ($has_old_table) {
-	outn("Migrating global vars into the KVStore..");
+	outn("Moving the global settings to the KVStore... ");
 	$sth = FreePBX::Database()->prepare('SELECT `var_name`, `value` FROM `endpointman_global_vars`');
 	$sth->execute();
 	$moved = 0;
@@ -158,7 +158,7 @@ if ($has_old_table) {
 		$moved++;
 	}
 	FreePBX::Database()->query('DROP TABLE `endpointman_global_vars`');
-	out("Done (" . $moved . " moved, table dropped)");
+	out("Done. Moved " . $moved . " settings, and removed the old table.");
 }
 
 // Set each key that the move did not supply. On a new install this is each
@@ -175,7 +175,7 @@ foreach (\FreePBX\modules\Endpointman\Config::defaults() as $key => $value) {
 	$epm->configmod->save($key, $value);
 	$seeded++;
 }
-if ($seeded) { out("Seeded " . $seeded . " default setting(s)"); }
+if ($seeded) { out("Added the default value of " . $seeded . " settings"); }
 
 // These depend on the host, so find them. Set them only when they are empty,
 // so that a path that the admin corrected stays.
@@ -198,7 +198,7 @@ foreach (array('nmap_location'     => array('nmap'),
 	// got the package later.
 	$stored_path = $epm->configmod->get($key);
 	if (($stored_path !== '') && file_exists($stored_path)) { continue; }
-	out("Locating " . strtoupper(implode('/', $execs)));
+	out("Finding " . implode(' or ', $execs));
 	$found = '';
 	foreach ($execs as $exec) {
 		$path = epm_find_exec($exec);
@@ -208,7 +208,7 @@ foreach (array('nmap_location'     => array('nmap'),
 }
 
 if (empty($epmdbversion)) {
-	outn('Creating symlink to web provisioner..');
+	outn('Making the link to the provisioning endpoint... ');
 	if (!file_exists($amp_conf['AMPWEBROOT'] . "/provisioning")) {
 		if (!symlink($LOCAL_PATH . "provisioning", $amp_conf['AMPWEBROOT'] . "/provisioning")) {
 			//out("<strong>Your permissions are wrong on ".$amp_conf['AMPWEBROOT'].", web provisioning link not created!</strong>");
@@ -236,7 +236,7 @@ if ($epmdbversion < "17.0.0.3") {
 		'endpointman_line_list'     => array('luid', array('custom_cfg_data', 'user_cfg_data')),
 	);
 
-	outn("Converting serialized blob columns to JSON..");
+	outn("Converting the serialized columns to JSON... ");
 	$converted = 0;
 	$skipped = 0;
 	foreach ($blob_columns as $table => $spec) {
@@ -257,10 +257,10 @@ if ($epmdbversion < "17.0.0.3") {
 			}
 		}
 	}
-	out("Done (" . $converted . " converted" . ($skipped ? ", " . $skipped . " unreadable and left as-is" : "") . ")");
+	out("Done. Converted " . $converted . " values" . ($skipped ? ". " . $skipped . " values cannot be read and stay as they are" : "") . ".");
 }
 
-out("Update Version Number to " . $epmxmlversion);
+out("Setting the version to " . $epmxmlversion);
 $epm->configmod->save('version', $epmxmlversion);
 
 // The old default, http://provision.lol/, is a parked domain, and the

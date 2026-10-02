@@ -385,11 +385,11 @@ class DevicesPage extends \PageBase {
                     $this->message['add_line'] = sprintf(_("Added %s to line %s of the phone. Click Submit to write the config files."), "<i>" . epm_esc($name) . "</i>", "<i>" . epm_esc($lines[0]['value']) . "</i>");
                     return($mac_id);
                 } else {
-                    $this->error['add_line'] = _("No Devices/Extensions Left to Add") . "!";
+                    $this->error['add_line'] = _("No free extension is left.");
                     return(FALSE);
                 }
             } else {
-                $this->error['add_line'] = _("No Lines Left to Add") . "!";
+                $this->error['add_line'] = _("The phone has no free line.");
                 return(FALSE);
             }
         } elseif ((!isset($line)) AND (isset($ext))) {
@@ -404,11 +404,11 @@ class DevicesPage extends \PageBase {
                     $this->message['add_line'] = sprintf(_("Added %s to line %s of the phone. Click Submit to write the config files."), "<i>" . epm_esc($name) . "</i>", "<i>" . epm_esc($lines[0]['value']) . "</i>");
                     return($mac_id);
                 } else {
-                    $this->error['add_line'] = _("No Devices/Extensions Left to Add") . "!";
+                    $this->error['add_line'] = _("No free extension is left.");
                     return(FALSE);
                 }
             } else {
-                $this->error['add_line'] = _("No Lines Left to Add") . "!";
+                $this->error['add_line'] = _("The phone has no free line.");
                 return(FALSE);
             }
         } elseif ((isset($line)) AND (isset($ext))) {

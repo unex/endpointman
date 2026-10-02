@@ -66,7 +66,7 @@ class Backup extends Base\BackupBase {
 	public function addPhoneModules() {
 		$root = rtrim($this->phoneModulesPath(), '/');
 		if (!is_dir($root)) {
-			$this->log(sprintf(_("%s does not exist, no phone modules to back up"), $root), 'WARNING');
+			$this->log(sprintf(_("%s does not exist. There are no phone modules to back up."), $root), 'WARNING');
 			return;
 		}
 
@@ -85,6 +85,6 @@ class Backup extends Base\BackupBase {
 		}
 
 		$this->addDirectories(array_unique($dirs));
-		$this->log(sprintf(_("Exporting %s phone module files from %s"), $count, $root));
+		$this->log(sprintf(_("Saving %s phone module files from %s"), $count, $root));
 	}
 }

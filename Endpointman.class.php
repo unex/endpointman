@@ -242,15 +242,15 @@ class Endpointman extends FreePBX_Helpers implements \BMO {
                 if (!is_writeable($config_location)) {
                     $user = exec('whoami');
                     $group = exec("groups");
-                    $this->error['config_location'] = _("Configuration Directory is not writable!") . "<br />" .
-                            _("Please change the location:") . "<a href='config.php?display=endpointman&view=settings'>" . _("Here") . "</a><br />" .
-                            _("Or run this command on SSH:") . "<br />" .
+                    $this->error['config_location'] = _("The web server cannot write to the config directory.") . "<br />" .
+                            "<a href='config.php?display=endpointman&view=settings'>" . _("Change the directory on the Settings page.") . "</a><br />" .
+                            _("Or run these commands as root:") . "<br />" .
 							"'chown -hR root: " . $group . " " . $config_location . "'<br />" .
 							"'chmod g+w " . $config_location . "'";
 					$this->configmod->set('disable_epm', TRUE);
                 }
             } else {
-                $this->error['config_location'] = _("Configuration Directory is not a directory or does not exist! Please change the location here:") . "<a href='config.php?display=endpointman&view=settings'>" . _("Here") . "</a>";
+                $this->error['config_location'] = _("The config directory does not exist.") . " <a href='config.php?display=endpointman&view=settings'>" . _("Change the directory on the Settings page.") . "</a>";
 				$this->configmod->set('disable_epm', TRUE);
             }
         }
@@ -460,14 +460,14 @@ class Endpointman extends FreePBX_Helpers implements \BMO {
 
 	public function uninstall() {
 		if(file_exists($this->PHONE_MODULES_PATH)) {
-			out(_("Removing Phone Modules Directory"));
+			out(_("Removing the phone modules directory"));
 			$this->system->rmrf($this->PHONE_MODULES_PATH);
 			@exec("rm -R ". $this->PHONE_MODULES_PATH);
 		}
 
 		$provisioning_path = $this->config->get('AMPWEBROOT')."/provisioning";
 		if(file_exists($provisioning_path) && is_link($provisioning_path)) {
-			out(_('Removing symlink to web provisioner'));
+			out(_('Removing the link to the provisioning endpoint'));
 			unlink($provisioning_path);
 		}
 
@@ -482,7 +482,7 @@ class Endpointman extends FreePBX_Helpers implements \BMO {
 	// backup() and restore() hooks of FreePBX 13 are not used.
 
 
-	// Manual upload is in SettingsPage (Advanced Settings, Manual Upload).
+	// The package upload is in SettingsPage. The Brands page shows it.
 
      /**
      * Returns list of Brands that are installed and not hidden and that have at least one model enabled under them

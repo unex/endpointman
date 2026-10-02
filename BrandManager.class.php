@@ -288,15 +288,15 @@ class BrandManager {
             $path_brand_dir_cfg_json = $path_brand_dir_cfg . '/family_data.json';
 
             if (!file_exists($path_brand_dir)) {
-            	$error['sync_model'] = sprintf(_("Brand Directory '%s' Doesn't Exist! (%s)"), $brand_row['directory'], $path_brand_dir);
+            	$error['sync_model'] = sprintf(_("The brand directory %s does not exist."), epm_esc($path_brand_dir));
                 return(FALSE);
             }
             if (!file_exists($path_brand_dir_cfg)) {
-            	$error['sync_model'] = sprintf(_("Product Directory '%s' Doesn't Exist! (%s)"), $product_row['cfg_dir'], $path_brand_dir_cfg);
+            	$error['sync_model'] = sprintf(_("The family directory %s does not exist."), epm_esc($path_brand_dir_cfg));
                 return(FALSE);
             }
             if (!file_exists($path_brand_dir_cfg_json)) {
-                $error['sync_model'] = sprintf(_("File 'family_data.json' Doesn't exist in directory: %s"), $path_brand_dir_cfg);
+                $error['sync_model'] = sprintf(_("The directory %s has no family_data.json file."), epm_esc($path_brand_dir_cfg));
                 return(FALSE);
             }
             $family_line_json = $this->file2json($path_brand_dir_cfg_json);
@@ -305,7 +305,7 @@ class BrandManager {
             //TODO: Add local file checks to avoid slow reloading on PHP < 5.3
 			$key = $this->system->arraysearchrecursive($model_row['model'], $family_line_json['data']['model_list'], 'model');
             if ($key === FALSE) {
-                $error['sync_model'] = "Can't locate model in family JSON file";
+                $error['sync_model'] = _("The family file does not list this model.");
                 return(FALSE);
             } else {
                 $template_list = implode(",", $family_line_json['data']['model_list'][$key[0]]['template_data']);
@@ -657,12 +657,12 @@ out(_("Converting old data... "));
 
 	                        $m_data = epm_sql('SELECT id FROM endpointman_model_list WHERE id = ?', 'getOne', array($brand_id . $family_line_xml['data']['id'] . $model_list['id']));
 	                        if ($m_data) {
-if ($this->configmod->get('debug')) echo format_txt(_("---Updating Model %_NAMEMOD_%"), "", array("%_NAMEMOD_%" => $model_list['model']));
+if ($this->configmod->get('debug')) echo format_txt(_("--- Updating the model %_NAMEMOD_%"), "", array("%_NAMEMOD_%" => epm_esc($model_list['model'])));
 	                            $sql = 'UPDATE endpointman_model_list SET max_lines = ?, model = ?, template_list = ? WHERE id = ?';
 	                            $sql_p = array($model_list['lines'], $model_list['model'], $template_list, $brand_id . $family_line_xml['data']['id'] . $model_list['id']);
 	                        }
 							else {
-if ($this->configmod->get('debug')) echo format_txt(_("---Inserting Model %_NAMEMOD_%"), "", array("%_NAMEMOD_%" => $model_list['model']));
+if ($this->configmod->get('debug')) echo format_txt(_("--- Adding the model %_NAMEMOD_%"), "", array("%_NAMEMOD_%" => epm_esc($model_list['model'])));
 	                            $sql = 'INSERT INTO endpointman_model_list (`id`, `brand`, `model`, `max_lines`, `product_id`, `template_list`, `enabled`, `hidden`) VALUES (?, ?, ?, ?, ?, ?, \'0\', \'0\')';
 	                            $sql_p = array($brand_id . $family_line_xml['data']['id'] . $model_list['id'], $brand_id, $model_list['model'], $model_list['lines'], $brand_id . $family_line_xml['data']['id'], $template_list);
 	                        }
@@ -1022,22 +1022,22 @@ if ($this->configmod->get('debug')) echo format_txt(_("---Inserting Model %_NAME
                         return($data);
                         break;
                     case JSON_ERROR_DEPTH:
-                        $this->error['file2json'] = _('Maximum stack depth exceeded');
+                        $this->error['file2json'] = _('The JSON file is nested too deep.');
                         break;
                     case JSON_ERROR_STATE_MISMATCH:
-                        $this->error['file2json'] = _('Underflow or the modes mismatch');
+                        $this->error['file2json'] = _('The JSON file is not valid.');
                         break;
                     case JSON_ERROR_CTRL_CHAR:
-                        $this->error['file2json'] = _('Unexpected control character found');
+                        $this->error['file2json'] = _('The JSON file contains a control character.');
                         break;
                     case JSON_ERROR_SYNTAX:
-                        $this->error['file2json'] = _('Syntax error, malformed JSON');
+                        $this->error['file2json'] = _('The JSON file has a syntax error.');
                         break;
                     case JSON_ERROR_UTF8:
-                        $this->error['file2json'] = _('Malformed UTF-8 characters, possibly incorrectly encoded');
+                        $this->error['file2json'] = _('The JSON file contains characters that are not valid UTF-8.');
                         break;
                     default:
-                        $this->error['file2json'] = _('Unknown error');
+                        $this->error['file2json'] = _('The JSON file cannot be read.');
                         break;
                 }
                 return(false);
@@ -1046,7 +1046,7 @@ if ($this->configmod->get('debug')) echo format_txt(_("---Inserting Model %_NAME
                 return($data);
             }
         } else {
-            $this->error['file2json'] = _('Cant find file:').' '.epm_esc($file) ;
+            $this->error['file2json'] = sprintf(_('Cannot find the file %s.'), epm_esc($file)) ;
             return(false);
         }
     }

@@ -30,15 +30,8 @@ class SettingsPage extends \PageBase {
 	}
 
     public function ajaxHandler($command) {
-		// The page script reads these from data.txt (data.txt.error and
-		// data.txt.save_changes_ok). Each handler that reports a result needs them
-		// in the response. PackagesPage::ajaxHandler() uses the same form.
-		$txt = array(
-			'error' => _("Error!"),
-			'save_changes' => _("Saving Changes..."),
-			'save_changes_ok' => _("Saving Changes... Ok!"),
-			'opt_invalid' => _("Invalid Option!")
-		);
+		// The page scripts show their own text, and read only status and message.
+		$txt = array();
 
 		switch ($command) {
 			case "saveconfig":
@@ -91,7 +84,7 @@ class SettingsPage extends \PageBase {
 				break;
 
 			default:
-				$retarr = array("status" => false, "message" => _("Command not found!") . " [" .$command. "]");
+				$retarr = array("status" => false, "message" => sprintf(_("Unknown command %s."), epm_esc($command)));
 				break;
 		}
 
@@ -1099,21 +1092,21 @@ class SettingsPage extends \PageBase {
     function file_upload_error_message($error_code) {
     	switch ($error_code) {
     		case UPLOAD_ERR_INI_SIZE:
-    			return _('The uploaded file exceeds the upload_max_filesize directive in php.ini');
+    			return _('The file is larger than upload_max_filesize in php.ini.');
     		case UPLOAD_ERR_FORM_SIZE:
-    			return _('The uploaded file exceeds the MAX_FILE_SIZE directive that was specified in the HTML form');
+    			return _('The file is larger than the limit of the form.');
     		case UPLOAD_ERR_PARTIAL:
-    			return _('The uploaded file was only partially uploaded');
+    			return _('Only a part of the file arrived.');
     		case UPLOAD_ERR_NO_FILE:
-    			return _('No file was uploaded');
+    			return _('No file was uploaded.');
     		case UPLOAD_ERR_NO_TMP_DIR:
-    			return _('Missing a temporary folder');
+    			return _('PHP has no temporary directory.');
     		case UPLOAD_ERR_CANT_WRITE:
-    			return _('Failed to write file to disk');
+    			return _('PHP cannot write the file to the disk.');
     		case UPLOAD_ERR_EXTENSION:
-    			return _('File upload stopped by extension');
+    			return _('A PHP extension stopped the upload.');
     		default:
-    			return _('Unknown upload error');
+    			return _('The upload failed.');
     	}
     }
 

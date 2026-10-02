@@ -213,7 +213,7 @@ class epm_system {
             //I really hope we NEVER get here.
             $contents = file_get_contents($url_file);
             if (!preg_match('/200/', $http_response_header[0])) {
-                $error['download_file'] = "Unknown Error in Download_file";
+                $error['download_file'] = _("The download failed.");
                 return false;
             }
         }
@@ -224,18 +224,18 @@ class epm_system {
                 mkdir($dirname);
             }
             if (!is_writable($dirname)) {
-                $error['download_file'] = "Directory '" . $dirname . "' is not writable! Unable to download files";
+                $error['download_file'] = sprintf(_("The web server cannot write to %s. The download stops."), epm_esc($dirname));
                 return false;
             }
             file_put_contents($destination_file, $contents);
             //check file placement
             if (!file_exists($destination_file)) {
-                $error['download_file'] = "File Doesn't Exist in '" . $dirname . "'. Unable to download files";
+                $error['download_file'] = sprintf(_("The downloaded file is not in %s."), epm_esc($dirname));
                 return false;
             }
             return true;
         } else {
-            $error['download_file'] = "Contents of Remote file are blank! URL:".$url_file;
+            $error['download_file'] = sprintf(_("The file at %s is empty."), epm_esc($url_file));
             return false;
         }
     }
@@ -262,7 +262,7 @@ class epm_system {
 
 	    $headers = get_headers($url_file, 1);
 	    if ($headers === false) {
-		    $error['download_file'] = "Unable to read the headers of ".$url_file;
+		    $error['download_file'] = sprintf(_("Cannot read the response headers of %s."), epm_esc($url_file));
 		    return false;
 	    }
 	    // With $associative = true, get_headers() returns an array for a header that
@@ -296,9 +296,9 @@ class epm_system {
 		    dbug($cmd);
 		    $pid = $this->run_in_background($cmd);
 
-		    echo sprintf("<div>"._("Downloading %s ...")."</div>", basename($destination_file));
+		    echo "<div>" . sprintf(_("Downloading %s..."), epm_esc(basename($destination_file))) . "</div>";
 		    echo sprintf("<div id='DivProgressBar_%d' class='progress' style='width:100%%'>", $randnumid);
-		    echo "<div class='progress-bar progress-bar-striped' role='progressbar' aria-valuenow='0' aria-valuemin='0' aria-valuemax='100' style='width:0%'>0% ("._("Complete").")</div>";
+		    echo "<div class='progress-bar progress-bar-striped' role='progressbar' aria-valuenow='0' aria-valuemin='0' aria-valuemax='100' style='width:0%'>0%</div>";
 		    echo "</div>";
 		    usleep('300');
 		    while ($this->is_process_running($pid)) {
@@ -309,7 +309,7 @@ class epm_system {
 			    $('#DivProgressBar_<?php echo $randnumid; ?> .progress-bar')
 				    .css('width', <?php echo $out ?>+'%')
 				    .attr('aria-valuenow', <?php echo $out ?>)
-				    .text("<?php echo $out ?>% (<?php echo _("Complete") ?>)");
+				    .text("<?php echo $out ?>%");
 			    </script>
 <?php
 			    usleep('500');
@@ -324,13 +324,13 @@ class epm_system {
 		    }
 ?>
 		    <script type="text/javascript">
-		    $('#DivProgressBar_<?php echo $randnumid; ?> .progress-bar').css('width', '100%').attr('aria-valuenow', '100').text("100% (<?php echo _("Success") ?>)");
+		    $('#DivProgressBar_<?php echo $randnumid; ?> .progress-bar').css('width', '100%').attr('aria-valuenow', '100').text(<?php echo json_encode('100% (' . _("Done") . ')'); ?>);
 		    </script>
 <?php
 		    return true;
 	    } else {
 
-		    echo sprintf("<div>"._("Downloading %s ...")."</div>", basename($destination_file));
+		    echo "<div>" . sprintf(_("Downloading %s..."), epm_esc(basename($destination_file))) . "</div>";
 		    echo "<div class='progress' style='width:100%'>";
 		    echo "<div class='progress-bar progress-bar-danger progress-bar-striped' role='progressbar' aria-valuenow='100' aria-valuemin='0' aria-valuemax='100' style='width:100%'>0% ("._("Error: ").$status."!)</div>";
 		    echo "</div>";

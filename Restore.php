@@ -68,7 +68,7 @@ class Restore extends Base\RestoreBase {
 				$sth = $pdo->query(sprintf('SELECT * FROM `%s`', $table));
 				$rows[$table] = $sth->fetchAll(PDO::FETCH_ASSOC);
 			} catch (\Exception $e) {
-				$this->log(sprintf(_("Table '%s' is not in the legacy backup, skipping"), $table), 'WARNING');
+				$this->log(sprintf(_("The old backup has no table %s. Skipped."), $table), 'WARNING');
 			}
 		}
 
@@ -114,7 +114,7 @@ class Restore extends Base\RestoreBase {
 	 */
 	public function importRowsForTables($tables) {
 		if (empty($tables) || !is_array($tables)) {
-			$this->log(_("No Endpoint Manager tables in this backup, nothing to import"), 'WARNING');
+			$this->log(_("This backup has no Endpoint Manager tables. There is nothing to restore."), 'WARNING');
 			return;
 		}
 		foreach ($tables as $table => $rows) {
@@ -136,11 +136,11 @@ class Restore extends Base\RestoreBase {
 	public function importRows($table, $rows) {
 		$columns = $this->columnsOf($table);
 		if ($columns === null) {
-			$this->log(sprintf(_("Table '%s' does not exist on this system, skipping"), $table), 'WARNING');
+			$this->log(sprintf(_("The table %s does not exist on this system. Skipped."), $table), 'WARNING');
 			return;
 		}
 
-		$this->log(sprintf(_("Importing %s rows into %s"), count($rows), $table));
+		$this->log(sprintf(_("Restoring %s rows into %s"), count($rows), $table));
 		$this->FreePBX->Database->query(sprintf('TRUNCATE TABLE `%s`', $table));
 
 		$statements = array();
@@ -154,7 +154,7 @@ class Restore extends Base\RestoreBase {
 			foreach ($row as $column => $value) {
 				if (!isset($columns[$column])) {
 					if (!isset($warned[$column])) {
-						$this->log(sprintf(_("Column '%s' does not exist in %s, skipping"), $column, $table), 'WARNING');
+						$this->log(sprintf(_("The column %s does not exist in %s. Skipped."), $column, $table), 'WARNING');
 						$warned[$column] = true;
 					}
 					continue;
@@ -181,7 +181,7 @@ class Restore extends Base\RestoreBase {
 			try {
 				$statements[$key]->execute($values);
 			} catch (\Exception $e) {
-				$this->log(sprintf(_("Could not insert a row into %s: %s"), $table, $e->getMessage()), 'ERROR');
+				$this->log(sprintf(_("Cannot add a row to %s: %s"), $table, $e->getMessage()), 'ERROR');
 			}
 		}
 	}
@@ -219,7 +219,7 @@ class Restore extends Base\RestoreBase {
 	public function restorePhoneModules($originalPath) {
 		$files = $this->getFiles();
 		if (empty($files)) {
-			$this->log(_("This backup holds no phone module files"), 'WARNING');
+			$this->log(_("This backup has no phone module files."), 'WARNING');
 			return;
 		}
 
@@ -229,7 +229,7 @@ class Restore extends Base\RestoreBase {
 			$original = $target;
 		}
 		if ($original !== $target) {
-			$this->log(sprintf(_("Phone modules were backed up from %s, restoring them to %s"), $original, $target));
+			$this->log(sprintf(_("The backup has the phone modules of %s. Restoring them to %s."), $original, $target));
 		}
 
 		$count = 0;
@@ -240,16 +240,16 @@ class Restore extends Base\RestoreBase {
 			}
 			$dir = $this->remap($file->getPathTo(), $original, $target);
 			if (!is_dir($dir) && !@mkdir($dir, 0775, true)) {
-				$this->log(sprintf(_("Could not create %s"), $dir), 'ERROR');
+				$this->log(sprintf(_("Cannot make %s."), $dir), 'ERROR');
 				continue;
 			}
 			if (!@copy($source, $dir . '/' . $file->getFilename())) {
-				$this->log(sprintf(_("Could not restore %s"), $dir . '/' . $file->getFilename()), 'ERROR');
+				$this->log(sprintf(_("Cannot restore %s."), $dir . '/' . $file->getFilename()), 'ERROR');
 				continue;
 			}
 			$count++;
 		}
-		$this->log(sprintf(_("Restored %s phone module files to %s"), $count, $target));
+		$this->log(sprintf(_("Restored %s phone module files to %s."), $count, $target));
 	}
 
 	/**
@@ -304,7 +304,7 @@ class Restore extends Base\RestoreBase {
 
 		if (!empty($missing)) {
 			$this->log(sprintf(
-				_("The database shows these brands as installed, but their packages are not on disk: %s. Install them again from Endpoint Manager, Packages."),
+				_("The database shows these brands as installed, but their packages are not on the disk: %s. Install them again on the Brands page."),
 				implode(', ', $missing)
 			), 'WARNING');
 		}

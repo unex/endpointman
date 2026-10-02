@@ -28,10 +28,10 @@ class Endpointman extends Command {
 			->setAliases(array('epm'))
 			->setDescription(_('OSS Endpoint Manager'))
 			->setDefinition(array(
-				new InputOption('list', 'l', InputOption::VALUE_NONE, _('List configured devices')),
-				new InputOption('brands', 'b', InputOption::VALUE_NONE, _('List installed brand packages')),
-				new InputOption('rebuild', 'r', InputOption::VALUE_OPTIONAL, _('Rebuild provisioning files for one MAC address, or for every device when given no MAC'), false),
-				new InputOption('reboot', null, InputOption::VALUE_NONE, _('With --rebuild, also tell each phone to reboot')),
+				new InputOption('list', 'l', InputOption::VALUE_NONE, _('List the phones')),
+				new InputOption('brands', 'b', InputOption::VALUE_NONE, _('List the installed brands')),
+				new InputOption('rebuild', 'r', InputOption::VALUE_OPTIONAL, _('Write the configs of the phone with this MAC address. Without a MAC address, write the configs of all phones.'), false),
+				new InputOption('reboot', null, InputOption::VALUE_NONE, _('With --rebuild, also restart each phone')),
 			));
 	}
 
@@ -76,7 +76,7 @@ class Endpointman extends Command {
 		$devices = $sth->fetchAll(\PDO::FETCH_ASSOC);
 
 		if (empty($devices)) {
-			$output->writeln('<info>' . _('No devices are configured.') . '</info>');
+			$output->writeln('<info>' . _('There are no phones.') . '</info>');
 			return self::SUCCESS;
 		}
 
@@ -109,7 +109,7 @@ class Endpointman extends Command {
 		$table->setRows($rows);
 		$table->render();
 		// FreePBX has no _n(), so use a text that needs no plural form.
-		$output->writeln(sprintf(_('Devices: %s'), count($rows)));
+		$output->writeln(sprintf(_('Phones: %s'), count($rows)));
 		return self::SUCCESS;
 	}
 
@@ -200,7 +200,7 @@ class Endpointman extends Command {
 		$targets = $sth->fetchAll(\PDO::FETCH_ASSOC);
 
 		if (empty($targets)) {
-			$output->writeln('<error>' . _('No matching device.') . '</error>');
+			$output->writeln('<error>' . _('No phone has this MAC address.') . '</error>');
 			return self::FAILURE;
 		}
 
@@ -222,15 +222,14 @@ class Endpointman extends Command {
 			}
 
 			$failed++;
-			$reason = empty($devices->error) ? _('unknown error') : implode('; ', $devices->error);
+			$reason = empty($devices->error) ? _('unknown error') : implode('; ', array_map('strip_tags', $devices->error));
 			$output->writeln('<error>' . sprintf(_('  %s failed: %s'), $target['mac'], $reason) . '</error>');
 		}
 
 		$output->writeln(sprintf(
-			_('%s of %s devices rebuilt%s'),
+			$reboot ? _('Wrote the configs of %s of %s phones, and restarted them.') : _('Wrote the configs of %s of %s phones.'),
 			count($targets) - $failed,
-			count($targets),
-			$reboot ? _(' and rebooted') : ''
+			count($targets)
 		));
 		return $failed ? self::FAILURE : self::SUCCESS;
 	}

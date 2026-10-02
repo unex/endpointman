@@ -62,18 +62,21 @@ An old symlink causes it. The line does not show again.
 
 ## Set up phones
 
-1. On **Settings → OSS Endpoint Manager → Settings**, set **IP address of
-   phone server**. A new install has no value, and configs without it do not
-   work.
-2. On the **Package Manager** page, install the brand of your phones, and
-   enable the models.
-3. On the **Extension Mapping** page, add each phone with its MAC address,
-   model and extension.
+The module is in **Settings → OSS Endpoint Manager**. It has five tabs:
+Phones, Brands, Templates, Settings and About.
+
+1. On the **Settings** tab, set **Server address**. A new install has no
+   value, and configs without it do not work.
+2. On the **Brands** tab, install the brand of your phones. Click the brand,
+   and enable the models of your phones.
+3. On the **Phones** tab, click **Add phone**. Type the MAC address, and
+   select the model and the extension. **Find phones** finds the phones on
+   the network, and **All phones → Import from CSV** adds many phones.
 4. If the FreePBX firewall is on, put the phone network into a zone that
    allows HTTP and SIP, for example **Internal**. The default **External**
    zone blocks both.
-5. For HTTP provisioning, set **Configuration Type** to `http` on the
-   Settings page.
+5. For HTTP provisioning, set **Provisioning type** to **Web (HTTP)** on the
+   Settings tab.
 6. Set the provisioning server of the phone, or use DHCP option 66. For HTTP,
    use `http://<pbx>/provisioning/p.php`.
 

@@ -61,8 +61,8 @@ function epm_provision_deny($reason, $client = null) {
     }
 
     header('HTTP/1.1 403 Forbidden', true, 403);
-    echo "<h1>" . _("Error 403 Forbidden") . "</h1>";
-    echo _("Access denied!");
+    echo "<h1>403 Forbidden</h1>";
+    echo _("This address cannot get configs.");
     die();
 }
 
@@ -154,8 +154,8 @@ if (getMethod() == "GET" || getMethod() == "HEAD") {
 
     if ($filename === '' || $filename === 'p.php') {
         header("HTTP/1.0 404 Not Found", true, 404);
-        echo "<h1>" . _("Error 404 Not Found") . "</h1>";
-        echo _("File not Found!");
+        echo "<h1>404 Not Found</h1>";
+        echo _("The file does not exist.");
         die();
     }
 
@@ -171,8 +171,8 @@ if (getMethod() == "GET" || getMethod() == "HEAD") {
     }
     else {
         header("HTTP/1.0 404 Not Found", true, 404);
-        echo "<h1>" . _("Error 404 Not Found") . "</h1>";
-        echo _("File not Found!");
+        echo "<h1>404 Not Found</h1>";
+        echo _("The file does not exist.");
         die();
     }
 }
