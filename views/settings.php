@@ -13,7 +13,6 @@
 
 $tabs = array(
 	__DIR__ . '/settings.inc/config.tab.php' => _("Config"),
-	__DIR__ . '/settings.inc/poce.tab.php' => _("Product Configuration Editor"),
 	__DIR__ . '/settings.inc/iedl.tab.php' => _("Import/Export My Devices List"),
 );
 

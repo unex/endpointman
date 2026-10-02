@@ -116,3 +116,16 @@
 	width: 16rem !important;
 	flex: 0 0 16rem;
 }
+
+.epm-page .epm-save-as {
+	width: 24rem;
+	max-width: 100%;
+}
+
+.epm-page .epm-field-break {
+	height: 0.5rem;
+}
+
+.epm-page .epm-field-group {
+	margin-top: 1rem;
+}

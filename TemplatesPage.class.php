@@ -45,19 +45,21 @@ class TemplatesPage extends \PageBase {
 		$views = array(
 			'manager' => __DIR__ . '/views/epm_templates_manager.page.php',
 			'editor'  => __DIR__ . '/views/epm_templates_editor.page.php',
+			'files'   => __DIR__ . '/views/epm_templates_files.page.php',
 		);
 		return load_view($views[$subpage], array('request' => $_REQUEST, 'subpage' => $subpage));
 	}
 
 	/**
 	 * ?subpage= comes from $_REQUEST, so do not trust it. Match it against the
-	 * two names, and use the manager for all other values.
+	 * names, and use the manager for all other values.
 	 *
-	 * @return string "manager" or "editor"
+	 * @return string "manager", "editor" or "files"
 	 */
 	public function _subpage() {
 		$subpage = $this->epm->getReq('subpage', '');
-		return (is_string($subpage) && strtolower($subpage) === 'editor') ? 'editor' : 'manager';
+		$subpage = is_string($subpage) ? strtolower($subpage) : '';
+		return in_array($subpage, array('editor', 'files'), true) ? $subpage : 'manager';
 	}
 
 	public function ajaxRequest($req, &$setting) {
@@ -103,13 +105,13 @@ class TemplatesPage extends \PageBase {
 			case "list_files_edit":
 				foreach (array('idsel', 'custom', 'namefile') as $v) {
 					if (!isset($_REQUEST[$v])) {
-						return array("status" => false, "message" => _("No send value!") . " [" . $v . "]");
+						return array("status" => false, "message" => sprintf(_("The request has no %s value."), $v));
 					}
 				}
 				return $this->edit_template_display_files($_REQUEST['idsel'], $_REQUEST['custom'], $_REQUEST['namefile']);
 
 			default:
-				return array("status" => false, "message" => _("Command not found!") . " [" . $command . "]");
+				return array("status" => false, "message" => sprintf(_("Unknown command %s."), epm_esc($command)));
 		}
 	}
 
@@ -156,7 +158,7 @@ class TemplatesPage extends \PageBase {
 		if ($custom === '0') {
 			redirect('config.php?display=endpointman&view=templates&subpage=editor&custom=0&idsel=' . (int) $id);
 		}
-		redirect('config.php?display=endpointman&view=devices');
+		redirect('config.php?display=endpointman&view=phones');
 	}
 
 	/**
@@ -179,11 +181,7 @@ class TemplatesPage extends \PageBase {
 	}
 
 	public function getRightNav($request) {
-		if(isset($request['subpage']) && $request['subpage'] == "editor") {
-			return load_view(__DIR__."/views/epm_templates/editor.views.rnav.php",array());
-		} else {
-			return '';
-		}
+		return '';
 	}
 
 	/**
@@ -234,13 +232,13 @@ class TemplatesPage extends \PageBase {
 	public function epm_template_custom_config_get_global()
 	{
 		if (! isset($_REQUEST['custom'])) {
-			$retarr = array("status" => false, "message" => _("No send Custom Value!"));
+			$retarr = array("status" => false, "message" => _("The request has no custom value."));
 		}
 		elseif (! isset($_REQUEST['tid'])) {
-			$retarr = array("status" => false, "message" => _("No send TID!"));
+			$retarr = array("status" => false, "message" => _("The request has no template ID."));
 		}
 		elseif (! is_numeric($_REQUEST['tid'])) {
-			$retarr = array("status" => false, "message" => _("TID is not number!"));
+			$retarr = array("status" => false, "message" => _("The template ID is not a number."));
 		}
 		else
 		{
@@ -271,7 +269,7 @@ class TemplatesPage extends \PageBase {
 				$settings['server_type'] = $this->configmod->get("server_type");
 			}
 
-			$retarr = array("status" => true, "settings" => $settings, "message" => _("Global Config Read OK!"));
+			$retarr = array("status" => true, "settings" => $settings, "message" => _("The server settings are loaded."));
 			unset($dget);
 		}
 		return $retarr;
@@ -281,13 +279,13 @@ class TemplatesPage extends \PageBase {
 	public function epm_template_custom_config_update_global ()
 	{
 		if (! isset($_REQUEST['custom'])) {
-			$retarr = array("status" => false, "message" => _("No send Custom Value!"));
+			$retarr = array("status" => false, "message" => _("The request has no custom value."));
 		}
 		elseif (! isset($_REQUEST['tid'])) {
-			$retarr = array("status" => false, "message" => _("No send TID!"));
+			$retarr = array("status" => false, "message" => _("The request has no template ID."));
 		}
 		elseif (! is_numeric($_REQUEST['tid'])) {
-			$retarr = array("status" => false, "message" => _("TID is not number!"));
+			$retarr = array("status" => false, "message" => _("The template ID is not a number."));
 		}
 		else
 		{
@@ -310,15 +308,15 @@ class TemplatesPage extends \PageBase {
 						if(is_writable($_REQUEST['config_loc'])) {
 							$_REQUEST['config_loc'] = $_REQUEST['config_loc'];
 						} else {
-							$settings_warning = _("Directory Not Writable!");
+							$settings_warning = _(" Warning: The web server cannot write to the config directory.");
 							$_REQUEST['config_loc'] = $this->configmod->get('config_location');
 						}
 					} else {
-						$settings_warning = _("Not a Vaild Directory");
+						$settings_warning = _(" Warning: The config directory does not exist.");
 						$_REQUEST['config_loc'] = $this->configmod->get('config_location');
 					}
 				} else {
-					$settings_warning = _("No Configuration Location Defined!");
+					$settings_warning = _(" Warning: No config directory is set.");
 					$_REQUEST['config_loc'] = $this->configmod->get('config_location');
 				}
 			}
@@ -344,7 +342,7 @@ class TemplatesPage extends \PageBase {
 			epm_sql($sql, 'query', $sql_p);
 
 			if (strlen($settings_warning) > 0) { $settings_warning = " ".$settings_warning; }
-			$retarr = array("status" => true, "message" => _("Updated!").$settings_warning);
+			$retarr = array("status" => true, "message" => _("The server settings are saved.") . $settings_warning);
 			unset($dget);
 		}
 		return $retarr;
@@ -354,13 +352,13 @@ class TemplatesPage extends \PageBase {
 	public function epm_template_custom_config_reset_global()
 	{
 		if (! isset($_REQUEST['custom'])) {
-			$retarr = array("status" => false, "message" => _("No send Custom Value!"));
+			$retarr = array("status" => false, "message" => _("The request has no custom value."));
 		}
 		elseif (! isset($_REQUEST['tid'])) {
-			$retarr = array("status" => false, "message" => _("No send TID!"));
+			$retarr = array("status" => false, "message" => _("The request has no template ID."));
 		}
 		elseif (! is_numeric($_REQUEST['tid'])) {
-			$retarr = array("status" => false, "message" => _("TID is not number!"));
+			$retarr = array("status" => false, "message" => _("The template ID is not a number."));
 		}
 		else
 		{
@@ -378,7 +376,7 @@ class TemplatesPage extends \PageBase {
 			}
 			epm_sql($sql, 'query', $sql_p);
 
-			$retarr = array("status" => true, "message" => _("Globals Reset to Default!"));
+			$retarr = array("status" => true, "message" => _("The template now uses the values of the Settings page."));
 			unset($dget);
 		}
 		return $retarr;
@@ -391,13 +389,13 @@ class TemplatesPage extends \PageBase {
 	public function epm_templates_del_template()
 	{
 		if (! isset($_REQUEST['idsel'])) {
-			$retarr = array("status" => false, "message" => _("No send ID!"));
+			$retarr = array("status" => false, "message" => _("The request has no ID."));
 		}
 		elseif (! is_numeric($_REQUEST['idsel'])) {
-			$retarr = array("status" => false, "message" => _("ID is not number!"));
+			$retarr = array("status" => false, "message" => _("The ID is not a number."));
 		}
 		elseif ($_REQUEST['idsel'] <= 0) {
-			$retarr = array("status" => false, "message" => _("ID send is negative!"));
+			$retarr = array("status" => false, "message" => _("The ID is not valid."));
 		}
 		else {
 			$dget['idsel'] = $_REQUEST['idsel'];
@@ -409,7 +407,7 @@ class TemplatesPage extends \PageBase {
 			$sql_p = array($dget['idsel']);
 			epm_sql($sql, 'query', $sql_p);
 
-			$retarr = array("status" => true, "message" => _("Delete Template OK!"));
+			$retarr = array("status" => true, "message" => _("The template is deleted."));
 			unset($dget);
 		}
 		return $retarr;
@@ -420,25 +418,25 @@ class TemplatesPage extends \PageBase {
 		$arrVal['VAR_REQUEST'] = array("newnametemplate", "newproductselec", "newclonemodel");
 		foreach ($arrVal['VAR_REQUEST'] as $valor) {
 			if (! array_key_exists($valor, $_REQUEST)) {
-				return array("status" => false, "message" => _("No send value!")." [".$valor."]");
+				return array("status" => false, "message" => sprintf(_("The request has no %s value."), $valor));
 			}
 		}
 
 		$arrVal['VAR_IS_NUM'] = array("newproductselec", "newclonemodel");
 		foreach ($arrVal['VAR_IS_NUM'] as $valor) {
 			if (! is_numeric($_REQUEST[$valor])) {
-				return array("status" => false, "message" => _("Value send is not number!")." [".$valor."]");
+				return array("status" => false, "message" => sprintf(_("The %s value is not a number."), $valor));
 			}
 		}
 
 		if (empty($_REQUEST['newnametemplate'])) {
-			$retarr = array("status" => false, "message" => _("Name is null!"));
+			$retarr = array("status" => false, "message" => _("Type a name for the template."));
 		}
 		elseif ($_REQUEST['newproductselec'] <= 0) {
-			$retarr = array("status" => false, "message" => _("Product send is negative!"));
+			$retarr = array("status" => false, "message" => _("Select a family."));
 		}
 		elseif ($_REQUEST['newclonemodel'] <= 0) {
-			$retarr = array("status" => false, "message" => _("Clone Model send is negative!"));
+			$retarr = array("status" => false, "message" => _("Select a model."));
 		}
 		else {
 			$dget['newnametemplate'] = $_REQUEST['newnametemplate'];
@@ -452,7 +450,7 @@ class TemplatesPage extends \PageBase {
 			$newid = $db->lastInsertId();
 			//$this->edit_template_display($newid,0);
 
-			$retarr = array("status" => true, "message" => _("Add New Template OK!"), "newid" => $newid);
+			$retarr = array("status" => true, "message" => _("The template is added."), "newid" => $newid);
 			unset($dget);
 		}
 		return $retarr;
@@ -461,13 +459,13 @@ class TemplatesPage extends \PageBase {
 	public function epm_templates_model_clone ()
 	{
 		if (! isset($_REQUEST['id'])) {
-			$retarr = array("status" => false, "message" => _("No send ID!"));
+			$retarr = array("status" => false, "message" => _("The request has no ID."));
 		}
 		elseif (! is_numeric($_REQUEST['id'])) {
-			$retarr = array("status" => false, "message" => _("ID send is not number!"));
+			$retarr = array("status" => false, "message" => _("The ID is not a number."));
 		}
 		elseif ($_REQUEST['id'] <= 0) {
-			$retarr = array("status" => false, "message" => _("ID send is number not valid!"));
+			$retarr = array("status" => false, "message" => _("The ID is not valid."));
 		}
 		else
 		{
@@ -483,7 +481,7 @@ class TemplatesPage extends \PageBase {
 				$out[$i]['optionDisplay'] = $row['model'];
 				$i++;
 			}
-			$retarr = array("status" => true, "message" => _("Generate list Ok!"), "listopt" => $out);
+			$retarr = array("status" => true, "message" => "OK", "listopt" => $out);
 
 			unset($dget);
 		}
@@ -799,7 +797,7 @@ class TemplatesPage extends \PageBase {
 		if ($row['template_data'] != "") {
 			$out = $this->generate_gui_html($row['template_data'], $row['global_custom_cfg_data'], TRUE, NULL, $maxlines);
 		} else {
-			$out = "No Template Data has been defined for this Product<br />";
+			$out = _("The package of this family has no template data.");
 		}
 
 		$dReturn['template_editor'] = $out;

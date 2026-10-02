@@ -1,383 +1,98 @@
-<?php if (!defined('FREEPBX_IS_AUTH')) die('No direct script access allowed'); ?>
+<?php
+/**
+ * The Placeholders page: the values that the config files of a brand
+ * package can use.
+ *
+ * Each row is: brand, placeholder, where it works, description. "L" is a
+ * {line_loop} block, "S" is outside of one, and "LS" is both.
+ */
+if (!defined('FREEPBX_IS_AUTH')) die('No direct script access allowed');
 
-<script>
-var mydata =
-[
-    {
-		"type": "<?php echo _('Line Loop')?>",
-        "brand": "<?php echo _('Global')?>",
-        "placeholder": "<?php echo _('$globaladminpassword')?>",
-		"description": "<?php echo _('Global Admin Password')?>"
-    },
-	    {
-		"type": "<?php echo _('Static')?>",
-        "brand": "<?php echo _('Global')?>",
-        "placeholder": "<?php echo _('$globaladminpassword')?>",
-		"description": "<?php echo _('Global Admin Password')?>"
-    },
-    {
-		"type": "<?php echo _('Line Loop')?>",
-        "brand": "<?php echo _('Global')?>",
-        "placeholder": "<?php echo _('$globaluserpassword')?>",
-		"description": "<?php echo _('Global User Password')?>"
-    },
-    {
-		"type": "<?php echo _('Static')?>",
-        "brand": "<?php echo _('Global')?>",
-        "placeholder": "<?php echo _('$globaluserpassword')?>",
-		"description": "<?php echo _('Global User Password')?>"
-    },
-    {
-		"type": "<?php echo _('Static')?>",
-        "brand": "<?php echo _('Global')?>",
-        "placeholder": "<?php echo _('$provisuser')?>",
-		"description": "<?php echo _('Sysadmin Pro Provisioning HTTP User')?>"
-    },
-    {
-		"type": "<?php echo _('Line Loop')?>",
-        "brand": "<?php echo _('Global')?>",
-        "placeholder": "<?php echo _('$provisuser')?>",
-		"description": "<?php echo _('Sysadmin Pro Provisioning HTTP User')?>"
-    },
-    {
-		"type": "<?php echo _('Static')?>",
-        "brand": "<?php echo _('Global')?>",
-        "placeholder": "<?php echo _('$provispass')?>",
-		"description": "<?php echo _('Sysadmin Pro Provisioning HTTP Password')?>"
-    },
-    {
-		"type": "<?php echo _('Line Loop')?>",
-        "brand": "<?php echo _('Global')?>",
-        "placeholder": "<?php echo _('$provispass')?>",
-		"description": "<?php echo _('Sysadmin Pro Provisioning HTTP Password')?>"
-    },
-    {
-		"type": "<?php echo _('Static')?>",
-        "brand": "<?php echo _('Global')?>",
-        "placeholder": "<?php echo _('$sslhpro')?>",
-		"description": "<?php echo _('Sysadmin Pro Provisioning HTTPS Port')?>"
-    },
-    {
-		"type": "<?php echo _('Line Loop')?>",
-        "brand": "<?php echo _('Global')?>",
-        "placeholder": "<?php echo _('$sslhpro')?>",
-		"description": "<?php echo _('Sysadmin Pro Provisioning HTTPS Port')?>"
-    },
-    {
-		"type": "<?php echo _('Static')?>",
-        "brand": "<?php echo _('Global')?>",
-        "placeholder": "<?php echo _('$hpro')?>",
-		"description": "<?php echo _('Sysadmin Pro Provisioning HTTP Port')?>"
-    },
-    {
-		"type": "<?php echo _('Line Loop')?>",
-        "brand": "<?php echo _('Global')?>",
-        "placeholder": "<?php echo _('$hpro')?>",
-		"description": "<?php echo _('Sysadmin Pro Provisioning HTTP Port')?>"
-    },
-    {
-		"type": "<?php echo _('Line Loop')?>",
-        "brand": "<?php echo _('Global')?>",
-        "placeholder": "<?php echo _('$line')?>",
-		"description": "<?php echo _('Prints the line Number of the mapped extension')?>"
-    },
-    {
-		"type": "<?php echo _('Line Loop')?>",
-        "brand": "<?php echo _('Global')?>",
-        "placeholder": "<?php echo _('$username')?>",
-		"description": "<?php echo _('Username for the Extension (most likely the endpoint extension number)')?>"
-    },
-    {
-		"type": "<?php echo _('Line Loop')?>",
-        "brand": "<?php echo _('Global')?>",
-        "placeholder": "<?php echo _('$authname')?>",
-		"description": "<?php echo _('Auth name for the Extension (most likely the endpoint extension number)')?>"
-    },
-    {
-		"type": "<?php echo _('Line Loop')?>",
-        "brand": "<?php echo _('Yealink')?>",
-        "placeholder": "<?php echo _('$yealinktransport')?>",
-		"description": "<?php echo _('Transport protocoll for Yealink (UDP,TCP,TLS)')?>"
-    },
-    {
-		"type": "<?php echo _('Static')?>",
-        "brand": "<?php echo _('Yealink')?>",
-        "placeholder": "<?php echo _('$accXyealinktransport')?>",
-		"description": "<?php echo _('Transport protocoll for Yealink (UDP,TCP,TLS)')?>"
-    },
-    {
-		"type": "<?php echo _('Line Loop')?>",
-        "brand": "<?php echo _('Yealink')?>",
-        "placeholder": "<?php echo _('$yealinksrtp')?>",
-		"description": "<?php echo _('SRTP Value for Yealink')?>"
-    },
-    {
-		"type": "<?php echo _('Static')?>",
-        "brand": "<?php echo _('Yealink')?>",
-        "placeholder": "<?php echo _('$accXyealinksrtp')?>",
-		"description": "<?php echo _('SRTP Value for Yealink')?>"
-    },
-    {
-		"type": "<?php echo _('Line Loop')?>",
-        "brand": "<?php echo _('Global')?>",
-        "placeholder": "<?php echo _('$secret')?>",
-		"description": "<?php echo _('Password for the mapped Extension')?>"
-    },
-    {
-		"type": "<?php echo _('Line Loop')?>",
-        "brand": "<?php echo _('Global')?>",
-        "placeholder": "<?php echo _('$displayname')?>",
-		"description": "<?php echo _('Display name for the Extension (The Name of the Extension')?>"
-    },
-    {
-		"type": "<?php echo _('Line Loop')?>",
-        "brand": "<?php echo _('Global')?>",
-        "placeholder": "<?php echo _('$server_host')?>",
-		"description": "<?php echo _('Server Hostname for the Extension (You can set your Hostname in your global settings)')?>"
-    },
-	{
-		"type": "<?php echo _('Line Loop')?>",
-        "brand": "<?php echo _('Global')?>",
-        "placeholder": "<?php echo _('$server_port')?>",
-		"description": "<?php echo _('The port your extension uses to connect. (The prefered Port you set in your extension will be used)')?>"
-    },
-	{
-		"type": "<?php echo _('Line Loop')?>",
-        "brand": "<?php echo _('Global')?>",
-        "placeholder": "<?php echo _('$proto')?>",
-		"description": "<?php echo _('Shows your Protocol your extension is using')?>"
-    },
-	{
-		"type": "<?php echo _('Line Loop')?>",
-        "brand": "<?php echo _('Global')?>",
-        "placeholder": "<?php echo _('$user_extension')?>",
-		"description": "<?php echo _('Shows your Extension number you are using')?>"
-    },
-	{
-		"type": "<?php echo _('Line Loop')?>",
-        "brand": "<?php echo _('Global')?>",
-        "placeholder": "<?php echo _('$extension')?>",
-		"description": "<?php echo _('Shows your Extension number you are using')?>"
-    },
-	{
-		"type": "<?php echo _('Line Loop')?>",
-        "brand": "<?php echo _('Global')?>",
-        "placeholder": "<?php echo _('$allowedcodec')?>",
-		"description": "<?php echo _('Prints you allowed codecs you set in your extension settings')?>"
-    },
-	{
-		"type": "<?php echo _('Line Loop')?>",
-        "brand": "<?php echo _('Global')?>",
-        "placeholder": "<?php echo _('$forcerport')?>",
-		"description": "<?php echo _('Shows you if you are using rport')?>"
-    },
-	{
-		"type": "<?php echo _('Line Loop')?>",
-        "brand": "<?php echo _('Global')?>",
-        "placeholder": "<?php echo _('$media_encryption')?>",
-		"description": "<?php echo _('Shows you if you have enabled media encryption')?>"
-    },
-	{
-		"type": "<?php echo _('Line Loop')?>",
-        "brand": "<?php echo _('Global')?>",
-        "placeholder": "<?php echo _('$sipdriver')?>",
-		"description": "<?php echo _('Shows you if you use SIP or PJSIP')?>"
-    },
-	{
-		"type": "<?php echo _('Line Loop')?>",
-        "brand": "<?php echo _('Global')?>",
-        "placeholder": "<?php echo _('$transport')?>",
-		"description": "<?php echo _('Shows you your prefered transport protocol')?>"
-    },
-	{
-		"type": "<?php echo _('Line Loop')?>",
-        "brand": "<?php echo _('Global')?>",
-        "placeholder": "<?php echo _('$trustrpid')?>",
-		"description": "<?php echo _('Trustrpid?')?>"
-    },
-	{
-		"type": "<?php echo _('Line Loop')?>",
-        "brand": "<?php echo _('Global')?>",
-        "placeholder": "<?php echo _('$callerid')?>",
-		"description": "<?php echo _('Prints your full callerid including name and number')?>"
-    },
-	{
-		"type": "<?php echo _('Line Loop')?>",
-        "brand": "<?php echo _('Global')?>",
-        "placeholder": "<?php echo _('$encryption')?>",
-		"description": "<?php echo _('Shows you if you have enabled encryption')?>"
-    },
-	{
-		"type": "<?php echo _('Line Loop')?>",
-        "brand": "<?php echo _('Global')?>",
-        "placeholder": "<?php echo _('$tech')?>",
-		"description": "<?php echo _('Shows you if you use SIP or PJSIP')?>"
-    },
-	{
-		"type": "<?php echo _('Static')?>",
-        "brand": "<?php echo _('Global')?>",
-        "placeholder": "<?php echo _('$accXsecret')?>",
-		"description": "<?php echo _('Password for the mapped Extension (change the X after acc with your line number)')?>"
-    },
-	{
-		"type": "<?php echo _('Static')?>",
-        "brand": "<?php echo _('Global')?>",
-        "placeholder": "<?php echo _('$accXdisplayname')?>",
-		"description": "<?php echo _('Display name for the Extension (The Name of the Extension (change the X after acc with your line number)')?>"
-    },
-	{
-		"type": "<?php echo _('Static')?>",
-        "brand": "<?php echo _('Global')?>",
-        "placeholder": "<?php echo _('$accXuser_extension')?>",
-		"description": "<?php echo _('Shows your Extension number you are using (change the X after acc with your line number)')?>"
-    },
-	{
-		"type": "<?php echo _('Static')?>",
-        "brand": "<?php echo _('Global')?>",
-        "placeholder": "<?php echo _('$accXusername')?>",
-		"description": "<?php echo _('Username for the Extension (change the X after acc with your line number)')?>"
-    },
-	{
-		"type": "<?php echo _('Static')?>",
-        "brand": "<?php echo _('Global')?>",
-        "placeholder": "<?php echo _('$accXauthname')?>",
-		"description": "<?php echo _('Auth name for the Extension (change the X after acc with your line number)')?>"
-    },
-	{
-		"type": "<?php echo _('Static')?>",
-        "brand": "<?php echo _('Global')?>",
-        "placeholder": "<?php echo _('$accXextension')?>",
-		"description": "<?php echo _('Shows your Extension number you are using (change the X after acc with your line number)')?>"
-    },
-	{
-		"type": "<?php echo _('Static')?>",
-        "brand": "<?php echo _('Global')?>",
-        "placeholder": "<?php echo _('$accXallowedcodec')?>",
-		"description": "<?php echo _('Prints you allowed codecs you set in your extension settings (change the X after acc with your line number)')?>"
-    },
-	{
-		"type": "<?php echo _('Static')?>",
-        "brand": "<?php echo _('Global')?>",
-        "placeholder": "<?php echo _('$accXforcerport')?>",
-		"description": "<?php echo _('Shows you if you are using rport (change the X after acc with your line number)')?>"
-    },
-	{
-		"type": "<?php echo _('Static')?>",
-        "brand": "<?php echo _('Global')?>",
-        "placeholder": "<?php echo _('$accXmedia_encryption')?>",
-		"description": "<?php echo _('Shows you if you have enabled media encryption (change the X after acc with your line number)')?>"
-    },
-	{
-		"type": "<?php echo _('Static')?>",
-        "brand": "<?php echo _('Global')?>",
-        "placeholder": "<?php echo _('$accXsipdriver')?>",
-		"description": "<?php echo _('Shows you if you use SIP or PJSIP (change the X after acc with your line number)')?>"
-    },
-	{
-		"type": "<?php echo _('Static')?>",
-        "brand": "<?php echo _('Global')?>",
-        "placeholder": "<?php echo _('$accXtransport')?>",
-		"description": "<?php echo _('Shows you your prefered transport protocol (change the X after acc with your line number)')?>"
-    },
-	{
-		"type": "<?php echo _('Static')?>",
-        "brand": "<?php echo _('Global')?>",
-        "placeholder": "<?php echo _('$accXtrustrpid')?>",
-		"description": "<?php echo _('Trustrpid? (change the X after acc with your line number)')?>"
-    },
-	{
-		"type": "<?php echo _('Static')?>",
-        "brand": "<?php echo _('Global')?>",
-        "placeholder": "<?php echo _('$accXcallerid')?>",
-		"description": "<?php echo _('Prints your full callerid including name and number (change the X after acc with your line number)')?>"
-    },
-	{
-		"type": "<?php echo _('Static')?>",
-        "brand": "<?php echo _('Global')?>",
-        "placeholder": "<?php echo _('$accXencryption')?>",
-		"description": "<?php echo _('Shows you if you have enabled encryption (change the X after acc with your line number)')?>"
-    },
-	{
-		"type": "<?php echo _('Static')?>",
-        "brand": "<?php echo _('Global')?>",
-        "placeholder": "<?php echo _('$accXserver_port')?>",
-		"description": "<?php echo _('The port your extension uses to connect. The prefered Port you set in your extension will be used. (change the X after acc with your line number)')?>"
-    },
-	{
-		"type": "<?php echo _('Static')?>",
-        "brand": "<?php echo _('Grandstream')?>",
-        "placeholder": "<?php echo _('$accXgsSRTP')?>",
-		"description": "<?php echo _('This is the SRTP Value (0/1) for Grandstream, tested with HT812 (change the X after acc with your line number)')?>"
-    },
-	{
-		"type": "<?php echo _('Static')?>",
-        "brand": "<?php echo _('Grandstream')?>",
-        "placeholder": "<?php echo _('$accXgsproto')?>",
-		"description": "<?php echo _('Sets the Protocol you set in you extension (TCP,UDP,TLS - Values:0,1,2),tested with HT812 (change the X after acc with your line number)')?>"
-    },
-	{
-		"type": "<?php echo _('Line Loop')?>",
-        "brand": "<?php echo _('Grandstream')?>",
-        "placeholder": "<?php echo _('$gsSRTP')?>",
-		"description": "<?php echo _('This is the SRTP Value (0/1) for Grandstream, tested with HT812')?>"
-	},
-    {
-		"type": "<?php echo _('Line Loop')?>",
-        "brand": "<?php echo _('Grandstream')?>",
-        "placeholder": "<?php echo _('$gsproto')?>",
-		"description": "<?php echo _('Sets the Protocol you set in you extension (TCP,UDP,TLS - Values:0,1,2),tested with HT812')?>"
-    },
-	{
-		"type": "<?php echo _('Line Loop')?>",
-        "brand": "<?php echo _('Global')?>",
-        "placeholder": "<?php echo _('$primtimeserver')?>",
-		"description": "<?php echo _('Hostname of the Primary NTP Server from Global Settings')?>"
-	},
-	{
-		"type": "<?php echo _('Static')?>",
-        "brand": "<?php echo _('Global')?>",
-        "placeholder": "<?php echo _('$primtimeserver')?>",
-		"description": "<?php echo _('Hostname of the Primary NTP Server from Global Settings')?>"
-	},
-	{
-		"type": "<?php echo _('Line Loop')?>",
-        "brand": "<?php echo _('Global')?>",
-        "placeholder": "<?php echo _('$myvoicemail')?>",
-		"description": "<?php echo _('Number of the Voicemail from Featurecodes')?>"
-	},
-	{
-		"type": "<?php echo _('Static')?>",
-        "brand": "<?php echo _('Global')?>",
-        "placeholder": "<?php echo _('$myvoicemail')?>",
-		"description": "<?php echo _('Number of the Voicemail from Featurecodes')?>"
-	}
+echo load_view(__DIR__ . '/epm_templates/subnav.php', array('current' => 'placeholders'));
 
-];
+$rows = array(
+	array('Global', '$globaladminpassword', 'LS', _('The admin password of the phones, from the Settings page')),
+	array('Global', '$globaluserpassword', 'LS', _('The user password of the phones, from the Settings page')),
+	array('Global', '$provisuser', 'LS', _('The HTTP provisioning user of Sysadmin Pro')),
+	array('Global', '$provispass', 'LS', _('The HTTP provisioning password of Sysadmin Pro')),
+	array('Global', '$hpro', 'LS', _('The HTTP provisioning port of Sysadmin Pro')),
+	array('Global', '$sslhpro', 'LS', _('The HTTPS provisioning port of Sysadmin Pro')),
+	array('Global', '$primtimeserver', 'LS', _('The time server from the Settings page')),
+	array('Global', '$myvoicemail', 'LS', _('The voicemail feature code')),
+	array('Global', '$line', 'L', _('The line number of the extension on the phone')),
+	array('Global', '$username', 'L', _('The user name of the extension, usually the extension number')),
+	array('Global', '$authname', 'L', _('The authentication name of the extension, usually the extension number')),
+	array('Global', '$secret', 'L', _('The password of the extension')),
+	array('Global', '$displayname', 'L', _('The display name of the extension')),
+	array('Global', '$server_host', 'L', _('The server address for the extension, from the Settings page')),
+	array('Global', '$server_port', 'L', _('The port that the extension connects to')),
+	array('Global', '$proto', 'L', _('The protocol of the extension')),
+	array('Global', '$user_extension', 'L', _('The extension number')),
+	array('Global', '$extension', 'L', _('The extension number')),
+	array('Global', '$allowedcodec', 'L', _('The allowed codecs of the extension')),
+	array('Global', '$forcerport', 'L', _('The rport setting of the extension')),
+	array('Global', '$media_encryption', 'L', _('The media encryption setting of the extension')),
+	array('Global', '$encryption', 'L', _('The encryption setting of the extension')),
+	array('Global', '$sipdriver', 'L', _('The channel driver of the extension: SIP or PJSIP')),
+	array('Global', '$tech', 'L', _('The channel driver of the extension: SIP or PJSIP')),
+	array('Global', '$transport', 'L', _('The transport protocol of the extension')),
+	array('Global', '$trustrpid', 'L', _('The trustrpid setting of the extension')),
+	array('Global', '$callerid', 'L', _('The caller ID of the extension, with the name and the number')),
+	array('Global', '$accXsecret', 'S', _('The password of the extension')),
+	array('Global', '$accXdisplayname', 'S', _('The display name of the extension')),
+	array('Global', '$accXuser_extension', 'S', _('The extension number')),
+	array('Global', '$accXusername', 'S', _('The user name of the extension')),
+	array('Global', '$accXauthname', 'S', _('The authentication name of the extension')),
+	array('Global', '$accXextension', 'S', _('The extension number')),
+	array('Global', '$accXserver_port', 'S', _('The port that the extension connects to')),
+	array('Global', '$accXallowedcodec', 'S', _('The allowed codecs of the extension')),
+	array('Global', '$accXforcerport', 'S', _('The rport setting of the extension')),
+	array('Global', '$accXmedia_encryption', 'S', _('The media encryption setting of the extension')),
+	array('Global', '$accXencryption', 'S', _('The encryption setting of the extension')),
+	array('Global', '$accXsipdriver', 'S', _('The channel driver of the extension: SIP or PJSIP')),
+	array('Global', '$accXtransport', 'S', _('The transport protocol of the extension')),
+	array('Global', '$accXtrustrpid', 'S', _('The trustrpid setting of the extension')),
+	array('Global', '$accXcallerid', 'S', _('The caller ID of the extension, with the name and the number')),
+	array('Yealink', '$yealinktransport', 'L', _('The transport protocol in the Yealink form: UDP, TCP or TLS')),
+	array('Yealink', '$accXyealinktransport', 'S', _('The transport protocol in the Yealink form: UDP, TCP or TLS')),
+	array('Yealink', '$yealinksrtp', 'L', _('The SRTP value in the Yealink form')),
+	array('Yealink', '$accXyealinksrtp', 'S', _('The SRTP value in the Yealink form')),
+	array('Grandstream', '$gsSRTP', 'L', _('The SRTP value in the Grandstream form, 0 or 1. Tested with the HT812.')),
+	array('Grandstream', '$accXgsSRTP', 'S', _('The SRTP value in the Grandstream form, 0 or 1. Tested with the HT812.')),
+	array('Grandstream', '$gsproto', 'L', _('The protocol in the Grandstream form: 0 for UDP, 1 for TCP, 2 for TLS. Tested with the HT812.')),
+	array('Grandstream', '$accXgsproto', 'S', _('The protocol in the Grandstream form: 0 for UDP, 1 for TCP, 2 for TLS. Tested with the HT812.')),
+);
+$where = array(
+	'L'  => _('Line loop'),
+	'S'  => _('Static'),
+	'LS' => _('Line loop, static'),
+);
+$brands = array('Global' => _('All brands'), 'Yealink' => 'Yealink', 'Grandstream' => 'Grandstream');
+?>
+<p><?php echo _('Use these placeholders in the config files of a brand package. When the module writes the configs of a phone, it replaces each placeholder with its value.'); ?></p>
+<ul>
+	<li><?php echo _('Line loop: use the placeholder in a {line_loop} block. The module repeats the block for each line of the phone.'); ?></li>
+	<li><?php echo _('Static: use the placeholder outside of a {line_loop} block. Replace the X in accX with the line number, for example $acc1secret.'); ?></li>
+</ul>
+<p class="text-muted"><?php echo _('To ask for a new placeholder, open an issue in the endpointman project.'); ?></p>
 
-$(function () {
-    $('#hwgrid').bootstrapTable({
-        data: mydata
-    });
-});
-</script>
-<h3><?php echo _('Config File Placeholder Values'); ?></h3>
-
-<p>
-This page helps you building your phone Packages. <br /> <br />
-Create or modify your config files and replace the needed values with the Placeholders. <br />
-With this information you can add new Phones to OSS EPM within minutes. <br /><br />
-If you need a specific value to add your Phone you can make a feature request.
-</p>
-
-<table id="hwgrid" data-pagination="true" data-show-columns="true" data-show-toggle="true" data-search="true" class="table table-striped">
+<table id="hwgrid" data-toggle="table" data-pagination="true" data-page-size="25" data-search="true" class="table table-striped">
 	<thead>
 		<tr>
-			<th data-field="type" data-sortable="true" data-escape="true"><?php echo _("Type")?></th>
-			<th data-field="brand" data-sortable="true" data-escape="true"><?php echo _("Brand")?></th>
-			<th data-field="placeholder" data-sortable="true" data-escape="true"><?php echo _("Placeholder")?></th>
-			<th data-field="description" data-sortable="true" data-escape="true"><?php echo _("Description")?></th>
+			<th data-field="placeholder" data-sortable="true"><?php echo _('Placeholder'); ?></th>
+			<th data-field="brand" data-sortable="true"><?php echo _('Brand'); ?></th>
+			<th data-field="where" data-sortable="true"><?php echo _('Where'); ?></th>
+			<th data-field="description" data-sortable="true"><?php echo _('Description'); ?></th>
 		</tr>
 	</thead>
-	<!-- rows come from the mydata array above, via bootstrapTable -->
-	<tbody></tbody>
+	<tbody>
+<?php foreach ($rows as $row) { ?>
+		<tr>
+			<td class="text-monospace"><?php echo epm_esc($row[1]); ?></td>
+			<td><?php echo epm_esc($brands[$row[0]]); ?></td>
+			<td><?php echo epm_esc($where[$row[2]]); ?></td>
+			<td><?php echo epm_esc($row[3]); ?></td>
+		</tr>
+<?php } ?>
+	</tbody>
 </table>

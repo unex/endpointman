@@ -19,7 +19,7 @@ class SettingsPage extends \PageBase {
 	public function ajaxRequest($req, &$setting) {
 		$arrVal = array("saveconfig", "oui", "oui_add", "oui_del",
 						"poce_list_brands", "poce_select", "poce_select_file",
-						"poce_save_file", "poce_save_as_file", "poce_sendid",
+						"poce_save_file", "poce_save_as_file",
 						"poce_delete_config_custom", "list_files_brands_export");
 		if (in_array($req, $arrVal)) {
 			$setting['authenticate'] = true;
@@ -80,10 +80,6 @@ class SettingsPage extends \PageBase {
 			case "poce_save_file":
 			case "poce_save_as_file":
 				$retarr = $this->_poce_save_file();
-				break;
-
-			case "poce_sendid":
-				$retarr = $this->_poce_sendid();
 				break;
 
 			case "poce_delete_config_custom":
@@ -156,7 +152,7 @@ class SettingsPage extends \PageBase {
 		$arrVal['VAR_REQUEST'] = array("name", "value");
 		foreach ($arrVal['VAR_REQUEST'] as $valor) {
 			if (! array_key_exists($valor, $_REQUEST)) {
-				return array("status" => false, "message" => _("No send value!")." [".$valor."]");
+				return array("status" => false, "message" => sprintf(_("The request has no %s value."), $valor));
 			}
 		}
 
@@ -401,19 +397,19 @@ class SettingsPage extends \PageBase {
 			$temp[$i]['name_mini'] = substr($srow['long_name'], 0, 40).(strlen($srow['long_name']) > 40 ? "..." : "");
 			$i++;
 		}
-		return array("status" => true, "message" => _("Ok!"), "ldatos" => $temp);
+		return array("status" => true, "message" => "OK", "ldatos" => $temp);
 	}
 
 	public function _poce_select()
 	{
 			if (! isset($_REQUEST['product_select'])) {
-			$retarr = array("status" => false, "message" => _("No send Product Select!"));
+			$retarr = array("status" => false, "message" => _("Select a family."));
 		}
 		elseif (! is_numeric($_REQUEST['product_select'])) {
-			$retarr = array("status" => false, "message" => _("Product Select send is not number!"));
+			$retarr = array("status" => false, "message" => _("The family ID is not a number."));
 		}
 		elseif ($_REQUEST['product_select'] < 0) {
-			$retarr = array("status" => false, "message" => _("Product Select send is number not valid!"));
+			$retarr = array("status" => false, "message" => _("The family ID is not valid."));
 		}
 		else
 		{
@@ -504,14 +500,14 @@ class SettingsPage extends \PageBase {
 		$arrVal['VAR_REQUEST'] = array("product_select", "file_id", "file_name", "type_file");
 		foreach ($arrVal['VAR_REQUEST'] as $valor) {
 			if (! array_key_exists($valor, $_REQUEST)) {
-				return array("status" => false, "message" => _("No send value!")." [".$valor."]");
+				return array("status" => false, "message" => sprintf(_("The request has no %s value."), $valor));
 			}
 		}
 		if (! is_numeric($_REQUEST['product_select'])) {
-			return array("status" => false, "message" => _("Product Select send is not number!"));
+			return array("status" => false, "message" => _("The family ID is not a number."));
 		}
 		elseif ($_REQUEST['product_select'] < 0) {
-			return array("status" => false, "message" => _("Product Select send is number not valid!"));
+			return array("status" => false, "message" => _("The family ID is not valid."));
 		}
 
 		$dget['product_select'] = $_REQUEST['product_select'];
@@ -567,7 +563,7 @@ class SettingsPage extends \PageBase {
 				$config_data = $contents;
 			}
 			else {
-				$retarr = array("status" => false, "message" => _("File not readable, check the permission! ").$filename);
+				$retarr = array("status" => false, "message" => sprintf(_("Cannot read the file %s. Check the permissions."), $filename));
 			}
 		}
 		elseif ($dget['type_file'] == "tfile")
@@ -619,62 +615,12 @@ class SettingsPage extends \PageBase {
 
 
 	//TODO: PENDIENTE REVISAR
-	function _poce_sendid()
-	{
-		if (! isset($_REQUEST['product_select'])) {
-			$retarr = array("status" => false, "message" => _("No send Product Select!"));
-		}
-		elseif (! isset($_REQUEST['type_file'])) {
-			$retarr = array("status" => false, "message" => _("No send Type File!"));
-		}
-		elseif (! isset($_REQUEST['sendid'])) {
-			$retarr = array("status" => false, "message" => _("No send SendID!"));
-		}
-		else {
-			$dget['product_select'] = $_REQUEST['product_select'];
-			$dget['type_file'] = $_REQUEST['type_file'];
-			$dget['sendid'] = $_REQUEST['sendid'];
-			$dget['original_name'] = $_REQUEST['original_name'];
-			$dget['config_text'] = $_REQUEST['config_text'];
-
-
-
-			//DEBUGGGGGGGGGGGGG
-			return;
-			if ($dget['type_file'] == "sql") {
-				$sql = 'SELECT cfg_dir,directory,config_files FROM endpointman_product_list,endpointman_brand_list WHERE endpointman_product_list.brand = endpointman_brand_list.id AND endpointman_product_list.id = ?';
-				$sql_p = array($dget['product_select']);
-				$row = epm_sql($sql, 'getrow', $sql_p);
-				$this->submit_config($row['directory'], $row['cfg_dir'], $dget['original_name'], $dget['config_text']);
-				$retarr = array("status" => true, "message" => "Sent! Thanks :-)");
-			}
-			elseif ($dget['type_file'] == "file") {
-				$sql = 'SELECT cfg_dir,directory,config_files FROM endpointman_product_list,endpointman_brand_list WHERE endpointman_product_list.brand = endpointman_brand_list.id AND endpointman_product_list.id = ?';
-				$sql_p = array($dget['product_select']);
-				$row = epm_sql($sql, 'getRow', $sql_p);
-				$error = $this->submit_config($row['directory'], $row['cfg_dir'], $dget['original_name'], $dget['config_text']);
-				$retarr = array("status" => true, "message" => "Sent! Thanks :-)");
-			}
-			else {
-				$retarr = array("status" => false, "message" => "Type not valid!");
-			}
-			unset ($dget);
-		}
-		return $retarr;
-	}
-
-
-
-
-
-
-
 	function _poce_save_file()
 	{
 		$arrVal['VAR_REQUEST'] = array("product_select", "sendid", "type_file", "config_text", "save_as_name", "file_name", "original_name");
 		foreach ($arrVal['VAR_REQUEST'] as $valor) {
 			if (! array_key_exists($valor, $_REQUEST)) {
-				return array("status" => false, "message" => _("No send value!")." [".$valor."]");
+				return array("status" => false, "message" => sprintf(_("The request has no %s value."), $valor));
 			}
 		}
 
@@ -700,21 +646,21 @@ class SettingsPage extends \PageBase {
 					$pathdir = $this->PHONE_MODULES_PATH . 'endpoint/' . $row['directory'] . "/" . $row['cfg_dir'] . "/";
 					$pathfile = $pathdir . $dget['file_name'];
 					if ((! file_exists($pathfile)) AND (! is_writable($pathdir))) {
-						$retarr = array("status" => false, "message" => "Directory is not Writable (".$pathdir.")!");
+						$retarr = array("status" => false, "message" => sprintf(_("The web server cannot write to the directory %s."), $pathdir));
 					}
 					elseif (! is_writable($pathfile)) {
-						$retarr = array("status" => false, "message" => "File is not Writable (".$pathfile.")!");
+						$retarr = array("status" => false, "message" => sprintf(_("The web server cannot write to the file %s."), $pathfile));
 					}
 					else
 					{
 						$wfh = fopen($pathfile, 'w');
 						fwrite($wfh, $dget['config_text']);
 						fclose($wfh);
-						$retarr = array("status" => true, "message" => "Saved to Hard Drive!");
+						$retarr = array("status" => true, "message" => _("The file is saved. A brand update can overwrite it."));
 					}
 				}
 				else {
-					$retarr = array("status" => false, "message" => "The File no existe in the DataBase!");
+					$retarr = array("status" => false, "message" => _("The file is not in the database."));
 				}
 			}
 			elseif ($dget['command'] == "poce_save_as_file")
@@ -725,14 +671,14 @@ class SettingsPage extends \PageBase {
 				$q = $db->prepare($sql);
 				$ob = $q->execute(array(addslashes($dget['save_as_name']), addslashes($dget['original_name']), $dget['product_select'], $dget['config_text']));
 				$newidinsert = $db->lastInsertId();
-				$retarr = array("status" => true, "message" => "Saved to Database!");
+				$retarr = array("status" => true, "message" => _("The file is saved as your version."));
 
 				$retarr['type_file'] = "sql";
 				$retarr['location'] = "SQL: ". $dget['save_as_name'];
 				$retarr['sendidt'] = $newidinsert;
 			}
 			else {
-				$retarr = array("status" => false, "message" => "Command not valid!");
+				$retarr = array("status" => false, "message" => _("Unknown command."));
 			}
 		}
 		elseif ($dget['type_file'] == "sql")
@@ -742,7 +688,7 @@ class SettingsPage extends \PageBase {
 				$sql = 'UPDATE endpointman_custom_configs SET data = ? WHERE id = ?';
 				$sql_p = array($dget['config_text'], $dget['sendid']);
 				epm_sql($sql, 'query', $sql_p);
-				$retarr = array("status" => true, "message" => "Saved to Database!");
+				$retarr = array("status" => true, "message" => _("The file is saved as your version."));
 			}
 			elseif ($dget['command'] == "poce_save_as_file")
 			{
@@ -752,14 +698,14 @@ class SettingsPage extends \PageBase {
 				$q = $db->prepare($sql);
 				$ob = $q->execute(array(addslashes($dget['save_as_name']), addslashes($dget['original_name']), $dget['product_select'], $dget['config_text']));
 				$newidinsert = $db->lastInsertId();
-				$retarr = array("status" => true, "message" => "Saved to Database!");
+				$retarr = array("status" => true, "message" => _("The file is saved as your version."));
 
 				$retarr['type_file'] = "sql";
 				$retarr['location'] = "SQL: ". $dget['save_as_name'];
 				$retarr['sendidt'] = $newidinsert;
 			}
 			else {
-				$retarr = array("status" => false, "message" => "Command not valid!");
+				$retarr = array("status" => false, "message" => _("Unknown command."));
 			}
 		}
 		elseif ($dget['type_file'] == "tfile")
@@ -776,7 +722,7 @@ class SettingsPage extends \PageBase {
 			*/
 		}
 		else {
-			$retarr = array("status" => false, "message" => "Type not valid!");
+			$retarr = array("status" => false, "message" => _("Unknown file type."));
 		}
 
 		$retarr['original_name'] = $dget['original_name'];
@@ -792,7 +738,7 @@ class SettingsPage extends \PageBase {
 		$arrVal['VAR_REQUEST'] = array("product_select", "type_file", "sql_select");
 		foreach ($arrVal['VAR_REQUEST'] as $valor) {
 			if (! array_key_exists($valor, $_REQUEST)) {
-				return array("status" => false, "message" => _("No send value!")." [".$valor."]");
+				return array("status" => false, "message" => sprintf(_("The request has no %s value."), $valor));
 			}
 		}
 
@@ -805,9 +751,9 @@ class SettingsPage extends \PageBase {
 			$sql_p = array($dget['sql_select']);
 			epm_sql($sql, 'query', $sql_p);
 			unset ($sql);
-			$retarr = array("status" => true, "message" => "File delete ok!");
+			$retarr = array("status" => true, "message" => _("Your version is deleted."));
 		}
-		else { $retarr = array("status" => false, "message" => _("Type File not valid!")); }
+		else { $retarr = array("status" => false, "message" => _("Unknown file type.")); }
 
 		unset($dget);
 		return $retarr;

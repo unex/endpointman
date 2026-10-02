@@ -166,6 +166,7 @@ class Endpointman extends FreePBX_Helpers implements \BMO {
 		require_once(__DIR__ . '/lib/blob.inc.php');
 		require_once(__DIR__ . '/lib/acl.inc.php');
 		require_once(__DIR__ . '/lib/esc.inc.php');
+		require_once(__DIR__ . '/lib/form.inc.php');
 		require_once('lib/Config.class.php');
 		require_once('lib/epm_system.class.php');
 		require_once('lib/epm_data_abstraction.class.php');
