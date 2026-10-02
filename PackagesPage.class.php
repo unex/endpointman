@@ -56,7 +56,7 @@ class PackagesPage extends \PageBase {
 	}
 
 	public function ajaxRequest($req, &$setting) {
-		$arrVal = array("saveconfig", "list_all_brand", "list_brand_model_hide");
+		$arrVal = array("saveconfig", "list_all_brand");
 		if (in_array($req, $arrVal)) {
 			$setting['authenticate'] = true;
 			$setting['allowremote'] = false;
@@ -66,34 +66,9 @@ class PackagesPage extends \PageBase {
 	}
 
     public function ajaxHandler($command) {
+		// The page script shows these after a failed save.
 		$txt = array(
-			'ayuda_model' => _("If we can activate the model set terminals of the models.<br /> If this model is disabled will not appear in the list of models that can be configured for PBX."),
-			'ayuda_producto' => _('The button "Install Firmware" installs the necessary files to the server for the terminal alone are updated via TFTP or HTTP.<br /> The button "Remove frimware" delete files server products.<br /> The button "Update frimware" appears if a newer frimware detected on the server and asks if you want to update.<br /> The "Update" button appears when a new version of this model pack is detected.'),
-			'ayuda_marca' => _('The "Install" button installs the configuration package brand models we selected.<br /> The "Uninstall" button removes the package configuration models of the brand selected.<br /> The "Update" button appears if a new version of the package that is already installed to upgrade to the latest version is detected.'),
-			'new_pack_mod' => _("New Package Modified"),
-			'pack_last_mod' => _("Package Last Modified"),
-			'check_update' => _("Check for Update "),
-			'check_online' => _("Check Online "),
-			'install' => _("Install"),
-			'uninstall' => _("Uninstall"),
-			'update' => _("Update"),
-			'fw_install' => _('FW Install'),
-			'fw_uninstall' =>  _('FW Delete'),
-			'fw_update' => _('FW Update'),
-			'enable' => _('Enable'),
-			'disable' => _('Disable'),
-			'show' => _("Show"),
-			'hide' => _("Hide"),
-			'ready' => _("Ready!"),
-			'error' => _("Error!"),
-			'title_update' => _("Update!"),
-			'save_changes' => _("Saving Changes..."),
-			'save_changes_ok' => _("Saving Changes... Ok!"),
-			'err_upload_content' => _("Upload Content!"),
-			'check' => _("Check for Updates..."),
-			'check_ok' => _("Check for Updates... Ok!"),
-			'update_content' => _("Update Content..."),
-			'opt_invalid' => _("Invalid Option!")
+			'error' => _("Error"),
 		);
 
 		switch ($command) {
@@ -105,12 +80,8 @@ class PackagesPage extends \PageBase {
 				$retarr = array("status" => true, "message" => "OK", "datlist" => $this->epm_config_manager_hardware_get_list_all());
 				break;
 
-			case "list_brand_model_hide":
-				$retarr = array("status" => true, "message" => "OK", "datlist" => $this->epm_config_manager_hardware_get_list_all_hide_show());
-				break;
-
 			default:
-				$retarr = array("status" => false, "message" => _("Command not found!") . " [" .$command. "]");
+				$retarr = array("status" => false, "message" => sprintf(_("Unknown command %s."), epm_esc($command)));
 				break;
 		}
 		$retarr['txt'] = $txt;
@@ -121,19 +92,16 @@ class PackagesPage extends \PageBase {
 		switch ($command) {
 			case "check_for_updates":
 				$this->epm_config_manager_check_for_updates();
-				echo "<br /><hr><br />";
 				exit;
 				break;
 
 			case "firmware":
 				$this->epm_config_manager_firmware();
-				echo "<br /><hr><br />";
 				exit;
 				break;
 
 			case "brand":
 				$this->epm_config_manager_brand();
-				echo "<br /><hr><br />";
 				exit;
 				break;
 		}
@@ -156,7 +124,7 @@ class PackagesPage extends \PageBase {
      */
 	public function epm_config_hardware_get_list_models($id_product=NULL, $show_all = true, $byorder = "model")
 	{
-		if(! is_numeric($id_product)) { throw new \Exception( _("ID Producto not is number")." (".$id_product.")"); }
+		if(! is_numeric($id_product)) { throw new \Exception(sprintf(_("The family ID %s is not a number."), epm_esc($id_product))); }
 		$byorder = $this->_order_column($byorder, array('id', 'brand', 'model', 'max_lines', 'product_id', 'enabled', 'hidden'), 'model');
 		if($show_all == true) 	{ $sql = 'SELECT * FROM endpointman_model_list WHERE product_id = ? ORDER BY '.$byorder.' ASC'; }
 		else 					{ $sql = 'SELECT * FROM endpointman_model_list WHERE hidden = 0 AND product_id = ? ORDER BY '.$byorder.' ASC'; }
@@ -172,7 +140,7 @@ class PackagesPage extends \PageBase {
      */
 	public function epm_config_hardware_get_list_product($id_brand=NULL, $show_all = true, $byorder = "long_name")
 	{
-		if(! is_numeric($id_brand)) { throw new \Exception(_("ID Brand not is numbre")." (".$id_brand.")"); }
+		if(! is_numeric($id_brand)) { throw new \Exception(sprintf(_("The brand ID %s is not a number."), epm_esc($id_brand))); }
 		$byorder = $this->_order_column($byorder, array('id', 'brand', 'short_name', 'long_name', 'cfg_dir', 'cfg_ver', 'hidden'), 'long_name');
 		if ($show_all == true) 	{ $sql = 'SELECT * FROM endpointman_product_list WHERE brand = ? ORDER BY '.$byorder.' ASC'; }
 		else 					{ $sql = 'SELECT * FROM endpointman_product_list WHERE hidden = 0 AND brand = ? ORDER BY '.$byorder.' ASC'; }
@@ -254,9 +222,9 @@ class PackagesPage extends \PageBase {
 	/**** FUNCIONES SEC MODULO "epm_config\manager" ****/
 	private function epm_config_manager_check_for_updates ()
 	{
-		out("<h3>Update data...</h3>");
+		out(_("Getting the brand list from the package server..."));
 		$this->epm->brandmanager->update_check(true);
-		out ("All Done!");
+		out(_("Done."));
 	}
 
 	private function epm_config_manager_brand()
@@ -264,7 +232,7 @@ class PackagesPage extends \PageBase {
 		$arrVal['VAR_REQUEST'] = array("command_sub", "idfw");
 		foreach ($arrVal['VAR_REQUEST'] as $valor) {
 			if (! array_key_exists($valor, $_REQUEST)) {
-				out (_("Error: No send value!")." [".$valor."]");
+				out(sprintf(_("Error: The request has no %s value."), epm_esc($valor)));
 				return false;
 			}
 		}
@@ -272,7 +240,7 @@ class PackagesPage extends \PageBase {
 		$arrVal['VAR_IS_NUM'] = array("idfw");
 		foreach ($arrVal['VAR_IS_NUM'] as $valor) {
 			if (! is_numeric($_REQUEST[$valor])) {
-				out (_("Error: Value send is not number!")." [".$valor."]");
+				out(sprintf(_("Error: The %s value is not a number."), epm_esc($valor)));
 				return false;
 			}
 		}
@@ -291,7 +259,7 @@ class PackagesPage extends \PageBase {
 				break;
 
 			default:
-				out (_("Error: Command not found!")." [" . $dget['command'] . "]");
+				out(sprintf(_("Error: Unknown command %s."), epm_esc($dget['command'])));
 		}
 		$this->epm->brandmanager->update_check();
 		unset ($dget);
@@ -304,7 +272,7 @@ class PackagesPage extends \PageBase {
 		$arrVal['VAR_REQUEST'] = array("command_sub", "idfw");
 		foreach ($arrVal['VAR_REQUEST'] as $valor) {
 			if (! array_key_exists($valor, $_REQUEST)) {
-				out (_("Error: No send value!")." [".$valor."]");
+				out(sprintf(_("Error: The request has no %s value."), epm_esc($valor)));
 				return false;
 			}
 		}
@@ -312,7 +280,7 @@ class PackagesPage extends \PageBase {
 		$arrVal['VAR_IS_NUM'] = array("idfw");
 		foreach ($arrVal['VAR_IS_NUM'] as $valor) {
 			if (! is_numeric($_REQUEST[$valor])) {
-				out (_("Error: Value send is not number!")." [".$valor."]");
+				out(sprintf(_("Error: The %s value is not a number."), epm_esc($valor)));
 				return false;
 			}
 		}
@@ -331,7 +299,7 @@ class PackagesPage extends \PageBase {
 				break;
 
 			default:
-				out (_("Error: Command not found!")." [" . $dget['command'] . "]");
+				out(sprintf(_("Error: Unknown command %s."), epm_esc($dget['command'])));
 		}
 
 		unset ($dget);
@@ -343,14 +311,14 @@ class PackagesPage extends \PageBase {
 		$arrVal['VAR_REQUEST'] = array("typesavecfg", "value", "idtype", "idbt");
 		foreach ($arrVal['VAR_REQUEST'] as $valor) {
 			if (! array_key_exists($valor, $_REQUEST)) {
-				return array("status" => false, "message" => _("No send value!")." [".$valor."]");
+				return array("status" => false, "message" => sprintf(_("The request has no %s value."), $valor));
 			}
 		}
 
 		$arrVal['VAR_IS_NUM'] = array("value", "idbt");
 		foreach ($arrVal['VAR_IS_NUM'] as $valor) {
 			if (! is_numeric($_REQUEST[$valor])) {
-				return array("status" => false, "message" => _("Value send is not number!")." [".$valor."]");
+				return array("status" => false, "message" => sprintf(_("The %s value is not a number."), $valor));
 			}
 		}
 
@@ -360,11 +328,11 @@ class PackagesPage extends \PageBase {
 		$dget['id'] = $_REQUEST['idbt'];
 
 		if (! in_array($dget['typesavecfg'], array("hidden", "enabled"))) {
-			return array("status" => false, "message" => _("Type Save Config is not valid!")." [".$dget['typesavecfg']."]");
+			return array("status" => false, "message" => sprintf(_("Unknown setting type %s."), epm_esc($dget['typesavecfg'])));
 		}
 
-		if (($dget['value'] > 1 ) and ($dget['value'] < 0)) {
-			return array("status" => false, "message" => _("Invalid Value!"));
+		if (($dget['value'] > 1 ) or ($dget['value'] < 0)) {
+			return array("status" => false, "message" => _("The value is not valid."));
 		}
 
 
@@ -374,7 +342,7 @@ class PackagesPage extends \PageBase {
 				$sql_p = array($dget['value'], $dget['id']);
 			}
 			else {
-				$retarr = array("status" => false, "message" => _("IdType not valid to typesavecfg!"));
+				$retarr = array("status" => false, "message" => _("Only a model can be enabled or disabled."));
 			}
 		}
 		else {
@@ -395,7 +363,7 @@ class PackagesPage extends \PageBase {
 					break;
 
 				default:
-					$retarr = array("status" => false, "message" => _("IDType invalid: ") . $dget['idtype'] );
+					$retarr = array("status" => false, "message" => sprintf(_("Unknown item type %s."), epm_esc($dget['idtype'])));
 			}
 		}
 		if (isset($sql)) {
@@ -407,68 +375,6 @@ class PackagesPage extends \PageBase {
 		unset($dget);
 		return $retarr;
 	}
-
-	public function epm_config_manager_hardware_get_list_all_hide_show()
-	{
-		$row_out = array();
-
-		$i = 0;
-		$brand_list = $this->epm_config_hardware_get_list_brand(true, "name");
-		foreach ($brand_list as $row)
-		{
-			//$row_out[$i] = $row;
-			$row_out[$i]['id'] = $row['id'];
-			$row_out[$i]['name'] = $row['name'];
-			$row_out[$i]['directory'] = $row['directory'];
-			$row_out[$i]['installed'] = $row['installed'];
-			$row_out[$i]['hidden'] = $row['hidden'];
-			$row_out[$i]['count'] = $i;
-			$row_out[$i]['products'] = array();
-			if ($row['hidden'] == 1)
-			{
-				$i++;
-				continue;
-			}
-
-			$j = 0;
-			$product_list = $this->epm_config_hardware_get_list_product($row['id'], true);
-			foreach($product_list as $row2) {
-				//$row_out[$i]['products'][$j] = $row2;
-				$row_out[$i]['products'][$j]['id'] = $row2['id'];
-				$row_out[$i]['products'][$j]['brand'] = $row2['brand'];
-				$row_out[$i]['products'][$j]['long_name'] = $row2['long_name'];
-				$row_out[$i]['products'][$j]['short_name'] = $row2['short_name'];
-				$row_out[$i]['products'][$j]['hidden'] = $row2['hidden'];
-				$row_out[$i]['products'][$j]['count'] = $j;
-				$row_out[$i]['products'][$j]['models'] = array();
-				if ($row2['hidden'] == 1)
-				{
-					$j++;
-					continue;
-				}
-
-				$k = 0;
-				$model_list = $this->epm_config_hardware_get_list_models($row2['id'], true);
-				foreach($model_list as $row3)
-				{
-					//$row_out[$i]['products'][$j]['models'][$k] = $row3;
-					$row_out[$i]['products'][$j]['models'][$k]['id'] = $row3['id'];
-					$row_out[$i]['products'][$j]['models'][$k]['brand'] = $row3['brand'];
-					$row_out[$i]['products'][$j]['models'][$k]['model'] = $row3['model'];
-					$row_out[$i]['products'][$j]['models'][$k]['product_id'] = $row3['product_id'];
-					$row_out[$i]['products'][$j]['models'][$k]['enabled'] = $row3['enabled'];
-					$row_out[$i]['products'][$j]['models'][$k]['hidden'] = $row3['hidden'];
-					$row_out[$i]['products'][$j]['models'][$k]['count'] = $k;
-					$k++;
-				}
-				$j++;
-			}
-			$i++;
-		}
-		//echo "<textarea>" . print_r($row_out, true)  . "</textarea>";
-		return $row_out;
-	}
-
 
 	//TODO: PENDIENTE ACTUALIZAR Y ELIMINAR DATOS NO NECESARIOS (TEMPLATES)
 	//http://pbx.cerebelum.lan/admin/ajax.php?module=endpointman&module_sec=epm_config&module_tab=manager&command=list_all_brand

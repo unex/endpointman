@@ -115,7 +115,6 @@ class SettingsPage extends \PageBase {
 				break;
 			case "export_brands_availables":
 				$this->_manual_upload_export_brans_available();
-				echo "<br /><hr><br />";
 				exit;
 				break;
 
@@ -126,7 +125,6 @@ class SettingsPage extends \PageBase {
 
 			case "upload_brand":
 				$this->_manual_upload_brand();
-				echo "<br /><hr><br />";
 				exit;
 				break;
 
@@ -817,228 +815,174 @@ class SettingsPage extends \PageBase {
 
 
 	/**** FUNCIONES SEC MODULO "epm_advanced\manual_upload" ****/
+	/**
+	 * List the packages that "Export a brand" made.
+	 *
+	 * The files are <directory>-<unix time>.tgz in temp/export/.
+	 */
 	public function _manual_upload_list_files_brans_export()
 	{
-		$path_tmp_dir = $this->PHONE_MODULES_PATH."temp/export/";
-		$array_list_files = array();
-		$array_count_brand = array();
-
-
-		$array_list_exception= array(".", "..", ".htaccess");
-		if(file_exists($path_tmp_dir))
-		{
-			if(is_dir($path_tmp_dir))
-			{
-				$l_files = scandir($path_tmp_dir, 1);
-				$i = 0;
-				foreach ($l_files as $archivo) {
-					if (in_array($archivo, $array_list_exception)) { continue; }
-
-					$pathandfile = $path_tmp_dir.$archivo;
-					$brand = substr(pathinfo($archivo, PATHINFO_FILENAME), 0, -11);
-					$ftime = substr(pathinfo($archivo, PATHINFO_FILENAME), -10);
-
-					$array_count_brand[] = $brand;
-					$array_list_files[$i] = array("brand" => $brand,
-							"pathall" => $pathandfile,
-							"path" => $path_tmp_dir,
-							"file" => $archivo,
-							"filename" => pathinfo($archivo, PATHINFO_FILENAME),
-							"extension" => pathinfo($archivo, PATHINFO_EXTENSION),
-							"timer" => $ftime,
-							"timestamp" => date('\[Y-m-d H:i:s\]', (int)$ftime),
-							"mime_type" => mime_content_type($pathandfile),
-							"is_dir" => is_dir($pathandfile),
-							"is_file" => is_file($pathandfile),
-							"is_link" => is_link($pathandfile),
-							"readlink" => (is_link($pathandfile) == true ? readlink ($pathandfile) : NULL));
-
-					$i++;
+		$path_tmp_dir = $this->PHONE_MODULES_PATH . "temp/export/";
+		$files = array();
+		if (is_dir($path_tmp_dir)) {
+			foreach (scandir($path_tmp_dir, SCANDIR_SORT_DESCENDING) as $archivo) {
+				if (!preg_match('/^(.+)-(\d{10})\.tgz$/', $archivo, $m) || !is_file($path_tmp_dir . $archivo)) {
+					continue;
 				}
-				unset ($l_files);
-
-				$array_count_brand = array_count_values($array_count_brand);
-				ksort ($array_count_brand);
-				$array_count_brand_end = array();
-
-				foreach($array_count_brand as $key => $value) {
-					$array_count_brand_end[] = array('name' => $key , 'num' => $value);
-				}
-
-				$retarr = array("status" => true, "message" => _("List Done!"), "countlist" => count($array_list_files), "list_files" => $array_list_files, "list_brands" => $array_count_brand_end );
-				unset ($array_count_brand_end);
-				unset ($array_count_brand);
-				unset ($array_list_files);
+				$files[] = array(
+					"brand"     => $m[1],
+					"file"      => $archivo,
+					"timer"     => $m[2],
+					"timestamp" => date('Y-m-d H:i:s', (int) $m[2]),
+				);
 			}
-			else {
-				$retarr = array("status" => false, "message" => _("Is not a directory: ") . $path_tmp_dir);
-			}
-		} else {
-			$retarr = array("status" => false, "message" => _("Directory does not exist: ") . $path_tmp_dir);
 		}
-		return $retarr;
+		return array("status" => true, "message" => "OK", "countlist" => count($files), "list_files" => $files);
 	}
 
+	/**
+	 * Install the brand packages of an upload.
+	 *
+	 * The output shows in a dialog on the Brands page as HTML, so each value is
+	 * escaped.
+	 */
 	public function _manual_upload_brand()
 	{
-		if (count($_FILES["files"]["error"]) == 0) {
-			out(_("Error: Can Not Find Uploaded Files!"));
+		if (empty($_FILES["files"]["error"]) || !is_array($_FILES["files"]["error"])) {
+			out(_("Error: No file was uploaded."));
+			return;
 		}
-		else {
-			foreach ($_FILES["files"]["error"] as $key => $error) {
-				out(sprintf(_("Importing brand file %s..."), $_FILES["files"]["name"][$key]));
+		foreach ($_FILES["files"]["error"] as $key => $error) {
+			$name = basename($_FILES["files"]["name"][$key]);
+			out(sprintf(_("Installing the package %s..."), epm_esc($name)));
 
-				if ($error != UPLOAD_ERR_OK) {
-					out(sprintf(_("Error: %s"), $this->file_upload_error_message($error)));
-				}
-				else {
-					$uploads_dir = $this->PHONE_MODULES_PATH . "temp";
-					$name = $_FILES["files"]["name"][$key];
-					$extension = pathinfo($name, PATHINFO_EXTENSION);
-					if ($extension == "tgz") {
-						$tmp_name = $_FILES["files"]["tmp_name"][$key];
-						$uploads_dir_file = $uploads_dir."/".$name;
-						move_uploaded_file($tmp_name, $uploads_dir_file);
+			if ($error != UPLOAD_ERR_OK) {
+				out(sprintf(_("Error: %s"), epm_esc($this->file_upload_error_message($error))));
+				continue;
+			}
+			if (strtolower(pathinfo($name, PATHINFO_EXTENSION)) !== "tgz") {
+				out(_("Error: The package must be a .tgz file."));
+				continue;
+			}
 
-						if (file_exists($uploads_dir_file))
-						{
-							$temp_directory = sys_get_temp_dir() . "/epm_temp/";
-							if (!file_exists($temp_directory)) {
-								outn(_("Creating EPM temp directory..."));
-								if (mkdir($temp_directory) == true) {
-									out(_("Done!"));
-								}
-								else {
-									out(_("Error!"));
-								}
-							}
-							if (file_exists($temp_directory))
-							{
-								if ($this->configmod->get('debug')) {
-									outn(sprintf(_("Extracting Tarball %s to %s... "), $uploads_dir_file, $temp_directory));
-								} else {
-									outn(_("Extracting Tarball... "));
-								}
-								// extract_package() applies the same rules as for a download. It refuses
-								// the tarball when a file in it is not data.
-								$extract_error = array();
-								if (! $this->system->extract_package($uploads_dir_file, $temp_directory, $extract_error)) {
-									out(_("Error!"));
-									out($extract_error['extract_package']);
-									@unlink($uploads_dir_file);
-									continue;
-								}
-								out(_("Done!"));
+			$uploads_dir_file = $this->PHONE_MODULES_PATH . "temp/" . $name;
+			if (!move_uploaded_file($_FILES["files"]["tmp_name"][$key], $uploads_dir_file)) {
+				out(_("Error: The upload is not valid."));
+				continue;
+			}
 
-								$package = basename($name, ".tgz");
-								$package = explode("-",$package);
+			$temp_directory = sys_get_temp_dir() . "/epm_temp/";
+			if (!file_exists($temp_directory) && !mkdir($temp_directory)) {
+				out(sprintf(_("Error: Cannot make the directory %s."), epm_esc($temp_directory)));
+				@unlink($uploads_dir_file);
+				continue;
+			}
 
-								if ($this->configmod->get('debug')) {
-									out(sprintf(_("Looking for file %s to pass on to update_brand() ... "), $temp_directory.$package[0]));
-								} else {
-									out(_("Looking file and update brand's ... "));
-								}
-								if(file_exists($temp_directory.$package[0])) {
-									$this->epm->brandmanager->update_brand($package[0],FALSE);
-									//Note: no need to delete/unlink/rmdir as this is handled in update_brand()
-								} else {
-									out(_("Please name the Package the same name as your brand!"));
-								}
-							}
-						}
-						else {
-							out(_("Error: No File Provided!"));
-							//echo "File ".$this->PHONE_MODULES_PATH."temp/".$_REQUEST['package']." not found. <br />";
-						}
-					}
-					else {
-						out(_("Error: Invalid File Extension!"));
-					}
-		 		}
+			outn(_("Extracting the package... "));
+			// extract_package() applies the same rules as for a download. It refuses
+			// the package when a file in it is not data.
+			$extract_error = array();
+			if (! $this->system->extract_package($uploads_dir_file, $temp_directory, $extract_error)) {
+				out(_("Failed."));
+				out(epm_esc($extract_error['extract_package']));
+				@unlink($uploads_dir_file);
+				continue;
+			}
+			out(_("Done."));
+
+			// polycom.tgz and polycom-1790882875.tgz both name the brand polycom.
+			$package = explode("-", basename($name, ".tgz"));
+			$package = $package[0];
+			if (file_exists($temp_directory . $package)) {
+				// update_brand() removes the temporary files.
+				$this->epm->brandmanager->update_brand($package, FALSE);
+			} else {
+				out(sprintf(_("Error: The package has no %s directory. Give the package the name of the brand directory, for example polycom.tgz."), epm_esc($package)));
 			}
 		}
 	}
 
+	/**
+	 * Send an exported package.
+	 *
+	 * file_package comes from the request. basename() keeps the read in
+	 * temp/export/, and the name must have the form of an export.
+	 */
 	public function _manual_upload_export_brans_available_file()
 	{
-		if ((! isset($_REQUEST['file_package'])) OR ($_REQUEST['file_package'] == "")) {
+		$file = isset($_REQUEST['file_package']) ? basename((string) $_REQUEST['file_package']) : '';
+		$path_tmp_file = $this->PHONE_MODULES_PATH . "temp/export/" . $file;
+		if (!preg_match('/^.+-\d{10}\.tgz$/', $file) || !is_file($path_tmp_file)) {
 			header('HTTP/1.0 404 Not Found', true, 404);
-			echo "<h1>Error 404 Not Found</h1>";
-			echo "No send name file!";
-			die();
+			echo _("The file does not exist.");
+			exit;
 		}
-		else {
-			$dget['file_package'] = $_REQUEST['file_package'];
-			$path_tmp_file = $this->PHONE_MODULES_PATH."/temp/export/".$_REQUEST['file_package'];
-
-			if (! file_exists($path_tmp_file)) {
-				header('HTTP/1.0 404 Not Found', true, 404);
-				echo "<h1>Error 404 Not Found</h1>";
-				echo "File no exist!";
-				die();
-			}
-			else {
-				header('Content-Description: File Transfer');
-				header('Content-Type: application/octet-stream');
-				header('Content-Disposition: attachment; filename="'.basename($dget['file_package']).'"');
-				header('Expires: 0');
-				header('Cache-Control: must-revalidate');
-				header('Pragma: public');
-				header('Content-Length: ' . filesize($path_tmp_file));
-				readfile($path_tmp_file);
-				exit;
-			}
-			unset ($path_tmp_file);
-			unset ($dget);
-		}
+		header('Content-Description: File Transfer');
+		header('Content-Type: application/octet-stream');
+		header('Content-Disposition: attachment; filename="' . $file . '"');
+		header('Expires: 0');
+		header('Cache-Control: must-revalidate');
+		header('Pragma: public');
+		header('Content-Length: ' . filesize($path_tmp_file));
+		readfile($path_tmp_file);
 		exit;
 	}
 
+	/**
+	 * Make a package of an installed brand in temp/export/.
+	 *
+	 * The package holds the endpoint/<directory>/ tree, without firmware. The
+	 * output shows in a dialog on the Brands page as HTML.
+	 */
 	public function _manual_upload_export_brans_available()
 	{
-		if ((! isset($_REQUEST['package'])) OR ($_REQUEST['package'] == "")) {
-			out(_("Error: No package set!"));
+		$id = isset($_REQUEST['package']) ? $_REQUEST['package'] : '';
+		if (!is_numeric($id) || $id < 0) {
+			out(_("Error: Select a brand."));
+			return;
 		}
-		elseif ((! is_numeric($_REQUEST['package'])) OR ($_REQUEST['package'] < 0)) {
-			out(_("Error: Package not valid!"));
+		$row = epm_sql('SELECT `name`, `directory` FROM `endpointman_brand_list` WHERE `id` = ?', 'getRow', array($id));
+		if (empty($row)) {
+			out(_("Error: There is no brand with this ID."));
+			return;
 		}
-		else {
-			$dget['package'] = $_REQUEST['package'];
+		$source = $this->PHONE_MODULES_PATH . "endpoint/" . $row['directory'];
+		if (!is_dir($source)) {
+			out(sprintf(_("Error: %s is not installed."), epm_esc($row['name'])));
+			return;
+		}
 
-			$sql = 'SELECT `name`, `directory` FROM `endpointman_brand_list` WHERE `id` = ?';
-			$sql_p = array($dget['package']);
-			$row = epm_sql($sql, 'getRow', $sql_p);
-
-			if ($row == "") {
-				out(_("Error: ID Package send not valid, brand not exist!"));
-			}
-			else {
-				outn(sprintf(_("Exporting %s ... "), $row['name']));
-
-				//TODO:Añadir validacion de si se ha creado el dire correctamente!!!!
-				if(!file_exists($this->PHONE_MODULES_PATH."/temp/export/")) {
-					mkdir($this->PHONE_MODULES_PATH."/temp/export/");
+		outn(sprintf(_("Exporting %s... "), epm_esc($row['name'])));
+		$export_dir = $this->PHONE_MODULES_PATH . "temp/export/";
+		if (!is_dir($export_dir) && !mkdir($export_dir, 0775, true)) {
+			out(_("Failed."));
+			out(sprintf(_("Error: Cannot make the directory %s."), epm_esc($export_dir)));
+			return;
+		}
+		$tar = $export_dir . $row['directory'] . "-" . time() . ".tar";
+		try {
+			$phar = new \PharData($tar);
+			$files = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($source, \FilesystemIterator::SKIP_DOTS));
+			foreach ($files as $path => $info) {
+				$relative = substr($path, strlen($this->PHONE_MODULES_PATH . "endpoint/"));
+				if (!$info->isFile() || preg_match('#(^|/)(firmware|\.svn)(/|$)#', $relative)) {
+					continue;
 				}
-				$time = time();
-				$archive = $this->PHONE_MODULES_PATH . "temp/export/" . $row['directory'] . "-" . $time . ".tgz";
-				$cmd = "tar zcf " . escapeshellarg($archive)
-				     . " --exclude .svn --exclude firmware -C " . escapeshellarg($this->PHONE_MODULES_PATH . "endpoint")
-				     . " " . escapeshellarg($row['directory']) . " 2>&1";
-				exec($cmd, $tar_output, $tar_status);
-				if ($tar_status !== 0) {
-					out(_("Error!"));
-					out(sprintf(_("tar failed: %s"), implode(" ", $tar_output)));
-					return;
-				}
-				out(_("Done!") . "<br />");
-
-
-				out(_("Click this link to download:"). "<br />");
-				out("<a href='config.php?display=endpointman&view=settings&subpage=manual_upload&command=export_brands_availables_file&file_package=".$row['directory']."-".$time.".tgz' class='btn btn-success btn-lg active btn-block' role='button' target='_blank'>" . _("Here")."</a>");
-				//echo "Done! Click this link to download:<a href='modules/_ep_phone_modules/temp/export/".$row['directory']."-".$time.".tgz' target='_blank'>Here</a>";
+				$phar->addFile($path, $relative);
 			}
-			unset ($dget);
+			$phar->compress(\Phar::GZ, '.tgz');
+			unset($phar);
+			@unlink($tar);
+		} catch (\Exception $e) {
+			@unlink($tar);
+			out(_("Failed."));
+			out(epm_esc($e->getMessage()));
+			return;
 		}
+		out(_("Done."));
+
+		$url = 'config.php?display=endpointman&view=settings&command=export_brands_availables_file&file_package=' . rawurlencode(basename($tar, '.tar') . '.tgz');
+		out('<a href="' . epm_esc($url) . '" class="btn btn-primary mt-2">' . _("Download the package") . '</a>');
 	}
 
 
@@ -1166,67 +1110,42 @@ class SettingsPage extends \PageBase {
 
 
 	/**** FUNCIONES SEC MODULO "epm_advanced\oui_manager" ****/
+	/**
+	 * Delete a custom MAC prefix. The prefixes from the brand packages stay.
+	 */
 	private function _oui_remove()
 	{
-		//TODO: Añadir validacion de si es custom o no
-		if ((! isset($_REQUEST['id_del'])) OR ($_REQUEST['id_del'] == "")) {
-			$retarr = array("status" => false, "message" => _("No ID set!"));
+		if (!isset($_REQUEST['id_del']) || !is_numeric($_REQUEST['id_del']) || $_REQUEST['id_del'] < 0) {
+			return array("status" => false, "message" => _("Select a MAC prefix."));
 		}
-		elseif ((! is_numeric($_REQUEST['id_del'])) OR ($_REQUEST['id_del'] < 0)) {
-			$retarr = array("status" => false, "message" => _("ID  not valid!"), "id" => $_REQUEST['id']);
+		$id = $_REQUEST['id_del'];
+		$custom = epm_sql('SELECT custom FROM endpointman_oui_list WHERE id = ?', 'getOne', array($id));
+		if ($custom != 1) {
+			return array("status" => false, "message" => _("Only a custom MAC prefix can be deleted. A brand update adds the built-in prefixes again."));
 		}
-		else
-		{
-			$dget['id'] = $_REQUEST['id_del'];
-
-			$sql = 'DELETE FROM endpointman_oui_list WHERE id = ?';
-			$sql_p = array($dget['id']);
-			epm_sql($sql, 'query', $sql_p);
-
-			$retarr = array("status" => true, "message" => "OK", "id" => $dget['id']);
-			unset($dget);
-		}
-		return $retarr;
+		epm_sql('DELETE FROM endpointman_oui_list WHERE id = ? AND custom = 1', 'query', array($id));
+		return array("status" => true, "message" => "OK", "id" => $id);
 	}
 
+	/**
+	 * Add a custom MAC prefix for a brand.
+	 */
 	private function _oui_add()
 	{
-		//TODO: Pendiente añadir isExiste datos.
-		if ((! isset($_REQUEST['number_new_oui'])) OR ($_REQUEST['number_new_oui'] == "")) {
-			$retarr = array("status" => false, "message" => _("No OUI set!"));
+		$oui = isset($_REQUEST['number_new_oui']) ? strtoupper(preg_replace('/[\s:\-]/', '', (string) $_REQUEST['number_new_oui'])) : '';
+		if (!preg_match('/^[0-9A-F]{6}$/', $oui)) {
+			return array("status" => false, "message" => _("A MAC prefix is 6 hexadecimal characters, for example 0004F2."));
 		}
-		elseif ((! isset($_REQUEST['brand_new_oui'])) OR ($_REQUEST['brand_new_oui'] == "")) {
-			$retarr = array("status" => false, "message" => _("No Brand set!"));
+		$brand = isset($_REQUEST['brand_new_oui']) ? $_REQUEST['brand_new_oui'] : '';
+		if (!is_numeric($brand) || !epm_sql('SELECT id FROM endpointman_brand_list WHERE id = ?', 'getOne', array($brand))) {
+			return array("status" => false, "message" => _("Select a brand."));
 		}
-		else {
-			$dget['oui'] = $_REQUEST['number_new_oui'];
-			$dget['brand'] = $_REQUEST['brand_new_oui'];
-
-			$sql = 'INSERT INTO  endpointman_oui_list (oui, brand, custom) VALUES (?,  ?,  \'1\')';
-			$sql_p = array($dget['oui'], $dget['brand']);
-			epm_sql($sql, 'query', $sql_p);
-
-			$retarr = array("status" => true, "message" => "OK", "oui" => $dget['oui'], "brand" => $dget['brand']);
-			unset($dget);
+		if (epm_sql('SELECT id FROM endpointman_oui_list WHERE oui = ?', 'getOne', array($oui))) {
+			return array("status" => false, "message" => _("This MAC prefix is already in the list."));
 		}
-		return $retarr;
+		epm_sql('INSERT INTO endpointman_oui_list (oui, brand, custom) VALUES (?, ?, \'1\')', 'query', array($oui, $brand));
+		return array("status" => true, "message" => "OK", "oui" => $oui, "brand" => $brand);
 	}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
     /**

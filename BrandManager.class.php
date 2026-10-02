@@ -133,7 +133,7 @@ class BrandManager {
 
 
         if (!$master_result || !file_exists($this->PHONE_MODULES_PATH . "endpoint/master.json")) {
-        	$error['brand_update_check_master'] = _("Error: Not able to connect to repository. Using local master file instead.");
+        	$error['brand_update_check_master'] = _("Cannot reach the package server. The module uses the brand list that it got before.");
         	if ($echomsg == true ) {
         		out($error['brand_update_check_master']);
         	}
@@ -144,7 +144,7 @@ class BrandManager {
         // Without a download and without an older copy, there is no brand list. This
         // happens on a first install when the web server cannot write endpoint/.
         if (!is_array($temp) || !isset($temp['data']['brands']) || !is_array($temp['data']['brands'])) {
-        	$error['brand_update_check_master_file'] = sprintf(_("Error: No brand list. Make sure that '%s' exists and that the web server can write to it. 'fwconsole chown' sets the correct owner."), $this->PHONE_MODULES_PATH . 'endpoint/');
+        	$error['brand_update_check_master_file'] = sprintf(_("Error: No brand list. Make sure that %s exists and that the web server can write to it. The command fwconsole chown sets the correct owner."), epm_esc($this->PHONE_MODULES_PATH . 'endpoint/'));
         	if ($echomsg == true ) {
         		out($error['brand_update_check_master_file']);
         	}
@@ -173,13 +173,13 @@ class BrandManager {
                     $local = epm_sql('SELECT local FROM endpointman_brand_list WHERE directory = ?', 'getOne', array($data['directory']));
                     if (!$local) {
                     	if ($echomsg == true) {
-                    		out(sprintf(_("Update Brand (%s):"), $data['name']));
+                    		out(sprintf(_("Brand %s:"), epm_esc($data['name'])));
                     		$result = $this->system->download_file_with_progress_bar($this->UPDATE_PATH . $data['directory'] . "/" . $data['directory'] . ".json", $this->PHONE_MODULES_PATH . "endpoint/" . $data['directory'] . "/brand_data.json");
                     	} else {
                     		$result = $this->system->download_file($this->UPDATE_PATH . $data['directory'] . "/" . $data['directory'] . ".json", $this->PHONE_MODULES_PATH . "endpoint/" . $data['directory'] . "/brand_data.json");
                     	}
                         if (!$result) {
-                        	$error['brand_update_check'] = sprintf(_("Not able to connect to repository. Using local brand [%s] file instead."), $data['name']);
+                        	$error['brand_update_check'] = sprintf(_("Cannot get the brand file of %s. The module uses the file that it got before."), epm_esc($data['name']));
                         	if ($echomsg == true ) {
                         		out($error['brand_update_check']);
                         	}
@@ -211,7 +211,7 @@ class BrandManager {
 							$sql_p = array($temp['brand_id']);
 							$datoif = epm_sql($sql, 'getOne', $sql_p);
 							if ($datoif != "") {
-								$error['brand_update_id_exist_other_brand'] = sprintf(_("You can not add the mark (%s) as the ID (%d) already exists in the database!"), $temp['name'], $temp['brand_id']);
+								$error['brand_update_id_exist_other_brand'] = sprintf(_("Cannot add the brand %s, because a different brand has the ID %d."), epm_esc($temp['name']), $temp['brand_id']);
 								if ($echomsg == true ) {
 									out($error['brand_update_id_exist_other_brand']);
 								}
@@ -225,7 +225,7 @@ class BrandManager {
                             //in database already!
                         }
                     } else {
-                    	$error['brand_update_check_local_file'] = sprintf(_("Error: No Local File for %s !"), $data['name'])."<br />"._("A brand package can be uploaded by hand from Advanced Settings, Manual Upload.");
+                    	$error['brand_update_check_local_file'] = sprintf(_("Error: No brand file for %s."), epm_esc($data['name']))."<br />".sprintf(_("You can upload the brand package on %s."), _("Brands > Upload and export"));
                     	if ($echomsg == true ) {
                     		out($error['brand_update_check_local_file']);
                     	}
@@ -249,14 +249,14 @@ class BrandManager {
                     }
                 }
             } else {
-            	$error['brand_update_check_master_file'] = _("Error: Aborting Brand Downloads. Can't Get Master File, Assuming Timeout Issues!")."<br />"._("You can upload a brand package by hand from Advanced Settings.");
+            	$error['brand_update_check_master_file'] = _("Error: Cannot get the brand list from the package server. The module downloads no brands.")."<br />".sprintf(_("You can upload a brand package on %s."), _("Brands > Upload and export"));
             	if ($echomsg == true ) {
             		out($error['brand_update_check_master_file']);
             	}
             }
             return $out;
         } else {
-        	$error['remote_server'] = _("Error: The Remote Server Is Currently Syncing With the Master Server, Please try again later");
+        	$error['remote_server'] = _("Error: The package server is busy with an update. Try again later.");
         	if ($echomsg == true ) {
         		out($error['remote_server']);
         	}
@@ -343,63 +343,63 @@ class BrandManager {
      * @param integer $id Brand ID
      */
     function download_brand($id) {
-    	out(_("Install/Update Brand..."));
+    	out(_("Installing the brand..."));
 
         $temp_directory = $this->system->sys_get_temp_dir() . "/epm_temp/";
         if (!file_exists($temp_directory)) {
-            out(_("Creating EPM temp directory"));
+            out(_("Making the temporary directory..."));
             if (! mkdir($temp_directory, 0775, true)) {
-                out(sprintf(_("Error: Failed to create the directory '%s', please Check Permissions!"), $temp_directory));
+                out(sprintf(_("Error: Cannot make the directory %s. Check the permissions."), epm_esc($temp_directory)));
                 return false;
             }
         }
         // The usual cause of this failure is a temp directory that a different user
         // left. Report it here, not four steps later as "Can't Find Downloaded File!".
         if (! is_writable($temp_directory)) {
-            out(sprintf(_("Error: The web server cannot write to '%s'. Check the owner. 'fwconsole chown' sets the correct owner."), $temp_directory));
+            out(sprintf(_("Error: The web server cannot write to %s. The command fwconsole chown sets the correct owner."), epm_esc($temp_directory)));
             return false;
         }
 
-        outn(_("Downloading Brand JSON..... "));
+        outn(_("Downloading the brand file... "));
         $row = epm_sql('SELECT * FROM endpointman_brand_list WHERE id = ?', 'getAll', array($id));
         if (empty($row)) {
-            out(sprintf(_("Error: No such brand: %s"), $id));
+            out(sprintf(_("Error: There is no brand with the ID %s."), epm_esc($id)));
             return false;
         }
 
         $download_error = array();
         $result = $this->system->download_file($this->UPDATE_PATH . $row[0]['directory'] . "/" . $row[0]['directory'] . ".json", $this->PHONE_MODULES_PATH . "endpoint/" . $row[0]['directory'] . "/brand_data.json", $download_error);
         if (! $result) {
-            out(_("Error!"));
-            out(sprintf(_("Error connecting to the package repository at %s. Brand not installed."), $this->UPDATE_PATH));
+            out(_("Failed."));
+            out(sprintf(_("Cannot reach the package server at %s. The brand is not installed."), epm_esc($this->UPDATE_PATH)));
             // download_file() gives the reason. An unwritable directory and a dead server
             // need different fixes.
             if (!empty($download_error['download_file'])) {
                 out($download_error['download_file']);
             }
-            out(_("You can also upload the brand package by hand: Advanced Settings, Manual Upload."));
+            out(sprintf(_("You can also upload the brand package on %s."), _("Brands > Upload and export")));
             return false;
         }
-        out(_("Done!"));
+        out(_("Done."));
 
         $temp = $this->file2json($this->PHONE_MODULES_PATH . 'endpoint/' . $row[0]['directory'] . '/brand_data.json');
         if (! is_array($temp) || ! isset($temp['data']['brands']['package'])) {
-            out(sprintf(_("Error: %s served a brand file with no package in it."), $this->UPDATE_PATH));
+            out(sprintf(_("Error: The brand file from %s names no package."), epm_esc($this->UPDATE_PATH)));
             return false;
         }
         $package = basename($temp['data']['brands']['package']);
 
-        out(_("Downloading Brand Package..."));
+        out(_("Downloading the brand package..."));
         $download_error = array();
         if (! $this->system->download_file_with_progress_bar($this->UPDATE_PATH . $row[0]['directory'] . '/' . $package, $temp_directory . $package, $download_error)) {
-            out(_("Error download Brand package!"));
+            out(_("Error: The download of the brand package failed."));
             if (!empty($download_error['download_file'])) {
                 out($download_error['download_file']);
             }
             return false;
         }
         if (! file_exists($temp_directory . $package)) {
-            out(_("Error: Can't Find Downloaded File!"));
+            out(_("Error: Cannot find the downloaded file."));
             return false;
         }
 
@@ -410,30 +410,30 @@ class BrandManager {
         $md5_xml = isset($temp['data']['brands']['md5sum']) ? $temp['data']['brands']['md5sum'] : '';
         $md5_pkg = md5_file($temp_directory . $package);
 
-        outn(_("Checking MD5sum of Package.... "));
+        outn(_("Checking the MD5 sum of the package... "));
         if ($md5_xml === '') {
             out(_("Error: The brand file has no md5sum, so the module refuses the package."));
             unlink($temp_directory . $package);
             return false;
         }
         if ($md5_xml !== $md5_pkg) {
-            out(_("MD5 Did not match!"));
-            out(sprintf(_("MD5 XML: %s"), $md5_xml));
-            out(sprintf(_("MD5 PKG: %s"), $md5_pkg));
+            out(_("Error: The MD5 sum is not correct."));
+            out(sprintf(_("Expected MD5: %s"), epm_esc($md5_xml)));
+            out(sprintf(_("Package MD5: %s"), epm_esc($md5_pkg)));
             unlink($temp_directory . $package);
             return false;
         }
-        out(_("Done!"));
+        out(_("Done."));
 
-        outn(_("Extracting Tarball........ "));
+        outn(_("Extracting the package... "));
         $extract_error = array();
         if (! $this->system->extract_package($temp_directory . $package, $temp_directory, $extract_error)) {
-            out(_("Error!"));
+            out(_("Failed."));
             out($extract_error['extract_package']);
             unlink($temp_directory . $package);
             return false;
         }
-        out(_("Done!"));
+        out(_("Done."));
 
         //Update File in the temp directory
         copy($this->PHONE_MODULES_PATH . 'endpoint/' . $row[0]['directory'] . '/brand_data.json', $temp_directory . $row[0]['directory'] . '/brand_data.json');
@@ -446,16 +446,16 @@ class BrandManager {
      * Still needs way to determine when models move...perhaps another function?
      */
     function update_brand($package, $remote=TRUE) {
-    	out(sprintf(_("Update Brand %s ... "), $package));
+    	out(sprintf(_("Updating the brand %s..."), epm_esc($package)));
 
 		$temp_directory = $this->system->sys_get_temp_dir() . "/epm_temp/";
 		//DEBUG
-		out(_("Processing ".$temp_directory.$package."/brand_data.json..."));
+		out(sprintf(_("Reading %s..."), epm_esc($temp_directory.$package."/brand_data.json")));
 
         if (file_exists($temp_directory . $package . '/brand_data.json')) {
             $temp = $this->file2json($temp_directory . $package . '/brand_data.json');
             if (key_exists('directory', $temp['data']['brands'])) {
-				out(_("Appears to be a valid Provisioner.net JSON file.....Continuing"));
+				out(_("The brand file is valid."));
                 //Pull in all variables
                 $directory = $temp['data']['brands']['directory'];
                 $brand_name = $temp['data']['brands']['name'];
@@ -463,7 +463,7 @@ class BrandManager {
                 $brand_version = $temp['data']['brands']['last_modified'];
 
                 //create directory structure and move files
-                out(sprintf(_("Creating Directory Structure for Brand '%s' and Moving Files..."), $brand_name));
+                out(sprintf(_("Copying the files of %s..."), epm_esc($brand_name)));
 
                 if (!file_exists($this->PHONE_MODULES_PATH . "endpoint/" . $directory)) {
                     mkdir($this->PHONE_MODULES_PATH . "endpoint/" . $directory);
@@ -483,7 +483,7 @@ class BrandManager {
                             $dir = str_replace($temp_directory . $directory . "/", "", $file);
                             $stats = rename($file, $this->PHONE_MODULES_PATH . "endpoint/" . $directory . "/" . $dir);
                             if ($stats === FALSE) {
-                            	out(sprintf(_("- Error Moving %s!"), basename($file)));
+                            	out(sprintf(_("- Error: Cannot move %s."), epm_esc(basename($file))));
                             }
                             // Data only. No file of a package needs the execute bit.
                             chmod($this->PHONE_MODULES_PATH . "endpoint/" . $directory . "/" . $dir, 0664);
@@ -491,7 +491,7 @@ class BrandManager {
                         }
                     }
                 }
-                out(_("All Done!"));
+                out(_("Done."));
 
                 if ($remote) {
                     $local = 0;
@@ -503,22 +503,22 @@ class BrandManager {
                 // it into the SQL text.
                 $b_data = epm_sql('SELECT id FROM endpointman_brand_list WHERE id = ?', 'getOne', array($brand_id));
                 if ($b_data) {
-                	outn(sprintf(_("Updating %s brand data ..."), $brand_name));
+                	outn(sprintf(_("Updating the data of %s... "), epm_esc($brand_name)));
                     $sql = 'UPDATE endpointman_brand_list SET local = ?, name = ?, cfg_ver = ?, installed = 1, hidden = 0 WHERE id = ?';
                     $sql_p = array($local, $brand_name, $brand_version, $brand_id);
                     epm_sql($sql, 'query', $sql_p);
-                    out(_("Done!"));
+                    out(_("Done."));
                 } else {
-                	outn(sprintf(_("Inserting %s brand data ..."), $brand_name));
+                	outn(sprintf(_("Adding the data of %s... "), epm_esc($brand_name)));
 					$sql = 'INSERT INTO endpointman_brand_list (id, name, directory, cfg_ver, local, installed) VALUES (?, ?, ?, ?, ?, \'1\')';
 					$sql_p = array($brand_id, $brand_name, $directory, $brand_version, $local);
                     epm_sql($sql, 'query', $sql_p);
-                    out(_("Done!"));
+                    out(_("Done."));
                 }
 
                 $last_mod = "";
                 foreach ($temp['data']['brands']['family_list'] as $family_list) {
-					out(_("Updating Family Lines ..."));
+					out(_("Updating the families..."));
 
                     $last_mod = max($last_mod, $family_list['last_modified']);
 
@@ -527,7 +527,7 @@ class BrandManager {
 
                     $require_firmware = NULL;
                     if ((key_exists('require_firmware', $family_line_xml['data'])) && ($remote) && ($family_line_xml['data']['require_firmware'] == "TRUE")) {
-						out(_("Firmware Requirment Detected!.........."));
+						out(_("This family has firmware."));
 						$this->install_firmware($family_line_xml['data']['id']);
                     }
 
@@ -550,7 +550,7 @@ class BrandManager {
 
 
 					if (count($family_line_xml['data']['model_list']) > 0) {
-						out(_("-- Updating Model Lines ... "));
+						out(_("-- Updating the models..."));
 	                    foreach ($family_line_xml['data']['model_list'] as $model_list) {
 	                        $template_list = implode(",", $model_list['template_data']);
 
@@ -562,7 +562,7 @@ class BrandManager {
 	                        foreach ($old_data as $data) {
 	                            $global_custom_cfg_data = epm_blob_decode($data['global_custom_cfg_data']);
 	                            if ((is_array($global_custom_cfg_data)) AND (!array_key_exists('data', $global_custom_cfg_data))) {
-outn(_("----Old Data Detected! Migrating ... "));
+outn(_("---- Converting old data... "));
 	                                $new_data = array();
 	                                $new_ari = array();
 	                                foreach ($global_custom_cfg_data as $key => $old_keys) {
@@ -583,7 +583,7 @@ outn(_("----Old Data Detected! Migrating ... "));
 	                                $sql = 'UPDATE endpointman_mac_list SET  global_custom_cfg_data =  ? WHERE  id =?';
 	                                $sql_p = array($final_data, $data['id']);
 	                                epm_sql($sql, 'query', $sql_p);
-									out(_("Done!"));
+									out(_("Done."));
 	                            }
 
 	                            $global_user_cfg_data = epm_blob_decode($data['global_user_cfg_data']);
@@ -603,7 +603,7 @@ outn(_("----Old Data Detected! Migrating ... "));
 	                                }
 	                            }
 	                            if ((is_array($global_user_cfg_data)) AND ($old_check)) {
-outn(_("Old Data Detected! Migrating ... "));
+outn(_("Converting old data... "));
 	                                $new_data = array();
 	                                foreach ($global_user_cfg_data as $key => $old_keys) {
 	                                    if (array_key_exists('value', $old_keys)) {
@@ -620,7 +620,7 @@ outn(_("Old Data Detected! Migrating ... "));
 	                                $sql = 'UPDATE endpointman_mac_list SET  global_user_cfg_data =  ? WHERE  id =?';
 	                                $sql_p = array($final_data, $data['id']);
 	                                epm_sql($sql, 'query', $sql_p);
-									out(_("Done!"));
+									out(_("Done."));
 	                            }
 	                        }
 	                        $old_data = NULL;
@@ -630,7 +630,7 @@ outn(_("Old Data Detected! Migrating ... "));
 	                        foreach ($old_data as $data) {
 	                            $global_custom_cfg_data = epm_blob_decode($data['global_custom_cfg_data']);
 	                            if ((is_array($global_custom_cfg_data)) AND (!array_key_exists('data', $global_custom_cfg_data))) {
-out(_("Old Data Detected! Migrating ... "));
+out(_("Converting old data... "));
 	                                $new_data = array();
 	                                $new_ari = array();
 	                                foreach ($global_custom_cfg_data as $key => $old_keys) {
@@ -651,7 +651,7 @@ out(_("Old Data Detected! Migrating ... "));
 	                                $sql = 'UPDATE endpointman_template_list SET  global_custom_cfg_data =  ? WHERE  id =?';
 	                                $sql_p = array($final_data, $data['id']);
 	                                epm_sql($sql, 'query', $sql_p);
-									out(_("Done!"));
+									out(_("Done."));
 	                            }
 	                        }
 
@@ -670,8 +670,8 @@ if ($this->configmod->get('debug')) echo format_txt(_("---Inserting Model %_NAME
 
 	                        //echo "brand_id:".$brand_id. " - family_line_xml:" . $family_line_xml['data']['id'] . "- model_list:" . $model_list['id']."<br>";
 	                        if (!$this->sync_model($brand_id . $family_line_xml['data']['id'] . $model_list['id'], $errlog)) {
-	                        	out(_("Error: System Error in Sync Model Function, Load Failure!"));
-								out(_("Error: ").$errlog['sync_model']);
+	                        	out(_("Error: The model update failed."));
+								out(_("Error: ") . epm_esc($errlog['sync_model']));
 	                        }
 	                        unset ($errlog);
 	                    }
@@ -685,7 +685,7 @@ if ($this->configmod->get('debug')) echo format_txt(_("---Inserting Model %_NAME
                     $products = epm_sql($sql, 'getall', $sql_p);
                     foreach ($products as $data) {
                         if (!$this->system->arraysearchrecursive($data['model'], $family_line_xml['data']['model_list'], 'model')) {
-							outn(sprintf(_("Moving/Removing Model '%s' not present in JSON file ... "), $data['model']));
+							outn(sprintf(_("Removing the model %s, which the brand file does not list... "), epm_esc($data['model'])));
                             $model_name = $data['model'];
                             $sql = 'DELETE FROM endpointman_model_list WHERE id = ?';
                             $sql_p = array($data['id']);
@@ -701,14 +701,14 @@ if ($this->configmod->get('debug')) echo format_txt(_("---Inserting Model %_NAME
                                 $sql_p = array($data['id']);
                             }
                             epm_sql($sql, 'query', $sql_p);
-                            out(_("Done!"));
+                            out(_("Done."));
                         }
                     }
                 }
-				out(_("All Done!"));
+				out(_("Done."));
 				//END Updating Family Lines
 
-				outn(_("Updating OUI list in DB ... "));
+				outn(_("Updating the MAC prefixes... "));
 				if ((isset($temp['data']['brands']['oui_list'])) AND (count($temp['data']['brands']['oui_list']) > 0))
 				{
 	                foreach ($temp['data']['brands']['oui_list'] as $oui) {
@@ -717,17 +717,17 @@ if ($this->configmod->get('debug')) echo format_txt(_("---Inserting Model %_NAME
 	                    epm_sql($sql, 'query', $sql_p);
 	                }
 				}
-				out(_("Done!"));
+				out(_("Done."));
             } else {
-				outn(sprintf(_("Error: Invalid JSON Structure in %s/brand_data.json"), $temp_directory.$package));
+				outn(sprintf(_("Error: %s is not a valid brand file."), epm_esc($temp_directory.$package."/brand_data.json")));
             }
         } else {
-			out(_("Error: No 'brand_data.xml' file exists!"));
+			out(_("Error: The package has no brand_data.json file."));
         }
 
-		outn(_("Removing Temporary Files... "));
+		outn(_("Removing the temporary files... "));
         $this->system->rmrf($temp_directory . $package);
-        out(_("Done!"));
+        out(_("Done."));
     }
 
 	/**
@@ -736,7 +736,7 @@ if ($this->configmod->get('debug')) echo format_txt(_("---Inserting Model %_NAME
      * @param int $id Brand ID
      */
     function remove_brand($id=NULL) {
-		out(_("Uninstalla Brand..."));
+		out(_("Removing the brand..."));
 
         $sql = 'SELECT id, firmware_vers FROM endpointman_product_list WHERE brand = ?';
         $sql_p = array($id);
@@ -753,7 +753,7 @@ if ($this->configmod->get('debug')) echo format_txt(_("---Inserting Model %_NAME
         $brand_dir = epm_sql($sql, 'getOne', $sql_p);
         $brand_path = $this->PHONE_MODULES_PATH . "endpoint/" . $brand_dir;
         if (!$this->system->rmrf($brand_path)) {
-            out(sprintf(_("Warning: Some files under '%s' remain. Check the owner. A new install of this brand fails until you remove them."), $brand_path));
+            out(sprintf(_("Warning: Some files in %s remain. Check the owner. A new install of this brand fails until you remove them."), epm_esc($brand_path)));
         }
 
         $sql = 'DELETE FROM endpointman_model_list WHERE brand = ?';
@@ -773,7 +773,7 @@ if ($this->configmod->get('debug')) echo format_txt(_("---Inserting Model %_NAME
         $sql_p = array($id);
         epm_sql($sql, 'query', $sql_p);
 
-		out(_("All Done!"));
+		out(_("Done."));
     }
 
 	/**
@@ -788,32 +788,32 @@ if ($this->configmod->get('debug')) echo format_txt(_("---Inserting Model %_NAME
      * @return bool
      */
     function install_firmware($product_id) {
-    	out(_("Install firmware... "));
+    	out(_("Installing the firmware..."));
 
         $temp_directory = $this->system->sys_get_temp_dir() . "/epm_temp/";
         $sql = 'SELECT endpointman_product_list.*, endpointman_brand_list.directory FROM endpointman_product_list, endpointman_brand_list WHERE endpointman_product_list.brand = endpointman_brand_list.id AND endpointman_product_list.id = ?';
         $sql_p = array($product_id);
         $row = epm_sql($sql, 'getRow', $sql_p);
         if (empty($row)) {
-            out(sprintf(_("Error: No such product: %s"), $product_id));
+            out(sprintf(_("Error: There is no family with the ID %s."), epm_esc($product_id)));
             return false;
         }
         $json_data = $this->file2json($this->PHONE_MODULES_PATH . "endpoint/" . $row['directory'] . "/" . $row['cfg_dir'] . "/family_data.json");
 
         if ((! isset($json_data['data']['firmware_ver'])) OR (empty($json_data['data']['firmware_ver']))) {
-        	out (_("This family publishes no firmware version, so there is nothing to install."));
-        	out (_("Firmware can be uploaded by hand: Advanced Settings, Manual Upload."));
+        	out (_("This family has no firmware version. There is nothing to install."));
+        	out (_("Copy the firmware files to the TFTP directory yourself."));
         	return false;
         }
 
         if ((! isset($json_data['data']['firmware_pkg'])) OR (empty($json_data['data']['firmware_pkg'])) OR ($json_data['data']['firmware_pkg'] == "NULL")) {
-        	out (_("This family names no firmware package, so there is nothing to download."));
-        	out (_("Firmware can be uploaded by hand: Advanced Settings, Manual Upload."));
+        	out (_("This family names no firmware package. There is nothing to download."));
+        	out (_("Copy the firmware files to the TFTP directory yourself."));
         	return false;
         }
 
         if ($json_data['data']['firmware_ver'] <= $row['firmware_vers']) {
-			out(_("Your Firmware is already up to date."));
+			out(_("The firmware is up to date."));
 			return true;
         }
 
@@ -831,24 +831,24 @@ if ($this->configmod->get('debug')) echo format_txt(_("---Inserting Model %_NAME
         $have_local = file_exists($temp_directory . $firmware_pkg)
                    && md5_file($temp_directory . $firmware_pkg) === $md5_xml;
         if ($have_local) {
-			out(_("Skipping download, updated local version..."));
+			out(_("The firmware package is already on this server. The module does not download it again."));
         } else {
-			out(_("Downloading firmware..."));
+			out(_("Downloading the firmware..."));
             if (! $this->system->download_file_with_progress_bar($this->UPDATE_PATH . $row['directory'] . "/" . $firmware_pkg, $temp_directory . $firmware_pkg)) {
-				out(sprintf(_("Error: %s does not serve %s."), $this->UPDATE_PATH, $firmware_pkg));
-				out(_("The package repository does not publish firmware. Upload it manually: Advanced Settings, Manual Upload."));
+				out(sprintf(_("Error: %s does not have %s."), epm_esc($this->UPDATE_PATH), epm_esc($firmware_pkg)));
+				out(_("The package server does not publish firmware. Copy the firmware files to the TFTP directory yourself."));
 				return false;
 			}
         }
 
-		outn(_("Checking MD5sum of Package... "));
+		outn(_("Checking the MD5 sum of the package... "));
         $md5_pkg = md5_file($temp_directory . $firmware_pkg);
         if ($md5_xml !== $md5_pkg) {
-			out(_("Firmware MD5 didn't match!"));
+			out(_("Error: The MD5 sum of the firmware is not correct."));
 			unlink($temp_directory . $firmware_pkg);
 			return false;
         }
-		out(_("Matches!"));
+		out(_("Correct."));
 
         $family_dir   = $temp_directory . $row['directory'] . "/" . $row['cfg_dir'];
         $firmware_dir = $family_dir . "/firmware";
@@ -859,7 +859,7 @@ if ($this->configmod->get('debug')) echo format_txt(_("---Inserting Model %_NAME
             mkdir($family_dir, 0775, TRUE);
         }
 
-		out(_("Installing Firmware..."));
+		out(_("Installing the firmware files..."));
         $extract_error = array();
         if (! $this->system->extract_package($temp_directory . $firmware_pkg, $family_dir, $extract_error)) {
             out($extract_error['extract_package']);
@@ -871,7 +871,7 @@ if ($this->configmod->get('debug')) echo format_txt(_("---Inserting Model %_NAME
         // no value, and implode() gives a TypeError on PHP 8.
         $files = glob($firmware_dir . "/*");
         if (empty($files)) {
-            out(sprintf(_("Error: %s contains no firmware files."), $firmware_pkg));
+            out(sprintf(_("Error: %s contains no firmware files."), epm_esc($firmware_pkg)));
             $this->system->rmrf($temp_directory . $row['directory']);
             return false;
         }
@@ -882,10 +882,10 @@ if ($this->configmod->get('debug')) echo format_txt(_("---Inserting Model %_NAME
             $file = basename($filename);
             $list[] = $file;
             if (!@copy($filename, $this->configmod->get('config_location') . $file)) {
-            	out(sprintf(_("- Failed To Copy %s!"), $file));
+            	out(sprintf(_("- Error: Cannot copy %s."), epm_esc($file)));
                 $copy_error = TRUE;
             } elseif ($this->configmod->get('debug')) {
-				out(sprintf(_("- Copied %s to %s."), $file, $this->configmod->get('config_location')));
+				out(sprintf(_("- Copied %s to %s."), epm_esc($file), epm_esc($this->configmod->get('config_location'))));
             }
         }
 
@@ -895,13 +895,13 @@ if ($this->configmod->get('debug')) echo format_txt(_("---Inserting Model %_NAME
         epm_sql($sql, 'query', $sql_p);
 
         if ($copy_error) {
-			out(_("Copy Error Detected! Aborting Install!"));
+			out(_("Error: A copy failed. The install stops."));
             $this->remove_firmware($product_id);
-			out(_("Info: Please Check Directory/Permissions!"));
+			out(_("Check the directory and its permissions."));
 			return false;
         }
 
-		out(_("Done!"));
+		out(_("Done."));
 		return true;
     }
 
@@ -910,7 +910,7 @@ if ($this->configmod->get('debug')) echo format_txt(_("---Inserting Model %_NAME
      * @param int $id Product ID
      */
     function remove_firmware($id) {
-		outn(_("Uninstalla frimware... "));
+		outn(_("Removing the firmware... "));
 
         $sql = 'SELECT firmware_files FROM  endpointman_product_list WHERE  id =?';
         $sql_p = array($id);
@@ -928,7 +928,7 @@ if ($this->configmod->get('debug')) echo format_txt(_("---Inserting Model %_NAME
         $sql_p = array($id);
         epm_sql($sql, 'query', $sql_p);
 
-		out(_("Done!"));
+		out(_("Done."));
     }
 
 
@@ -987,7 +987,10 @@ if ($this->configmod->get('debug')) echo format_txt(_("---Inserting Model %_NAME
 				return("nothing");
             } else {
                 $temp = $this->file2json($this->PHONE_MODULES_PATH . "endpoint/" . $brand_directory . "/" . $row['cfg_dir'] . "/family_data.json");
-                if ( (isset($temp['data']['firmware_ver'])) AND (! empty ($temp['data']['firmware_ver'])) ) {
+                // Show the firmware buttons only when the family names a version and a
+                // package. install_firmware() needs the two.
+                $pkg = isset($temp['data']['firmware_pkg']) ? $temp['data']['firmware_pkg'] : '';
+                if ( (isset($temp['data']['firmware_ver'])) AND (! empty ($temp['data']['firmware_ver'])) AND ($pkg !== '') AND ($pkg !== 'NULL') ) {
                     if ($row['firmware_vers'] == "") {
                         return("install");
                     } else {

@@ -65,3 +65,54 @@
 .pull-xs-right {
 	float: right;
 }
+
+.epm-task .epm-task-output {
+	max-height: 50vh;
+	overflow-y: auto;
+	font-family: monospace;
+	font-size: 0.9em;
+	margin-bottom: 0.5rem;
+}
+
+.epm-page .epm-subnav .btn.active {
+	background-color: #4e9a74;
+	border-color: #4e9a74;
+	color: #fff;
+}
+
+.epm-page .epm-model-search {
+	width: 16rem;
+}
+
+.epm-page .epm-wide-select {
+	min-width: 14rem;
+}
+
+.epm-page .epm-models-cell {
+	padding: 0.5rem 1rem 1rem 2rem;
+	background-color: #fafafa;
+}
+
+.epm-page .epm-family {
+	padding: 0.5rem 0;
+	border-bottom: 1px solid #e5e5e5;
+}
+
+.epm-page .epm-family:last-child {
+	border-bottom: 0;
+}
+
+.epm-page .epm-family-head {
+	margin-bottom: 0.25rem;
+}
+
+.epm-page .epm-model-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(13rem, 1fr));
+	gap: 0 1rem;
+}
+
+.epm-page .epm-brands-toolbar .epm-model-search {
+	width: 16rem !important;
+	flex: 0 0 16rem;
+}
