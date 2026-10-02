@@ -2,7 +2,7 @@
 	<rawname>endpointman</rawname>
 	<repo>unsupported</repo>
 	<name>OSS PBX End Point Manager</name>
-	<version>17.0.0.9</version>
+	<version>17.0.1.0</version>
 	<type>setup</type>
 	<category>Settings</category>
 	<license>GPLv3+</license>
@@ -19,6 +19,7 @@
 		Pull requests to both repositories are welcome.
 	</description>
 	<changelog>
+		*17.0.1.0* New user interface. The menu is a row of tabs, and the module opens on the Phones page. Phones has the phone list, an add and edit form, the actions for selected phones and for all phones, and the CSV import and export. Brands has the brand list with the models of each brand, the MAC prefixes, and the package upload and export. Templates has the template list and editor, the config file editor and the placeholder list. Settings is one form. The text of all pages is rewritten. These are fixed: "Reconfigure all (models)", the Delete button of a phone, the CSV import, and a path in the export download that could read files outside the export directory. The Asterisk path, debug mode and tooltip settings, the Share button and the hide-brands tab are removed
 		*17.0.0.9* The package server is https://unex.github.io/provisioner/v4/, which publishes only data, and the upgrade moves the old default there. The module refuses a brand package or a manual upload that holds a file that is not data, and names the file. Extracted files are not executable. The upgrade removes the old drivers and the Aastra program anacrypt from _ep_phone_modules and names each file. The Aastra driver runs anacrypt only from a path that the admin sets on the Settings page, never from the data tree. The phone drivers send reboot and check-config NOTIFY over AMI and start no shell. The Grandstream encoder is always the PHP encoder, and the Cisco ATA 18x driver no longer runs cfgfmt.linux from /tftpboot
 		*17.0.0.8* A new install can download brands, because the install gives the brand data directories to the web server user. Check for Updates reports a missing brand list and does not stop with an error. Config generation works for families that copy files, for example Polycom. Add Selected Phones works. HTTP provisioning answers HEAD requests, which Polycom phones send before a log upload. Tested on FreePBX 17 with a Polycom VVX 310
 		*17.0.0.7* The About page, the README and this description point to unex/endpointman and unex/provisioner
