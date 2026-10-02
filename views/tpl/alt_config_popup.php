@@ -24,68 +24,52 @@
  * native submit writes the file. The parent page refreshes from the response
  * to the save, which is the first moment when the write is complete.
  *
- * The textarea is plain. The page loads no CodeMirror files.
+ * The textarea is plain. The page loads no CodeMirror files. The page uses
+ * the Bootstrap file of FreePBX.
  */
 ?>
-<html>
-    <head>
-        <title>PBX Endpoint Configuration Manager</title>
-        <link href="assets/endpointman/theme/codemirror.css" rel="stylesheet" type="text/css" />
-        <link href="assets/endpointman/css/main.css" rel="stylesheet" type="text/css">
-        <link href="assets/css/font-awesome.min-4.7.0.css" rel="stylesheet" type="text/css" />
-        <link href="assets/endpointman/css/default.css" rel="stylesheet" type="text/css" />
-        <script language="javascript">
-            function Close() {
-                self.close();
-            }
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title><?php echo _('Config file'); ?></title>
+<link href="assets/css/bootstrap-4.6.1.min.css" rel="stylesheet" type="text/css">
+<style>body { padding: 1rem; } textarea { font-family: monospace; font-size: 0.85rem; }</style>
+<script>
 <?php if (!empty($saved)) { ?>
-            // The save is complete when the server sends this document. Tell
-            // the page that opened the popup to list its files again.
-            // assets/js/views/epm_templates.js defines Reload() for the
-            // template editor. The devices page has no such function.
-            if (window.opener && !window.opener.closed
-                && typeof window.opener.Reload === 'function') {
-                window.opener.Reload();
-            }
+// The save is complete when the server sends this document. Tell the page
+// that opened the popup to list its files again. assets/js/views/epm_templates.js
+// defines Reload() for the template editor.
+if (window.opener && !window.opener.closed && typeof window.opener.Reload === 'function') {
+	window.opener.Reload();
+}
 <?php } ?>
-        </script>
-    </head>
-    <body name="alt_config_pop">
-     <div id="page_body">
-        <div id="spinner">
-        </div>
-        <h1><face="Arial"><center><?php echo _('End Point Configuration Manager')?></center></h1>
-        <hr>
-<?php if (isset($show_error_box)) { $this->render('message_box', $this->vars()); } ?>
+</script>
+</head>
+<body>
 <?php
 // popup.inc.php assigns `file` for a file on disk and `filename` for a saved
-// alternative in the database. Use the one that is set for the heading.
+// version in the database. Use the one that is set for the heading.
 $heading_file = isset($file) ? $file : (isset($filename) ? $filename : '');
 ?>
-	<center><h4><?php echo _("File Configuration Editor For")?>: <?php echo epm_esc($heading_file); ?></h4>
-	    <font color="red">Warning! You can really mess up your phone by messing with these settings. Potentially causing it to not boot!</font><br/>
-<?php if (isset($location) && isset($allow_hdfiles)) { ?>
-	    <strong>You are editing a global file. This will effect any & all phones that reference this hard file
-		<br/>It is <font color="red">NOT</font> individual to this template!!!</strong><br/>
-	    <i>You can setup individual templates in the "Product Configuration Editor" under "End Point Advanced Settings"</i>
+	<h1 class="h4"><?php echo sprintf(_('Config file %s'), '<span class="text-monospace">' . epm_esc($heading_file) . '</span>'); ?></h1>
+<?php if (isset($show_error_box)) { $this->render('message_box', $this->vars()); } ?>
+	<div class="alert alert-warning"><?php echo _('A wrong value can stop the phone. The phone can then fail to start.'); ?></div>
+<?php if (isset($location) && (!empty($allow_hd) || !empty($allow_hdfiles))) { ?>
+	<div class="alert alert-danger"><?php echo _('You edit the file of the package. The change applies to all phones that use this file, not only to this template. A brand update can overwrite it.'); ?></div>
+<?php } elseif (isset($location)) { ?>
+	<p class="text-muted"><?php echo _('Save makes your version of this file for this template. The file of the package does not change.'); ?></p>
 <?php } ?>
-	    <form name="myform" id="myform" method="post" action=""><input type="hidden" id="value" name="value" value="<?php echo epm_esc(isset($value) ? $value : ''); ?>" />
-		<table width="90%" border="0" cellspacing="4" cellpadding="4">
-		    <tr><td><div style="font-size: 14px" align="left"><?php if (isset($location)) { ?>File Location: <i><?php echo epm_esc($location); ?></i><?php } ?></div></td></tr>
-		    <tr>
-			<td>
-			    <label>
-				<textarea name="config_text" id="textarea" cols="100"><?php echo epm_esc(isset($config_data) ? $config_data : ''); ?></textarea>
-			    </label>
-			    <br><div style="font-size: 15px">
-				<label>
-				    <button type="submit" name="button_save" value="Save"><i class='fa fa-floppy-o blue'></i> <?php echo _('Save')?></button>
-                    <button type=button onClick="javascript:Close();"><i class='fa fa-floppy-o blue'></i> <?php echo _('Cancel')?></button>
-				</label>
-		    </tr>
-		</table>
-	    </form>
-	</center>
-    </div>
-    </body>
+<?php if (isset($location)) { ?>
+	<p class="small text-muted text-monospace"><?php echo epm_esc($location); ?></p>
+<?php } ?>
+	<form name="myform" id="myform" method="post" action="">
+		<input type="hidden" id="value" name="value" value="<?php echo epm_esc(isset($value) ? $value : ''); ?>">
+		<textarea class="form-control" name="config_text" id="textarea" rows="24"><?php echo epm_esc(isset($config_data) ? $config_data : ''); ?></textarea>
+		<div class="mt-2">
+			<button type="submit" class="btn btn-primary" name="button_save" value="Save"><?php echo _('Save'); ?></button>
+			<button type="button" class="btn btn-secondary" onclick="window.close();"><?php echo _('Close'); ?></button>
+		</div>
+	</form>
+</body>
 </html>

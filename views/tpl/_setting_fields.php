@@ -1,21 +1,12 @@
 <?php
 /**
- * The rows of one settings section. The specifics popup and the template
- * editor share this file, so the two pages show the same widgets.
+ * The fields of one settings section, for the phone settings popup.
  *
- * generate_gui_html() builds the rows. Each row has a 'type' that selects the
- * widget, and a 'description'. The other keys depend on the type.
+ * generate_gui_html() builds the fields. Each field has a 'type' that selects
+ * the control, and a 'description'. The other keys depend on the type. A
+ * 'tooltip' from the package shows as the help text of the field.
  *
- * Each field below is kind 1 under the rule in lib/esc.inc.php (data, not
- * markup), so each one prints through epm_esc(). `key` and `value` are
- * attribute data. `description` is the label text. `max_chars`, `rows` and
- * `cols` come from the same vendor file and go into attributes. The only
- * markup is the <a class="info"> wrapper and the tags that this file writes.
- *
- * `tooltip` arrives raw, as the other fields do, and is escaped once, here.
- *
- * 'checked' and 'selected' have no escape. generate_form_data() sets each one
- * to the literal of its name, or leaves the key out. They are never data.
+ * Each value prints through epm_esc(). The markup is the markup of this file.
  *
  * @var array $fields The 'data' list of one section
  */
@@ -23,78 +14,61 @@ if (!isset($fields) || !is_array($fields)) {
     $fields = array();
 }
 
-/** Label cell contents: the description, in the tooltip link if it has one. */
-$label = function (array $field) {
-    if (isset($field['tooltip'])) {
-        return '<a href="#" class="info">' . epm_esc($field['description']) .
-               '<span>' . epm_esc($field['tooltip']) . '</span></a>';
-    }
-    return epm_esc($field['description']);
+$help = function (array $field) {
+    return isset($field['tooltip']) ? '<small class="form-text text-muted">' . epm_esc($field['tooltip']) . '</small>' : '';
+};
+$row = function ($id, $label, $control) {
+    echo '<div class="form-group row"><label class="col-sm-4 col-form-label" for="' . epm_esc($id) . '">' . $label . '</label>'
+        . '<div class="col-sm-8">' . $control . '</div></div>' . "\n";
 };
 
 foreach ($fields as $field) {
-    echo "<tr>\n";
+    $key = isset($field['key']) ? $field['key'] : '';
+    $label = isset($field['description']) ? epm_esc($field['description']) : '';
     switch ($field['type']) {
         case 'input':
-            $size = isset($field['max_chars']) ? $field['max_chars'] : 90;
-            echo "<td nowrap>" . $label($field) . ":</td><td nowrap>" .
-                 "<input type='text' name='" . epm_esc($field['key']) . "' id='" . epm_esc($field['key']) .
-                 "' value='" . epm_esc($field['value']) . "' size=\"" . epm_esc($size) . "\">";
+            $row($key, $label, '<input type="text" class="form-control form-control-sm" name="' . epm_esc($key) . '" id="' . epm_esc($key) . '" value="' . epm_esc($field['value']) . '"'
+                . (isset($field['max_chars']) ? ' maxlength="' . epm_esc($field['max_chars']) . '"' : '') . '>' . $help($field));
             break;
 
         case 'textarea':
-            $rows = isset($field['rows']) ? $field['rows'] : 2;
-            $cols = isset($field['cols']) ? $field['cols'] : 20;
-            echo "<td nowrap>" . $label($field) . ":</td><td nowrap>" .
-                 "<textarea rows=\"" . epm_esc($rows) . "\" cols=\"" . epm_esc($cols) .
-                 "\" name='" . epm_esc($field['key']) . "' id='" . epm_esc($field['key']) . "'>" .
-                 epm_esc($field['value']) . "</textarea>";
+            $row($key, $label, '<textarea class="form-control form-control-sm" rows="' . epm_esc(isset($field['rows']) ? $field['rows'] : 2) . '" name="' . epm_esc($key) . '" id="' . epm_esc($key) . '">'
+                . epm_esc($field['value']) . '</textarea>' . $help($field));
             break;
 
         case 'radio':
-            echo "<td nowrap>" . $label($field) . ":</td><td nowrap>";
-            foreach ($field['data'] as $option) {
-                $checked = array_key_exists('checked', $option) ? $option['checked'] : '';
-                echo "[<label>" . $label($option) . ": " .
-                     "<input type='radio' name='" . epm_esc($option['key']) . "' id='" . epm_esc($option['key']) .
-                     "' value='" . epm_esc($option['value']) . "' {$checked}></label>]";
+            $control = '';
+            $first = $key;
+            foreach ($field['data'] as $n => $option) {
+                $id = $option['key'] . '_' . $n;
+                if ($n === 0) {
+                    $first = $id;
+                }
+                $control .= '<div class="form-check form-check-inline"><input class="form-check-input" type="radio" name="' . epm_esc($option['key']) . '" id="' . epm_esc($id) . '" value="' . epm_esc($option['value']) . '"'
+                    . (!empty($option['checked']) ? ' checked' : '') . '><label class="form-check-label" for="' . epm_esc($id) . '">' . epm_esc($option['description']) . '</label></div>';
             }
+            $row($first, $label, $control . $help($field));
             break;
 
         case 'list':
-            echo "<td nowrap>" . $label($field) . ":</td><td nowrap>" .
-                 "<select name='" . epm_esc($field['key']) . "' id='" . epm_esc($field['key']) . "'>";
+            $control = '<select class="form-control form-control-sm" name="' . epm_esc($key) . '" id="' . epm_esc($key) . '">';
             foreach ($field['data'] as $option) {
-                $selected = array_key_exists('selected', $option) ? $option['selected'] : '';
-                echo "<option value='" . epm_esc($option['value']) . "' {$selected}>" .
-                     epm_esc($option['description']) . "</option>";
+                $control .= '<option value="' . epm_esc($option['value']) . '"' . (!empty($option['selected']) ? ' selected' : '') . '>' . epm_esc($option['description']) . '</option>';
             }
-            echo "</select>";
+            $row($key, $label, $control . '</select>' . $help($field));
             break;
 
         case 'checkbox':
-            echo "<td nowrap>" . $label($field) . ":</td><td nowrap>" .
-                 "<input type='checkbox' name='" . epm_esc($field['key']) . "' id='" . epm_esc($field['key']) .
-                 "' value='" . epm_esc($field['value']) . "'>";
-            break;
-
-        case 'break':
-            echo "<td nowrap colspan=\"2\">&nbsp;";
+            $row($key, $label, '<input type="checkbox" class="mt-2" name="' . epm_esc($key) . '" id="' . epm_esc($key) . '" value="' . epm_esc($field['value']) . '"'
+                . (!empty($field['checked']) ? ' checked' : '') . '>' . $help($field));
             break;
 
         case 'group':
-            echo "<td nowrap colspan=\"2\"><hr><H3>" . $label($field) . "</H3>";
+            echo '<h3 class="h5 mt-3">' . $label . "</h3>\n";
             break;
 
         case 'header':
-            echo "<td nowrap colspan=\"2\"><strong>" . $label($field) . "</strong>";
-            break;
-
-        default:
-            // An unknown type opens a cell here, so that the closing </td> below keeps
-            // the row valid.
-            echo "<td nowrap colspan=\"2\">";
+            echo '<h4 class="h6 mt-2">' . $label . "</h4>\n";
             break;
     }
-    echo "</td>\n</tr>\n";
 }

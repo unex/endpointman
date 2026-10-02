@@ -85,28 +85,8 @@ if($_REQUEST['pop_type'] == 'edit_specifics') {
     echo $tpl->draw( 'specifics_pop' );
 }
 
-if($_REQUEST['pop_type'] == 'edit_template') {
-    if(empty($_REQUEST['edit_id'])) {
-        $message = _("No Device Selected to Edit!")."!";
-        if(isset($message)) {
-            $endpoint->display_message_box($message, 0);
-        }
-        if(isset($error_message)) {
-            $endpoint->display_message_box($error_message, 1);
-        }
-    } else {
-        $sql = 'UPDATE  endpointman_mac_list SET  model =  ? WHERE  id =?';
-        $sql_p = array($_REQUEST['model_list'], $_REQUEST['edit_id']);
-        epm_sql($sql, 'query', $sql_p);
-
-        // Open the template editor page of TemplatesPage. Its "New Template" flow
-        // redirects to the same page.
-        redirect($epm->_get_page('templates')->editorUrl($_REQUEST['edit_id'], $_REQUEST['template_list']));
-    }
-}
-
-// The global settings overrides are in the "Edit Global Settings Overrides"
-// dialog of the templates page
+// The global settings overrides are in the "Server settings" dialog of the
+// template editor
 // (views/epm_templates/editor.views.dialog.cfg.global.php). The ajax
 // commands custom_config_get_gloabl, _update_gloabl and _reset_gloabl drive
 // it.
@@ -125,7 +105,7 @@ if($_REQUEST['pop_type'] == "alt_cfg_edit") {
                 $sql = 'UPDATE endpointman_custom_configs SET data = ? WHERE id = ?';
                 $sql_p = array($_REQUEST['config_text'], $cfg_id);
                 epm_sql($sql, 'query', $sql_p);
-                $endpoint->message['alt_config'] = "Saved to Database!";
+                $endpoint->message['alt_config'] = _("The file is saved as your version.");
             }
             $sql = 'SELECT * FROM endpointman_custom_configs WHERE id =?';
             $sql_p = array($cfg_id);
@@ -147,7 +127,7 @@ if($_REQUEST['pop_type'] == "alt_cfg_edit") {
 
             if((isset($_REQUEST['button_save'])) && ($endpoint->global_cfg['allow_hdfiles'])) {
                 file_put_contents($file, $_REQUEST['config_text']);
-                $endpoint->message['alt_config'] = "Saved to Hard Drive!";
+                $endpoint->message['alt_config'] = _("The package file is saved. A brand update can overwrite it.");
                 $contents = file_get_contents($file);
             } elseif((isset($_REQUEST['button_save'])) && (!$endpoint->global_cfg['allow_hdfiles'])) {
                 $time = time();
@@ -159,7 +139,7 @@ if($_REQUEST['pop_type'] == "alt_cfg_edit") {
                 $sql = 'INSERT INTO endpointman_custom_configs (name, original_name, product_id, data) VALUES (?,?,?,?)';
                 $sql_p = array($row['name'] . '_' . $time, $cfg_filename, $row['product_id'], $_REQUEST['config_text']);
                 epm_sql($sql, 'query', $sql_p);
-                $endpoint->message['alt_config'] = "Saved to Database!";
+                $endpoint->message['alt_config'] = _("The file is saved as your version.");
                 $new_id = $endpoint->eda->sql('SELECT last_insert_id()','getOne');
                 $sql = 'SELECT * FROM endpointman_custom_configs WHERE id =?';
                 $sql_p = array($new_id);
@@ -198,7 +178,7 @@ if($_REQUEST['pop_type'] == "alt_cfg_edit") {
                 $sql = 'UPDATE endpointman_custom_configs SET data = ? WHERE id = ?';
                 $sql_p = array($_REQUEST['config_text'], $cfg_id);
                 epm_sql($sql, 'query', $sql_p);
-                $endpoint->message['alt_config'] = "Saved to Database!";
+                $endpoint->message['alt_config'] = _("The file is saved as your version.");
             }
             $sql = 'SELECT * FROM endpointman_custom_configs WHERE id =?';
             $sql_p = array($cfg_id);
@@ -220,7 +200,7 @@ if($_REQUEST['pop_type'] == "alt_cfg_edit") {
 
             if((isset($_REQUEST['button_save'])) && ($endpoint->global_cfg['allow_hdfiles'])) {
                 file_put_contents($file, $_REQUEST['config_text']);
-                $endpoint->message['alt_config'] = "Saved to Hard Drive!";
+                $endpoint->message['alt_config'] = _("The package file is saved. A brand update can overwrite it.");
                 $contents = file_get_contents($file);
             } elseif((isset($_REQUEST['button_save'])) && (!$endpoint->global_cfg['allow_hdfiles'])) {
                 $time = time();
@@ -232,7 +212,7 @@ if($_REQUEST['pop_type'] == "alt_cfg_edit") {
                 $sql = 'INSERT INTO endpointman_custom_configs (name, original_name, product_id, data) VALUES (?,?,?,?)';
                 $sql_p = array($row['mac'] . '_' . $time, $cfg_filename, $row['product_id'], $_REQUEST['config_text']);
                 epm_sql($sql, 'query', $sql_p);
-                $endpoint->message['alt_config'] = "Saved to Database!";
+                $endpoint->message['alt_config'] = _("The file is saved as your version.");
                 $new_id = $endpoint->eda->sql('SELECT last_insert_id()','getOne');
                 $sql = 'SELECT * FROM endpointman_custom_configs WHERE id =?';
                 $sql_p = array($new_id);
@@ -268,151 +248,6 @@ if($_REQUEST['pop_type'] == "alt_cfg_edit") {
         }
     }
 
-    if(isset($_REQUEST['cfg_file'])) {
-        $sql = 'SELECT cfg_dir,directory,config_files FROM endpointman_product_list,endpointman_brand_list WHERE endpointman_product_list.brand = endpointman_brand_list.id AND endpointman_product_list.id = ?';
-        $sql_p = array($_REQUEST['product_select']);
-        $row = epm_sql($sql, 'getRow', $sql_p);
-
-        $config_files = explode(",",$row['config_files']);
-        $file=$epm->PHONE_MODULES_PATH.'endpoint/'.$row['directory']."/".$row['cfg_dir']."/".$config_files[$_REQUEST['cfg_file']];
-        if(isset($_REQUEST['config_text'])) {
-            if(isset($_REQUEST['button_save'])) {
-                file_put_contents($file, $_REQUEST['config_text']);
-                $endpoint->message['alt_config'] = "Saved to Hard Drive!";
-            }elseif(isset($_REQUEST['button_save_as'])) {
-                $sql = 'INSERT INTO endpointman_custom_configs (name, original_name, product_id, data) VALUES (?,?,?,?)';
-                $sql_p = array($_REQUEST['save_as_name'], addslashes($config_files[$_REQUEST['cfg_file']]), $_REQUEST['product_select'], $_REQUEST['config_text']);
-                epm_sql($sql, 'query', $sql_p);
-                $endpoint->message['alt_config'] = "Saved to Database!";
-            }
-        }
-
-        $contents = file_get_contents($file);
-
-        if(isset($_REQUEST['sendid'])) {
-            if($epm->submit_config($row['directory'],$row['cfg_dir'],$config_files[$_REQUEST['cfg_file']],$contents)) {
-                $endpoint->message['alt_config'] = 'Sent! Thanks :-)';
-            } else {
-                $endpoint->message['alt_config'] = 'Could not send at this time';
-            }
-        }
-        $tpl->assign("save_as_name_value", $config_files[$_REQUEST['cfg_file']]);
-        $tpl->assign("config_data", $contents);
-        $tpl->assign("filename", $config_files[$_REQUEST['cfg_file']]);
-        $tpl->assign('sendid', $_REQUEST['cfg_file']);
-        $tpl->assign("type", 'file');
-        $tpl->assign("location", $file);
-
-
-    } elseif(isset($_REQUEST['sql'])) {
-        if(isset($_REQUEST['config_text'])) {
-            if(isset($_REQUEST['button_save'])) {
-                $sql = 'UPDATE endpointman_custom_configs SET data = ? WHERE id = ?';
-                $sql_p = array($_REQUEST['config_text'], $_REQUEST['sql']);
-                epm_sql($sql, 'query', $sql_p);
-                $endpoint->message['alt_config'] = "Saved to Database!";
-            }elseif(isset($_REQUEST['button_save_as'])) {
-                $sql = 'SELECT original_name FROM endpointman_custom_configs WHERE id = ?';
-                $sql_p = array($_REQUEST['sql']);
-                $file_name = epm_sql($sql, 'getOne', $sql_p);
-
-                $sql = 'INSERT INTO endpointman_custom_configs (name, original_name, product_id, data) VALUES (?,?,?,?)';
-                $sql_p = array($_REQUEST['save_as_name'], $file_name, $_REQUEST['product_select'], $_REQUEST['config_text']);
-                epm_sql($sql, 'query', $sql_p);
-                $endpoint->message['alt_config'] = "Saved to Database!";
-            }
-        }
-        if(isset($_REQUEST['sendid'])) {
-            $sql = 'SELECT cfg_dir,directory,config_files FROM endpointman_product_list,endpointman_brand_list WHERE endpointman_product_list.brand = endpointman_brand_list.id AND endpointman_product_list.id = ?';
-            $sql_p = array($_REQUEST['product_select']);
-            $row22 = epm_sql($sql, 'getRow', $sql_p);
-            if($epm->submit_config($row22['directory'],$row22['cfg_dir'],$config_files[$_REQUEST['cfg_file']],$contents)) {
-                $endpoint->message['alt_config'] = 'Sent! Thanks! :-)';
-            } else {
-                $endpoint->message['alt_config'] = 'Could not send at this time';
-            }
-
-        }
-        $sql = 'SELECT * FROM endpointman_custom_configs WHERE id =?';
-        $sql_p = array($_REQUEST['sql']);
-        $row = epm_sql($sql, 'getRow', $sql_p);
-        $tpl->assign("save_as_name_value", $row['name']);
-        $tpl->assign("filename", $row['original_name']);
-        $tpl->assign('sendid', $_REQUEST['sql']);
-        $tpl->assign("type", 'sql');
-        $tpl->assign("config_data", $row['data']);
-    }
-    if(isset($_REQUEST['product_select'])) {
-        $sql = 'SELECT cfg_dir,directory,config_files FROM endpointman_product_list,endpointman_brand_list WHERE endpointman_product_list.brand = endpointman_brand_list.id AND endpointman_product_list.id =?';
-        $sql_p = array($_REQUEST['product_select']);
-
-        $row = epm_sql($sql, 'getRow', $sql_p);
-        $config_files = explode(",",$row['config_files']);
-        $i = 0;
-        foreach($config_files as $config_files_data) {
-            $file_list[$i]['value'] = $i;
-            $file_list[$i]['text'] = $config_files_data;
-            $i++;
-        }
-        $sql = 'SELECT * FROM endpointman_custom_configs WHERE product_id = ?';
-        $sql_p = array($_REQUEST['product_select']);
-        $res = epm_sql($sql, 'query', $sql_p);
-        $i = 0;
-        if($res) {
-            $data = epm_sql($sql, 'getAll', $sql_p);
-            foreach($data as $row2) {
-                $sql_file_list[$i]['value'] = $row2['id'];
-                $sql_file_list[$i]['text'] = $row2['name'];
-                $sql_file_list[$i]['ref'] = $row2['original_name'];
-                $i++;
-            }
-        } else {
-            $sql_file_list = NULL;
-        }
-
-        require_once($epm->LOCAL_PATH . 'lib/provisioner/autoload.php');
-
-        $class = "endpoint_" . $row['directory'] . "_" . $row['cfg_dir'] . '_phone';
-        if (!class_exists($class)) {
-            ProvisionerConfig::endpointsAutoload($class);
-        }
-        if (!class_exists($class)) {
-            die('No driver for this model: ' . htmlspecialchars($class, ENT_QUOTES | ENT_SUBSTITUTE | ENT_HTML401));
-        }
-
-        $phone_config = new $class();
-
-        if((method_exists($phone_config,'display_options')) AND (method_exists($phone_config,'process_options'))) {
-            if(isset($_REQUEST['phone_options'])) {
-                $tpl->assign("options", $phone_config->process_options());
-            } else {
-                $tpl->assign("options", $phone_config->display_options());
-            }
-        }
-
-        $template_file_list[0]['value'] = "template_data_custom.xml";
-        $template_file_list[0]['text'] = "template_data_custom.xml";
-
-        $sql = "SELECT model FROM `endpointman_model_list` WHERE `product_id` LIKE '1-2' AND `enabled` = 1 AND `hidden` = 0";
-        $sql_p = array();
-        $data = epm_sql($sql, 'getAll', $sql_p);
-        $i = 1;
-        foreach($data as $list) {
-            $template_file_list[$i]['value'] = "template_data_" . $list['model'] . "_custom.xml";
-            $template_file_list[$i]['text'] = "template_data_" . $list['model'] . "_custom.xml";
-        }
-
-        $tpl->assign("template_file_list",$template_file_list);
-        if(isset($_REQUEST['temp_file'])) {
-            $tpl->assign("temp_file",1);
-        } else {
-            $tpl->assign("temp_file",NULL);
-        }
-
-        $tpl->assign("file_list", $file_list);
-        $tpl->assign("sql_file_list", $sql_file_list);
-        $tpl->assign("product_selected", $_REQUEST['product_select']);
-    }
 
     // Each write in this branch needs button_save or button_save_as. When one of
     // them is present, the page that opened the popup shows an old file list. The

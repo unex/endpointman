@@ -576,27 +576,6 @@ class Endpointman extends FreePBX_Helpers implements \BMO {
     }
 
 
-    /**
-     * Send sample configurations upstream. This always refuses.
-     *
-     * There is no place to send them. The old endpoint was on provisioner.net,
-     * which does not resolve. provision.lol replaced it in the old defaults, but
-     * it is a parked domain. A POST of a phone config would go to the owner of
-     * that domain.
-     *
-     * Two callers in includes/popup.inc.php read the return value, so the method
-     * stays. Put a new submission endpoint here if the project gets one.
-     *
-     * @param string $brand     Brand Directory
-     * @param string $product   Product Directory
-     * @param string $orig_name The original name of the file to send
-     * @param string $data      The data of the config file
-     * @return false
-    */
-    function submit_config($brand, $product, $orig_name, $data) {
-    	$this->error['submit_config'] = _("The module cannot send configurations upstream, because the project has no submission endpoint. Open a pull request at https://github.com/unex/provisioner.");
-    	return false;
-    }
 
     /**
      * Save template from the template view pain
