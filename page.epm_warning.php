@@ -1,14 +1,33 @@
-<div class="col-sm-12">
-<br />
-					<div class="display full-border">
-												<div class="content">
-<div class="alert alert-warning">
-	<strong><?php echo _("Warning - Commercial Endpoint Manager detected!")?><br/><br/></strong>
-		<?php echo _("You have installed the Commercial Endpoint Manager and OSS Endpoint Manager together!")?><br/><br/>
-		<?php echo _("This is not recommended and can bring you in troubles with provisioning your phones!")?><br/><br/>
-		<?php echo _("Only use one kind of Endpoint Manager for each Brand, never use the same Brand with both Endpoint Managers and also never assign the same Extension to a second Device!")?>
-		<?php echo _("If you need support for your Commercial Endpoint Manager we inform you here that Sangoma states clearly that running both Endpoint Managers together is officially not supported and Sangoma is allowed to reject your support request if you have both Endpoint Managers running!")?><br/><br/>
-		</div>
-		</div>
-		</div>
-		</div>
+<?php
+/**
+ * The notice that shows when the commercial Endpoint Manager is also active.
+ *
+ * The Phones and Brands pages include this file. It prints nothing when the
+ * commercial module is not active, or when the admin dismissed the notice.
+ * "Do not show again" sets disable_endpoint_warning, which the Settings page
+ * also shows.
+ */
+global $active_modules;
+
+if (empty($active_modules['endpoint']['rawname'])) {
+	return;
+}
+if (FreePBX::Endpointman()->configmod->get('disable_endpoint_warning') === '1') {
+	return;
+}
+?>
+<div class="alert alert-warning epm-conflict" role="alert">
+	<strong><?php echo _('The commercial Endpoint Manager is also active.'); ?></strong>
+	<?php echo _('Do not use the two modules for the same brand or the same extension. Sangoma does not support a system that runs the two modules.'); ?>
+	<a href="#" class="alert-link epm-conflict-dismiss"><?php echo _('Do not show again'); ?></a>
+</div>
+<script>
+$(function () {
+	$('.epm-conflict-dismiss').on('click', function (e) {
+		e.preventDefault();
+		$.post('ajax.php', { module: 'endpointman', view: 'settings', command: 'saveconfig', name: 'disable_endpoint_warning', value: 'yes' }, function () {
+			$('.epm-conflict').remove();
+		}, 'json');
+	});
+});
+</script>

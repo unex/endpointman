@@ -12,6 +12,7 @@ var box = null;
  */
 var epmViewHooks = {
 	'devices': 'epm_devices',
+	'phones': 'epm_devices',
 	'templates': 'epm_templates',
 	'settings': 'epm_advanced'
 };

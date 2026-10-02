@@ -279,12 +279,19 @@ class Endpointman extends FreePBX_Helpers implements \BMO {
 		require_once('TemplatesPage.class.php');
 		require_once('PlaceholdersPage.class.php');
 
-		// The keys are the ?view= values. views/bootnav.php lists the same set.
+		// The keys are the ?view= values. views/bootnav.php shows the menu.
+		// "devices" and "packages" are the old names of "phones" and "brands".
+		// The page scripts send their ajax commands and popup commands to the
+		// old names, and old links use them too, so both names stay.
+		$devices = new DevicesPage($this);
+		$packages = new PackagesPage($this);
 		$this -> pages = array(
 			"about" => new AboutPage($this),
 			"settings" => new SettingsPage($this),
-			"devices" => new DevicesPage($this),
-			"packages" => new PackagesPage($this),
+			"phones" => $devices,
+			"devices" => $devices,
+			"brands" => $packages,
+			"packages" => $packages,
 			"templates" => new TemplatesPage($this),
 			"placeholders" => new PlaceholdersPage($this),
 		);
@@ -292,16 +299,41 @@ class Endpointman extends FreePBX_Helpers implements \BMO {
 	}
 
 	/**
+	 * Get the menu item of a ?view= value.
+	 *
+	 * An empty view is the landing page, which is the phone list. An old name
+	 * gives the menu item of its new name. An unknown view gives "about", the
+	 * same as _get_page().
+	 *
+	 * @param mixed $name value of ?view=
+	 * @return string one of phones, brands, templates, settings, about
+	 */
+	public function menuItem($name) {
+		$alias = array('' => 'phones', 'devices' => 'phones', 'packages' => 'brands', 'placeholders' => 'templates');
+		if (is_string($name) && isset($alias[$name])) {
+			return $alias[$name];
+		}
+		if (is_string($name) && in_array($name, array('phones', 'brands', 'templates', 'settings'), true)) {
+			return $name;
+		}
+		return 'about';
+	}
+
+	/**
 	 * Find the page object for a ?view= value.
 	 *
-	 * $name comes from $_REQUEST, so do not trust it. An unknown view gets the
-	 * "about" page, not null. doConfigPageInit() runs before showPage(), so a
-	 * null here causes a 500 before the page shows.
+	 * $name comes from $_REQUEST, so do not trust it. An empty view gets the
+	 * phone list. An unknown view gets the "about" page, not null.
+	 * doConfigPageInit() runs before showPage(), so a null here causes a 500
+	 * before the page shows.
 	 *
 	 * @param string $name value of ?view=, possibly empty or unknown
 	 * @return object the matching page object, or the "about" page
 	 */
 	function _get_page($name) {
+		if ($name === '') {
+			return $this -> pages["phones"];
+		}
 		if (!is_string($name) || !isset($this -> pages[$name])) {
 			return $this -> pages["about"];
 		}

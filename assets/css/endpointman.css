@@ -1,10 +1,57 @@
-@CHARSET "ISO-8859-1";
+/* Styles of the module pages. FreePBX loads this file on each page of the
+ * module. Each rule is under an epm- class, so other pages do not change. */
+
+.epm-menu {
+	margin-bottom: 1rem;
+}
+
+.epm-page {
+	padding-top: 0.5rem;
+}
+
+.epm-page .btn-group {
+	margin-left: 0.25rem;
+}
+
+.epm-page #epm-phones-toolbar .btn,
+.epm-page #epm-phones-toolbar .btn-group {
+	margin-right: 0.25rem;
+	margin-left: 0;
+}
+
+.epm-page .epm-lines select,
+.epm-page .epm-lines input {
+	min-width: 8rem;
+}
+
+.epm-page .epm-csv-format {
+	background: #f7f7f9;
+	border: 1px solid #e1e1e8;
+	padding: 0.5rem;
+}
+
+.epm-page .epm-import-result ul {
+	padding-left: 1.25rem;
+}
+
+.epm-page .epm-about-table {
+	max-width: 50rem;
+}
+
+.epm-page .epm-about-table th {
+	width: 12rem;
+	font-weight: 600;
+}
+
+.epm-page .epm-conflict {
+	margin-bottom: 1rem;
+}
 
 #epm_templates option[value=""], #epm_advanced option[value=""], #epm_config option[value=""] {
 	background-color: #E5FFCC;
 }
 
-
+/* The settings and template pages still use these. */
 .section-title {
 	margin: 10px 10px 0px 10px;
 }
@@ -15,24 +62,6 @@
 	margin-bottom: 10px;
 }
 
-.pull-xs-right
-{
+.pull-xs-right {
 	float: right;
-}
-
-
-
-
-
-
-/* Class */
-.center-block {
-  display: block;
-  margin-left: auto;
-  margin-right: auto;
-}
-
-/* Usage as a mixin */
-.element {
-  @include center-block;
 }

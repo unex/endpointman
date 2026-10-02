@@ -1,16 +1,25 @@
 <?php
+/**
+ * The menu of the module. It shows as tabs under the title.
+ *
+ * Each tab is a link to its page, not a Bootstrap tab. The <ul> has no
+ * role="tablist", because the tab hook in assets/js/endpointman.js binds to
+ * that role.
+ */
 $list = array(
-    'settings'	   => _('Settings'),
-    'devices'      => _('Extension Mapping'),
-    'packages'	   => _('Package Manager'),
-    'templates'	   => _('Template Manager'),
-    'placeholders' => _('Config File Placeholders')
+	'phones'    => _('Phones'),
+	'brands'    => _('Brands'),
+	'templates' => _('Templates'),
+	'settings'  => _('Settings'),
+	'about'     => _('About'),
 );
 
-// ?view= is absent on the landing page and can have any value on other
-// pages, so read it with care. $view is always one of the keys above.
-$current = isset($_REQUEST['view']) && is_string($_REQUEST['view']) ? $_REQUEST['view'] : '';
-
-foreach ($list as $view => $name) {
-    echo '<a class="list-group-item' . ($current === $view ? " active":"") . '" href="config.php?display=endpointman&view=' . $view . '">' . $name . '</a>' . PHP_EOL;
-}
+// ?view= can have any value, so menuItem() reads it. $current is always one of
+// the keys above.
+$current = FreePBX::Endpointman()->menuItem(isset($_REQUEST['view']) ? $_REQUEST['view'] : '');
+?>
+<ul class="nav nav-tabs epm-menu">
+<?php foreach ($list as $view => $name) { ?>
+	<li class="nav-item"><a class="nav-link<?php echo ($current === $view) ? ' active' : ''; ?>" href="config.php?display=endpointman&amp;view=<?php echo $view; ?>"><?php echo $name; ?></a></li>
+<?php } ?>
+</ul>
