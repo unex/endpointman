@@ -1165,7 +1165,6 @@ class DevicesPage extends \PageBase {
                 //Tell the system who we are and were to find the data.
                 $provisioner_lib->root_dir = $this->PHONE_MODULES_PATH;
                 $provisioner_lib->engine = 'asterisk';
-                $provisioner_lib->engine_location = !empty($this->global_cfg['asterisk_location']) ? $this->global_cfg['asterisk_location'] : 'asterisk';
                 $provisioner_lib->system = 'unix';
 
                 // Only the Aastra driver has these properties. The driver checks the path

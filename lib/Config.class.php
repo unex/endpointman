@@ -29,8 +29,8 @@ class Config {
 	 * This list is also the list of all keys. A get() for a different key
 	 * returns the default of its caller.
 	 *
-	 * install.php sets `nmap_location`, `arp_location` and `asterisk_location`
-	 * from epm_find_exec(), because they depend on the host. `arp_location` holds
+	 * install.php sets `nmap_location` and `arp_location` from
+	 * epm_find_exec(), because they depend on the host. `arp_location` holds
 	 * the neighbor table tool that install.php found: `ip` (iproute2) before
 	 * `arp` (net-tools). Debian 12 has `ip` but not `arp`, and
 	 * epm_system::neighbour_table() reads both. Empty means that install.php found
@@ -48,7 +48,6 @@ class Config {
 		'debug'                    => '0',
 		'arp_location'             => '',
 		'nmap_location'            => '',
-		'asterisk_location'        => '',
 		// The Aastra program that encrypts config files, and its key (-p). The
 		// admin installs the program. Empty means that the module never runs it.
 		// See epm_system::anacrypt_problem().

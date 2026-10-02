@@ -547,31 +547,32 @@ class Endpointman extends FreePBX_Helpers implements \BMO {
                 $rand = md5(rand(10, 2000));
                 if (file_put_contents($this->configmod->get('config_location') . 'TEST', $rand)) {
                     if ($this->system->tftp_fetch('127.0.0.1', 'TEST') != $rand) {
-                        $this->error['tftp_check'] = 'Local TFTP Server is not correctly configured';
+                        $this->error['tftp_check'] = _('The TFTP server runs, but it does not serve the config directory. Set the root of the TFTP server to the config directory.');
                     }
                     unlink($this->configmod->get('config_location') . 'TEST');
                 } else {
-                    $this->error['tftp_check'] = 'Unable to write to ' . epm_esc($this->configmod->get('config_location'));
+                    $this->error['tftp_check'] = sprintf(_('The web server cannot write to %s.'), epm_esc($this->configmod->get('config_location')));
                 }
             } else {
                 $dis = FALSE;
                 if (file_exists('/etc/xinetd.d/tftp')) {
                     $contents = file_get_contents('/etc/xinetd.d/tftp');
                     if (preg_match('/disable.*=.*yes/i', $contents)) {
-                        $this->error['tftp_check'] = 'Disabled is set to "yes" in /etc/xinetd.d/tftp. Please fix <br />Then restart your TFTP service';
+                        $this->error['tftp_check'] = _('The TFTP server is off: /etc/xinetd.d/tftp has disable = yes. Change it to no, and restart the TFTP service.');
                         $dis = TRUE;
                     }
                 }
                 if (!$dis) {
                     // wiki.provisioner.net does not resolve. Point to Debian's tftpd-hpa, which
                     // FreePBX 17 uses.
-                    $this->error['tftp_check'] = _('The TFTP server is not running. Install and enable tftpd-hpa, and set its root to the configuration directory below.');
+                    $this->error['tftp_check'] = _('The TFTP server does not run. Install and start tftpd-hpa, and set its root to the config directory.');
                 }
             }
             $this->configmod->save('tftp_check', '0');
-        } else {
-            $this->error['tftp_check'] = 'TFTP Server check failed on last past. Skipping';
         }
+        // A value of 1 is "Skip the TFTP check" on the Settings page. It is also
+        // the value while a check runs, so a check that stopped the web server
+        // does not run again.
     }
 
 

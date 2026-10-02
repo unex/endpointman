@@ -186,9 +186,12 @@ if ($seeded) { out("Seeded " . $seeded . " default setting(s)"); }
 // formats. Do not store a tool that is not on disk. An empty value lets the
 // module search PATH at run time, and a later upgrade can fill the key when
 // the package is installed.
+// The drivers send phone reboots over AMI, so nothing reads the path of
+// asterisk now. Remove the key of older versions.
+$epm->configmod->del('asterisk_location');
+
 foreach (array('nmap_location'     => array('nmap'),
-               'arp_location'      => array('ip', 'arp'),
-               'asterisk_location' => array('asterisk')) as $key => $execs) {
+               'arp_location'      => array('ip', 'arp')) as $key => $execs) {
 	// A stored path that is not on disk is not a correction. It is a bare name
 	// from older versions ("arp", "nmap"). file_exists() rejects it, and the
 	// settings page shows it as a path. Search again, and find `ip` on hosts that

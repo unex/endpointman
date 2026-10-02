@@ -160,18 +160,6 @@ class SettingsPage extends \PageBase {
 		$dget['value'] = $_REQUEST['value'];
 
 		switch($dget['name']) {
-			case "enable_debug":
-				$dget['value'] = strtolower($dget['value']);
-				$save_key = 'debug';
-				$save_val = ($dget['value'] == "yes" ? "1": "0");
-				break;
-
-			case "disable_help":
-				$dget['value'] = strtolower($dget['value']);
-				$save_key = 'disable_help';
-				$save_val = ($dget['value'] == "yes" ? "1": "0");
-				break;
-
 			case "disable_endpoint_warning":
 				$dget['value'] = strtolower($dget['value']);
 				$save_key = 'disable_endpoint_warning';
@@ -208,7 +196,7 @@ class SettingsPage extends \PageBase {
 				// $_POST['config_loc'].
 				$dget['value'] = trim($dget['value']);
 				if ($dget['value'] == "") {
-					$retarr = array("status" => false, "message" => _("No Configuration Location Defined!"));
+					$retarr = array("status" => false, "message" => _("Type the config directory."));
 					break;
 				}
 				//No trailing slash. Help the user out and add one :-)
@@ -220,10 +208,10 @@ class SettingsPage extends \PageBase {
 						$save_key = 'config_location';
 						$save_val = $dget['value'];
 					} else {
-						$retarr = array("status" => false, "message" => _("Directory Not Writable!"));
+						$retarr = array("status" => false, "message" => _("The web server cannot write to this directory."));
 					}
 				} else {
-					$retarr = array("status" => false, "message" => sprintf(_("Not a Vaild Directory.<br /> Try to run 'mkdir %s' as root."), $dget['value']));
+					$retarr = array("status" => false, "message" => sprintf(_("The directory does not exist. Make it as root: mkdir %s"), epm_esc($dget['value'])));
 				}
 				break;
 
@@ -266,11 +254,6 @@ class SettingsPage extends \PageBase {
 
 			case "arp_loc":
 				$save_key = 'arp_location';
-				$save_val = $dget['value'];
-				break;
-
-			case "asterisk_loc":
-				$save_key = 'asterisk_location';
 				$save_val = $dget['value'];
 				break;
 
@@ -349,7 +332,7 @@ class SettingsPage extends \PageBase {
 					$reallink = $this->LOCAL_PATH . "provisioning";
 					if ((!is_link($symlink)) OR (!readlink($symlink) == $reallink)) {
 						if (!symlink($reallink, $symlink)) {
-							$retarr = array("status" => false, "message" => _("Your permissions are wrong on " . $this->config->get('AMPWEBROOT') . ", web provisioning link not created!"));
+							$retarr = array("status" => false, "message" => sprintf(_("Cannot make the provisioning link in %s. Check the permissions."), epm_esc($this->config->get('AMPWEBROOT'))));
 							//$dget['value'] = 'file';
 							break;
 						} //else {
@@ -366,7 +349,7 @@ class SettingsPage extends \PageBase {
 				break;
 
 			default:
-				$retarr = array("status" => false, "message" => _("Name invalid: ") . $dget['name'] );
+				$retarr = array("status" => false, "message" => sprintf(_("Unknown setting %s."), epm_esc($dget['name'])) );
 		}
 
 		if (isset($save_key)) {
