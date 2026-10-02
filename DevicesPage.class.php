@@ -108,10 +108,11 @@ class DevicesPage extends \PageBase {
 
 		if (($command == "template") OR ($command == "template2") OR ($command == "mtemplate")) {
 			$out[0]['optionValue'] = 0;
-			$out[0]['optionDisplay'] = "Custom...";
+			$out[0]['optionDisplay'] = _("Custom");
 			$i=1;
 		} elseif ($command == "model") {
-			$out[0]['optionValue'] = 0;
+			// An empty value, so that a required <select> refuses the blank row.
+			$out[0]['optionValue'] = "";
 			$out[0]['optionDisplay'] = "";
 			$i=1;
 		} else {
@@ -152,8 +153,28 @@ class DevicesPage extends \PageBase {
 		return "";
 	}
 
+	/**
+	 * The form that views/devices.php shows: "add", "edit", or "" for the list.
+	 *
+	 * config.php draws the page before it asks for the action bar. The view
+	 * sets this value, so the action bar follows the page that the view
+	 * shows, and not the request. After Submit, the request still says
+	 * "edit", but the view shows the list.
+	 */
+	public $form_mode = '';
+
 	public function getActionBar($request) {
-		return "";
+		if ($this->form_mode === '') {
+			return "";
+		}
+		$buttons = array(
+			'reset'  => array('name' => 'reset',  'id' => 'reset',  'value' => _('Reset')),
+			'submit' => array('name' => 'submit', 'id' => 'submit', 'value' => _('Submit')),
+		);
+		if ($this->form_mode === 'edit') {
+			$buttons['delete'] = array('name' => 'delete', 'id' => 'delete', 'value' => _('Delete'));
+		}
+		return $buttons;
 	}
 
     function prepare_message_box() {
@@ -241,17 +262,19 @@ class DevicesPage extends \PageBase {
         return($phone_info);
     }
 
-    function add_device($mac, $model, $ext, $template=NULL, $line=NULL, $displayname=NULL) {
-		// Only the single-add form sends an ipei field. "Add Selected Phones" does
-		// not send it.
-		$ipei = $_REQUEST['ipei'] ?? '';
+    function add_device($mac, $model, $ext, $template=NULL, $line=NULL, $displayname=NULL, $ipei=NULL) {
+		// The CSV import gives $ipei. Of the forms, only the add form sends an
+		// ipei field. "Add selected phones" does not send it.
+		if ($ipei === NULL) {
+			$ipei = (isset($_REQUEST['ipei']) && is_string($_REQUEST['ipei'])) ? $_REQUEST['ipei'] : '';
+		}
         $mac = $this->epm->_get_page('settings')->mac_check_clean($mac);
         if ($mac) {
             if (empty($model)) {
-                $this->error['add_device'] = _("You Must Select A Model From the Drop Down") . "!";
+                $this->error['add_device'] = _("Select a model.");
                 return(FALSE);
             } elseif (empty($ext)) {
-                $this->error['add_device'] = _("You Must Select an Extension/Device From the Drop Down") . "!";
+                $this->error['add_device'] = _("Select an extension.");
                 return(FALSE);
             } else {
                 if ($this->epm->brandmanager->sync_model($model)) {
@@ -283,7 +306,7 @@ class DevicesPage extends \PageBase {
                         $used = epm_sql($sql, 'getOne', $sql_p);
 
                         if (($used) AND (!$this->global_cfg['show_all_registrations'])) {
-                            $this->error['add_device'] = "You can't assign the same user to multiple devices!";
+                            $this->error['add_device'] = _("This extension is already on a different phone. To allow this, set Allow duplicate extensions on the Settings page.");
                             return(FALSE);
                         }
 
@@ -316,16 +339,16 @@ class DevicesPage extends \PageBase {
                         $sql_p = array($ext_id, $ipei, $ext, $line, $name);
                         epm_sql($sql, 'query', $sql_p);
 
-                        $this->message['add_device'][] = "Added " . epm_esc($name) . " to line " . epm_esc($line);
+                        $this->message['add_device'][] = sprintf(_("Added %s to line %s."), epm_esc($name), epm_esc($line));
                         return($ext_id);
                     }
                 } else {
-                    $this->error['Sync_Model'] = _("Invalid Model Selected, Can't Sync System") . "!";
+                    $this->error['Sync_Model'] = _("The model is not valid.");
                     return(FALSE);
                 }
             }
         } else {
-            $this->error['add_device'] = _("Invalid MAC Address") . "!";
+            $this->error['add_device'] = _("The MAC address is not valid.");
             return(FALSE);
         }
     }
@@ -359,7 +382,7 @@ class DevicesPage extends \PageBase {
                     $sql_p = array($mac_id, $reg[0]['value'], $lines[0]['value'], $name);
                     epm_sql($sql, 'query', $sql_p);
 
-                    $this->message['add_line'] = "Added '<i>" . epm_esc($name) . "</i>' to line '<i>" . epm_esc($lines[0]['value']) . "</i>' on device '<i>" . epm_esc($reg[0]['value']) . "</i>' <br/> Configuration Files will not be Generated until you click Save!";
+                    $this->message['add_line'] = sprintf(_("Added %s to line %s of the phone. Click Submit to write the config files."), "<i>" . epm_esc($name) . "</i>", "<i>" . epm_esc($lines[0]['value']) . "</i>");
                     return($mac_id);
                 } else {
                     $this->error['add_line'] = _("No Devices/Extensions Left to Add") . "!";
@@ -378,7 +401,7 @@ class DevicesPage extends \PageBase {
                     $sql_p = array($mac_id, $ext, $lines[0]['value'], $displayname);
                     epm_sql($sql, 'query', $sql_p);
 
-                    $this->message['add_line'] = "Added '<i>" . epm_esc($name) . "</i>' to line '<i>" . epm_esc($lines[0]['value']) . "</i>' on device '<i>" . epm_esc($reg[0]['value']) . "</i>' <br/> Configuration Files will not be Generated until you click Save!";
+                    $this->message['add_line'] = sprintf(_("Added %s to line %s of the phone. Click Submit to write the config files."), "<i>" . epm_esc($name) . "</i>", "<i>" . epm_esc($lines[0]['value']) . "</i>");
                     return($mac_id);
                 } else {
                     $this->error['add_line'] = _("No Devices/Extensions Left to Add") . "!";
@@ -393,7 +416,7 @@ class DevicesPage extends \PageBase {
             $sql_p = array($line, $mac_id);
             $luid = epm_sql($sql, 'getOne', $sql_p);
             if ($luid) {
-                $this->error['add_line'] = "This line has already been assigned!";
+                $this->error['add_line'] = _("This line is already in use.");
                 return(FALSE);
             } else {
                 if (!isset($displayname)) {
@@ -407,7 +430,7 @@ class DevicesPage extends \PageBase {
                 $sql = 'INSERT INTO `endpointman_line_list` (`mac_id`, `ext`, `line`, `description`) VALUES (?, ?, ?, ?)';
                 $sql_p = array($mac_id, $ext, $line, $name);
                 epm_sql($sql, 'query', $sql_p);
-                $this->message['add_line'] .= "Added " . epm_esc($name) . " to line " . epm_esc($line) . "<br/>";
+                $this->message['add_line'] .= sprintf(_("Added %s to line %s."), epm_esc($name), epm_esc($line)) . "<br/>";
                 return($mac_id);
             }
         }
@@ -484,7 +507,7 @@ class DevicesPage extends \PageBase {
             $sql = 'DELETE FROM endpointman_line_list WHERE luid=?';
             $sql_p = array($lineid);
             epm_sql($sql, 'query', $sql_p);
-            $this->message['delete_line'] = "Deleted!";
+            $this->message['delete_line'] = _("The line is deleted.");
             return(TRUE);
         } else {
             if ($allow_device_remove) {
@@ -495,26 +518,27 @@ class DevicesPage extends \PageBase {
                 $sql = 'DELETE FROM endpointman_mac_list WHERE id=?';
                 $sql_p = array($mac_id);
                 epm_sql($sql, 'query', $sql_p);
-                $this->message['delete_line'] = "Deleted!";
+                $this->message['delete_line'] = _("The line is deleted.");
                 return(TRUE);
             } else {
-                $this->error['delete_line'] = _("You can't remove the only line left") . "!";
+                $this->error['delete_line'] = _("A phone must have one line. Delete the phone instead.");
                 return(FALSE);
             }
         }
     }
 
+    /**
+     * Delete a phone and all of its lines.
+     *
+     * @param int $mac_id endpointman_mac_list.id
+     * @return bool TRUE
+     */
     function delete_device($mac_id) {
+        $sql = 'DELETE FROM endpointman_line_list WHERE mac_id = ?';
+        epm_sql($sql, 'query', array($mac_id));
 
-
-        $sql = 'DELETE FROM endpointman_line_list WHERE ext=?';
-        $sql_p = array($mac_id);
-        epm_sql($sql, 'query', $sql_p);
-
-		$sql = "DELETE FROM endpointman_mac_list WHERE NOT EXISTS (SELECT * FROM endpointman_line_list WHERE mac_id = id)";
-		$sql_p = array();
-        epm_sql($sql, 'query', $sql_p);
-        $this->message['delete_device'] = "Deleted!";
+        $sql = 'DELETE FROM endpointman_mac_list WHERE id = ?';
+        epm_sql($sql, 'query', array($mac_id));
         return(TRUE);
     }
 
@@ -526,8 +550,6 @@ class DevicesPage extends \PageBase {
         if ($mac_id) {
           $this->delete_device($mac_id);
         }
-
-        $this->message['delete_device'] = "Deleted!";
         return(TRUE);
     }
 
@@ -551,7 +573,7 @@ class DevicesPage extends \PageBase {
         if (isset($this->message[$function_name])) {
             return($this->message[$function_name]);
         } else {
-            return("Unknown Message");
+            return(_("Unknown message"));
         }
     }
 
@@ -619,7 +641,7 @@ class DevicesPage extends \PageBase {
 
 
             if (!$res) {
-                $this->error['getSipextensions'] = "Error with SQL Statement";
+                $this->error['getSipextensions'] = _("The database query failed.");
             }
 
 		foreach ($res as $row) {
@@ -651,7 +673,7 @@ class DevicesPage extends \PageBase {
 		$res = epm_sql($sql, 'getAll', $sql_p);
 
             if (!$res) {
-                $this->error['getSipSettings2'] = "Error with SQL Statement";
+                $this->error['getSipSettings2'] = _("The database query failed.");
             }
 		if ($res) {
 
@@ -691,7 +713,7 @@ class DevicesPage extends \PageBase {
             $featurecodes = $res;
 
             if (!$featurecodes) {
-                $this->error['featurecodes'] = "Error with SQL Statement";
+                $this->error['featurecodes'] = _("The database query failed.");
             }
 
 		foreach ($featurecodes as $row) {
@@ -746,7 +768,7 @@ class DevicesPage extends \PageBase {
 
 
             if (!$res) {
-                $this->error['sysadmin_options'] = "Error with SQL Statement";
+                $this->error['sysadmin_options'] = _("The database query failed.");
             }
 
 		foreach ($res as $row) {
@@ -780,7 +802,7 @@ class DevicesPage extends \PageBase {
 
         //You could screw up a phone if the mac_id is blank
         if (!isset($mac_id)) {
-            $this->error['get_phone_info'] = "Mac ID is not set";
+            $this->error['get_phone_info'] = _("No phone is selected.");
             return(FALSE);
         }
         $sql = 'SELECT id FROM endpointman_mac_list WHERE model > 0 AND id =?';
@@ -796,7 +818,7 @@ class DevicesPage extends \PageBase {
             $phone_info = epm_sql($sql, 'getRow', $sql_p);
 
             if (!$phone_info) {
-                $this->error['get_phone_info'] = "Error with SQL Statement";
+                $this->error['get_phone_info'] = _("The database query failed.");
             }
 
             //If there is a template associated with this phone then pull that information and put it into the array
@@ -942,7 +964,7 @@ class DevicesPage extends \PageBase {
                         $dir = $write_path . str_replace($this->PHONE_MODULES_PATH . "endpoint/" . $phone_info['directory'] . "/" . $phone_info['cfg_dir'] . "/", "", dirname($file));
                         if (!file_exists($dir)) {
                             if (!@mkdir($dir, 0775, TRUE)) {
-                                $this->error['parse_configs'] = "Could Not Create Directory: " . epm_esc($data);
+                                $this->error['parse_configs'] = sprintf(_("Cannot make the directory %s."), epm_esc($data));
                                 return(FALSE);
                             }
                         }
@@ -951,7 +973,7 @@ class DevicesPage extends \PageBase {
                     $dir = $write_path . $data;
                     if (!file_exists($dir)) {
                         if (!@mkdir($dir, 0775)) {
-                            $this->error['parse_configs'] = "Could Not Create Directory: " . epm_esc($data);
+                            $this->error['parse_configs'] = sprintf(_("Cannot make the directory %s."), epm_esc($data));
                             return(FALSE);
                         }
                     }
@@ -967,7 +989,7 @@ class DevicesPage extends \PageBase {
                     $orig = $this->PHONE_MODULES_PATH . "endpoint/" . $phone_info['directory'] . "/" . $phone_info['cfg_dir'] . "/" . $data;
                     if (!file_exists($file)) {
                         if (!@copy($orig, $file)) {
-                            $this->error['parse_configs'] = "Could Not Create File: " . epm_esc($data);
+                            $this->error['parse_configs'] = sprintf(_("Cannot make the file %s."), epm_esc($data));
                             return(FALSE);
                         }
                     } else {
@@ -989,7 +1011,7 @@ class DevicesPage extends \PageBase {
                 if (!$this->global_cfg['backup_check']) {
                     if (!file_exists($write_path . 'config_bkup')) {
                         if (!@mkdir($write_path . 'config_bkup', 0775)) {
-                            $this->error['parse_configs'] = "Could Not Create Backup Directory";
+                            $this->error['parse_configs'] = _("Cannot make the backup directory.");
                             return(FALSE);
                         }
                     }
@@ -1067,11 +1089,11 @@ class DevicesPage extends \PageBase {
 
 
                 if (!file_exists($write_path . $file)) {
-                    $this->error['parse_configs'] = "File (" . epm_esc($file) . ") not written to hard drive!";
+                    $this->error['parse_configs'] = sprintf(_("Cannot write the file %s."), epm_esc($file));
                     return(FALSE);
                 }
             } elseif (!in_array($file, $provisioner_lib->protected_files)) {
-                $this->error['parse_configs'] = "File not written to hard drive!";
+                $this->error['parse_configs'] = _("Cannot write the config file.");
                 return(FALSE);
             }
         }
@@ -1167,7 +1189,7 @@ class DevicesPage extends \PageBase {
                 try {
                     $provisioner_lib->DateTimeZone = new \DateTimeZone($settings['tz']);
                 } catch (Exception $e) {
-                    $this->error['parse_configs'] = 'Error Returned From Timezone Library: ' . epm_esc($e->getMessage());
+                    $this->error['parse_configs'] = sprintf(_("The time zone is not valid: %s"), epm_esc($e->getMessage()));
                     return(FALSE);
                 }
 
@@ -1523,7 +1545,7 @@ class DevicesPage extends \PageBase {
                 try {
                     $returned_data = $provisioner_lib->generate_all_files();
                 } catch (Exception $e) {
-                    $this->error['prepare_configs'] = 'Error Returned From Provisioner Library: ' . epm_esc($e->getMessage()) . ' ' . epm_esc($e->getFile()) . ' line ' . epm_esc($e->getLine());
+                    $this->error['prepare_configs'] = sprintf(_("The phone driver stopped with an error: %s (%s, line %s)"), epm_esc($e->getMessage()), epm_esc($e->getFile()), epm_esc($e->getLine()));
                     return(FALSE);
                 }
                 //print_r($provisioner_lib->debug_return);
@@ -1531,7 +1553,7 @@ class DevicesPage extends \PageBase {
                 $time_end = microtime(true);
                 $time = $time_end - $time_start;
                 if ($time > 360) {
-                    $this->error['generate_time'] = "It took an awfully long time to generate configs...(" . round($time, 2) . " seconds)";
+                    $this->error['generate_time'] = sprintf(_("The configs took %s seconds to make."), round($time, 2));
                 }
                 if ($write) {
                     $this->write_configs($provisioner_lib, $reboot, $settings['config_location'], $phone_info, $returned_data);
@@ -1733,7 +1755,7 @@ class DevicesPage extends \PageBase {
 
     function discover_new($netmask, $use_nmap=TRUE) {
         if (!$this->validate_netmask($netmask)) {
-            $this->error['discover_new'] = "Invalid Netmask";
+            $this->error['discover_new'] = _("The network is not valid. Use the form 192.168.1.0/24.");
             return(FALSE);
         }
 
@@ -1745,7 +1767,7 @@ class DevicesPage extends \PageBase {
                 $nmap = $this->system->find_exec('nmap');
             }
             if ($nmap === '') {
-                $this->error['discover_new'] = "Could Not Find NMAP, Using The Neighbour Table Only";
+                $this->error['discover_new'] = _("nmap is not installed. The search uses the neighbor table only.");
             } else {
                 shell_exec(escapeshellcmd($nmap) . ' -v -sP ' . escapeshellarg($netmask));
             }
@@ -1757,7 +1779,7 @@ class DevicesPage extends \PageBase {
         // the same as an empty network.
         $neighbours = $this->system->neighbour_table($this->global_cfg['arp_location']);
         if ($neighbours === NULL) {
-            $this->error['discover_new'] = "Could not read the network neighbour table: neither ip (iproute2) nor arp (net-tools) is installed.";
+            $this->error['discover_new'] = _("Cannot read the neighbor table. Install iproute2 (ip) or net-tools (arp).");
             return(FALSE);
         }
 
@@ -1873,13 +1895,13 @@ class DevicesPage extends \PageBase {
         $temp = array();
         foreach ($result as $row) {
             $temp[$i]['value'] = $row['id'];
-            $temp[$i]['text'] = $row['id'] . " --- " . $row['description'];
+            $temp[$i]['text'] = $row['id'] . " (" . $row['description'] . ")";
             $i++;
         }
 
         if (isset($line_data)) {
             $temp[$i]['value'] = $line_data['ext'];
-            $temp[$i]['text'] = $line_data['ext'] . " --- " . $line_data['description'];
+            $temp[$i]['text'] = $line_data['ext'] . " (" . $line_data['description'] . ")";
             $temp[$i]['selected'] = "selected";
         }
 
@@ -1913,10 +1935,10 @@ class DevicesPage extends \PageBase {
         }
         $temp[$i]['value'] = 0;
         if ($temp_select == 0) {
-            $temp[$i]['text'] = "Custom...";
+            $temp[$i]['text'] = _("Custom (this phone only)");
             $temp[$i]['selected'] = "selected";
         } else {
-            $temp[$i]['text'] = "Custom...";
+            $temp[$i]['text'] = _("Custom (this phone only)");
         }
 
         return($temp);
@@ -1979,7 +2001,7 @@ class DevicesPage extends \PageBase {
                 $template_variables_array[$group_count]['title'] = $cats_name;
             } else {
                 //Group all ARI stuff into one tab
-                $template_variables_array[$group_count]['title'] = "Your Phone Settings";
+                $template_variables_array[$group_count]['title'] = _("Phone settings");
             }
             foreach ($cats as $subcat_name => $subcats) {
                 foreach ($subcats as $item_var => $config_options) {
@@ -2293,7 +2315,7 @@ class DevicesPage extends \PageBase {
 
         if (!isset($temp)) {
             if (!isset($this->global_cfg['new'])) {
-                $this->error['modelsAvailable'] = "You need to enable at least ONE model";
+                $this->error['modelsAvailable'] = _("No model is enabled. Enable a model on the Brands page.");
             }
             return(FALSE);
         } else {

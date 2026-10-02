@@ -111,7 +111,6 @@ class SettingsPage extends \PageBase {
 
 			case "import":
 				$this->_iedl_import();
-				echo "<br /><hr><br />";
 				exit;
 				break;
 			case "export_brands_availables":
@@ -1044,110 +1043,123 @@ class SettingsPage extends \PageBase {
 
 
 	/**** FUNCIONES SEC MODULO "epm_advanced\iedl" ****/
+	/**
+	 * Send the phone list as a CSV file.
+	 *
+	 * The columns are MAC, brand, model, extension, line and IPEI. One row is one
+	 * line of a phone. _iedl_import() reads the same columns.
+	 */
 	public function _iedl_export($sFileName = "devices_list.csv")
 	{
 		header("Content-type: text/csv");
 		header('Content-Disposition: attachment; filename="'.$sFileName.'"');
 		$outstream = fopen("php://output",'w');
-		$sql = 'SELECT endpointman_mac_list.mac, endpointman_line_list.ipei, endpointman_brand_list.name, endpointman_model_list.model, endpointman_line_list.ext,endpointman_line_list.line FROM endpointman_mac_list, endpointman_model_list, endpointman_brand_list, endpointman_line_list WHERE endpointman_line_list.mac_id = endpointman_mac_list.id AND endpointman_model_list.id = endpointman_mac_list.model AND endpointman_model_list.brand = endpointman_brand_list.id';
-		$sql_p = array();
-		$result = epm_sql($sql, 'getAll', $sql_p);
+		$sql = 'SELECT endpointman_mac_list.mac, endpointman_brand_list.name, endpointman_model_list.model, endpointman_line_list.ext, endpointman_line_list.line, endpointman_line_list.ipei FROM endpointman_mac_list, endpointman_model_list, endpointman_brand_list, endpointman_line_list WHERE endpointman_line_list.mac_id = endpointman_mac_list.id AND endpointman_model_list.id = endpointman_mac_list.model AND endpointman_model_list.brand = endpointman_brand_list.id ORDER BY endpointman_mac_list.mac, endpointman_line_list.line';
+		$result = epm_sql($sql, 'getAll', array());
 		foreach($result as $row) {
-			fputcsv($outstream, $row);
+			fputcsv($outstream, array_values($row));
 		}
 		fclose($outstream);
 		exit;
 	}
 
-	//Dave B's Q&D file upload security code (http://us2.php.net/manual/en/features.file-upload.php)
+	/**
+	 * Add the phones of an uploaded CSV file.
+	 *
+	 * The columns are MAC, brand, model, extension, line and IPEI. Only the MAC
+	 * is necessary. The brand and the model match by name, first exactly and
+	 * then as part of a name. The extension must match exactly.
+	 *
+	 * The Phones page shows the output as HTML, so each value from the file is
+	 * escaped.
+	 */
 	public function _iedl_import()
 	{
-		if (count($_FILES["files"]["error"]) == 0) {
-			out(_("Error: Can Not Find Uploaded Files!"));
+		$devices = $this->epm->_get_page('devices');
+		if (empty($_FILES["files"]["error"]) || !is_array($_FILES["files"]["error"])) {
+			echo '<p class="text-danger">' . _("No file was uploaded.") . '</p>';
+			return;
 		}
-		else
-		{
-			//$allowedExtensions = array("application/csv", "text/plain", "text/csv", "application/vnd.ms-excel");
-			$allowedExtensions = array("csv", "txt");
-			foreach ($_FILES["files"]["error"] as $key => $error) {
-				outn(sprintf(_("Importing CSV file %s ...<br />"), $_FILES["files"]["name"][$key]));
+		$allowedExtensions = array("csv", "txt");
+		foreach ($_FILES["files"]["error"] as $key => $error) {
+			$file_name = epm_esc($_FILES["files"]["name"][$key]);
+			echo '<p><strong>' . sprintf(_("Import of %s"), $file_name) . '</strong></p><ul>';
 
-				if ($error != UPLOAD_ERR_OK) {
-					out(sprintf(_("Error: %s"), $this->file_upload_error_message($error)));
+			if ($error != UPLOAD_ERR_OK) {
+				echo '<li class="text-danger">' . epm_esc($this->file_upload_error_message($error)) . '</li></ul>';
+				continue;
+			}
+			if (!in_array(strtolower(substr(strrchr($_FILES["files"]["name"][$key], "."), 1)), $allowedExtensions)) {
+				echo '<li class="text-danger">' . _("Use a .csv or a .txt file.") . '</li></ul>';
+				continue;
+			}
+			if ($_FILES["files"]["size"][$key] == 0) {
+				echo '<li class="text-danger">' . _("The file is empty.") . '</li></ul>';
+				continue;
+			}
+			if (!is_uploaded_file($_FILES["files"]["tmp_name"][$key])) {
+				echo '<li class="text-danger">' . _("The upload is not valid.") . '</li></ul>';
+				continue;
+			}
+
+			$handle = fopen($_FILES["files"]["tmp_name"][$key], "r");
+			$i = 0;
+			$added = 0;
+			while (($device = fgetcsv($handle)) !== FALSE) {
+				$i++;
+				if (!isset($device[0]) || trim($device[0]) === "") {
+					continue;
 				}
-				else
-				{
-					//if (!in_array($_FILES["files"]["type"][$key], $allowedExtensions)) {
-					if (!in_array(substr(strrchr($_FILES["files"]["name"][$key], "."), 1), $allowedExtensions)) {
-						out(sprintf(_("Error: We support only CSV and TXT files, type file %s no support!"), $_FILES["files"]["name"][$key]));
-					}
-					elseif ($_FILES["files"]["size"][$key] == 0) {
-						out(sprintf(_("Error: File %s size is 0!"), $_FILES["files"]["name"][$key]));
-					}
-					else {
-						$uploadfile = $this->LOCAL_PATH . basename($_FILES["files"]["name"][$key]);
-						$uploadtemp = $_FILES["files"]["tmp_name"][$key];
-
-						if (move_uploaded_file($uploadtemp, $uploadfile)) {
-							//Parse the uploaded file
-							$handle = fopen($uploadfile, "r");
-							$i = 1;
-							while (($device = fgetcsv($handle, filesize($uploadfile))) !== FALSE) {
-								if ($device[0] != "") {
-									if ($mac = $this->mac_check_clean($device[0])) {
-										$sql = 'SELECT id FROM endpointman_brand_list WHERE name LIKE ? LIMIT 1';
-										$sql_p = array('%' . $device[1] . '%');
-										//$res = epm_sql($sql, 'query', $sql_p);
-										$res = epm_sql($sql, 'getAll', $sql_p);
-
-										if ($res) {
-											$brand_id = epm_sql($sql, 'getOne', $sql_p);
-
-											$sql_model = 'SELECT id FROM endpointman_model_list WHERE brand = ? AND model LIKE ? LIMIT 1';
-											$sql_model_p = array($brand_id, '%' . $device[2] . '%');
-											$sql_ext = 'SELECT extension, name FROM users WHERE extension LIKE ? LIMIT 1';
-											$sql_ext_p = array('%' . $device[3] . '%');
-
-											$line_id = isset($device[4]) ? $device[4] : 1;
-
-											$res_model = epm_sql($sql_model, 'query', $sql_model_p);
-											if (count($res_model)) {
-												$model_id = epm_sql($sql_model, 'getRow', $sql_model_p);
-												$model_id = $model_id['id'];
-
-												$res_ext = epm_sql($sql_ext, 'query', $sql_ext_p);
-												if (count($res_ext)) {
-													$ext = epm_sql($sql_ext, 'getRow', $sql_ext_p);
-													$description = $ext['name'];
-													$ext = $ext['extension'];
-//TODO: PENDIENTE ASIGNAR OBJ
-FreePBX::Endpointman()->add_device($mac, $model_id, $ext, 0, $line_id, $description);
-
-													//out(_("Done!"));
-												} else {
-													out(sprintf(_("Error: Invalid Extension Specified on line %d!"), $i));
-												}
-											} else {
-												out(sprintf(_("Error: Invalid Model Specified on line %d!"), $i));
-											}
-										} else {
-											out(sprintf(_("Error: Invalid Brand Specified on line %d!"), $i));
-										}
-									} else {
-										out(sprintf(_("Error: Invalid Mac on line %d!"), $i));
-									}
-								}
-								$i++;
-
-							}
-							fclose($handle);
-							unlink($uploadfile);
-							out(_("<font color='#FF0000'><b>Please reboot & rebuild all imported phones</b></font>"));
-						} else {
-							out(_("Error: Possible file upload attack!"));
-						}
-					}
+				// Skip a header row, for example "MAC,Brand,Model,...".
+				if ($i == 1 && !$this->mac_check_clean($device[0]) && stripos($device[0], 'mac') !== FALSE) {
+					continue;
 				}
+				$mac = $this->mac_check_clean($device[0]);
+				if (!$mac) {
+					echo '<li class="text-danger">' . sprintf(_("Row %d: the MAC address is not valid."), $i) . '</li>';
+					continue;
+				}
+				$brand_name = isset($device[1]) ? trim($device[1]) : '';
+				$model_name = isset($device[2]) ? trim($device[2]) : '';
+				$ext_name   = isset($device[3]) ? trim($device[3]) : '';
+				$line_id    = (isset($device[4]) && trim($device[4]) !== '') ? trim($device[4]) : 1;
+				$ipei       = isset($device[5]) ? trim($device[5]) : '';
+
+				$brand_id = epm_sql('SELECT id FROM endpointman_brand_list WHERE name = ? LIMIT 1', 'getOne', array($brand_name));
+				if (!$brand_id && $brand_name !== '') {
+					$brand_id = epm_sql('SELECT id FROM endpointman_brand_list WHERE name LIKE ? LIMIT 1', 'getOne', array('%' . $brand_name . '%'));
+				}
+				if (!$brand_id) {
+					echo '<li class="text-danger">' . sprintf(_("Row %d: the brand %s is not known."), $i, epm_esc($brand_name)) . '</li>';
+					continue;
+				}
+
+				$model_id = epm_sql('SELECT id FROM endpointman_model_list WHERE brand = ? AND model = ? LIMIT 1', 'getOne', array($brand_id, $model_name));
+				if (!$model_id && $model_name !== '') {
+					$model_id = epm_sql('SELECT id FROM endpointman_model_list WHERE brand = ? AND model LIKE ? LIMIT 1', 'getOne', array($brand_id, '%' . $model_name . '%'));
+				}
+				if (!$model_id) {
+					echo '<li class="text-danger">' . sprintf(_("Row %d: the model %s is not known."), $i, epm_esc($model_name)) . '</li>';
+					continue;
+				}
+
+				$ext = epm_sql('SELECT extension, name FROM users WHERE extension = ? LIMIT 1', 'getRow', array($ext_name));
+				if (empty($ext)) {
+					echo '<li class="text-danger">' . sprintf(_("Row %d: the extension %s does not exist."), $i, epm_esc($ext_name)) . '</li>';
+					continue;
+				}
+
+				$devices->error = array();
+				if ($devices->add_device($mac, $model_id, $ext['extension'], 0, $line_id, $ext['name'], $ipei)) {
+					$added++;
+				} else {
+					echo '<li class="text-danger">' . sprintf(_("Row %d: %s"), $i, implode(' ', $devices->error)) . '</li>';
+				}
+			}
+			fclose($handle);
+			echo '</ul><p>' . sprintf(ngettext("%d phone is added.", "%d phones are added.", $added), $added) . '</p>';
+			if ($added > 0) {
+				echo '<p>' . _("Write the configs of the new phones, and restart them: select the phones, and then use Selected phones > Write configs and restart.") . '</p>';
 			}
 		}
 	}
