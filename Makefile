@@ -194,7 +194,7 @@ i18n: ## Regenerate i18n/endpointman.pot, then merge and compile every locale
 		&& command -v msgfmt >/dev/null \
 		|| { echo "need GNU gettext: xgettext, msgmerge, msgfmt" >&2; exit 1; }
 	@mkdir -p build
-	xgettext --language=PHP --from-code=UTF-8 --keyword=_ \
+	xgettext --language=PHP --from-code=UTF-8 --keyword=_ --keyword=ngettext:1,2 \
 		--package-name=$(RAWNAME) --package-version=$(VERSION) \
 		--copyright-holder='Sangoma Technologies, Inc.' \
 		--msgid-bugs-address='' -o build/$(RAWNAME).pot $(I18N_SOURCES)
