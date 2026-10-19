@@ -10,3 +10,4 @@ module.xml	merge=ours
 /.gitignore		export-ignore
 /Makefile		export-ignore
 /docker/		export-ignore
+/.github/		export-ignore

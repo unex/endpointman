@@ -35,7 +35,8 @@ The message names the file. A manual upload follows the same rules.
 
 ## Install
 
-1. Download the release tarball (`endpointman-<version>.tgz`).
+1. Download the release tarball (`endpointman-<version>.tgz`) from the
+   [releases page](https://github.com/unex/endpointman/releases).
 2. Unpack it into the FreePBX modules directory, and install the module:
 
    ```sh

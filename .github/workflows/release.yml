@@ -1,0 +1,101 @@
+# Publish a release when a version tag is pushed.
+#
+# The tag is the module version, for example 17.0.1.0. It must be the same as
+# <version> in module.xml. The run checks the PHP syntax, runs the tests in
+# docker/tests, and builds the tarball with "git archive", as
+# "make package-release" does. .gitattributes selects the files that ship.
+# Then it makes a GitHub release with the tarball and its SHA-256 file. The
+# release notes are the changelog line of the version in module.xml.
+#
+# A failed step stops the run, and no release is made.
+name: Publish the release tarball
+
+on:
+  push:
+    tags:
+      - "[0-9]*.[0-9]*.[0-9]*.[0-9]*"
+
+permissions:
+  contents: read
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    env:
+      TAG: ${{ github.ref_name }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Check that the tag is the module version
+        run: |
+          version=$(sed -n 's/.*<version>\([^<]*\)<\/version>.*/\1/p' module.xml | head -1)
+          if [ "$version" != "$TAG" ]; then
+            echo "::error::The tag is $TAG, but module.xml has version $version."
+            exit 1
+          fi
+
+      - name: Check the PHP syntax with PHP 8.2
+        run: |
+          docker run --rm -v "$PWD":/src -w /src php:8.2-cli sh -c '
+            find . -name "*.php" -not -path "./build/*" -print0 \
+              | xargs -0 -n1 php -l > /tmp/lint.log 2>&1
+            status=$?
+            grep -v "^No syntax errors" /tmp/lint.log
+            exit $status'
+
+      - name: Run the tests
+        run: |
+          for t in docker/tests/*_test.php; do
+            echo "--- $t"
+            docker run --rm -v "$PWD":/src -w /src php:8.2-cli php "$t"
+          done
+
+      - name: Build the tarball
+        run: |
+          mkdir -p dist
+          tarball="dist/endpointman-$TAG.tgz"
+          git archive --format=tar.gz --prefix=endpointman/ -o "$tarball" HEAD
+          for f in endpointman/module.xml endpointman/Endpointman.class.php; do
+            tar tzf "$tarball" | grep -qx "$f" || { echo "::error::The tarball has no $f."; exit 1; }
+          done
+          if tar tzf "$tarball" | grep -E '^endpointman/(docker|\.github)/|^endpointman/(Makefile|\.env)$'; then
+            echo "::error::The tarball contains development files."
+            exit 1
+          fi
+          (cd dist && sha256sum "endpointman-$TAG.tgz" > "endpointman-$TAG.tgz.sha256")
+          echo "$(tar tzf "$tarball" | wc -l) entries, $(du -h "$tarball" | cut -f1)"
+
+      - name: Write the release notes
+        run: |
+          line=$(grep -F "*$TAG*" module.xml | head -1 | sed -e 's/^[[:space:]]*//' -e "s/^\*$TAG\*[[:space:]]*//")
+          {
+            echo "OSS Endpoint Manager $TAG for FreePBX 17."
+            echo
+            if [ -n "$line" ]; then echo "$line"; echo; fi
+            echo "Install: download endpointman-$TAG.tgz and upload it in Admin > Module Admin > Upload modules, or run:"
+            echo
+            echo '```'
+            echo "tar xzf endpointman-$TAG.tgz -C /var/www/html/admin/modules/"
+            echo "fwconsole ma install endpointman"
+            echo "fwconsole reload"
+            echo '```'
+            echo
+            echo "The module is not signed, so FreePBX shows an \"Unsigned module\" notice. This is normal."
+          } > dist/notes.md
+          cat dist/notes.md
+
+      - name: Publish the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$TAG" \
+            --repo "$GITHUB_REPOSITORY" \
+            --verify-tag \
+            --title "endpointman $TAG" \
+            --notes-file dist/notes.md \
+            "dist/endpointman-$TAG.tgz" \
+            "dist/endpointman-$TAG.tgz.sha256"

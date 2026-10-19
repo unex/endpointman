@@ -110,6 +110,23 @@ There are two differences from a module that Sangoma publishes:
   `.gitattributes`). Thus `package-release` compares the two lists, and it
   fails and shows the file if they differ.
 
+## Publish a release
+
+A push of a version tag publishes the release.
+`.github/workflows/release.yml` checks the PHP syntax, runs the tests,
+builds the tarball with `git archive`, and makes a GitHub release with the
+tarball and its SHA-256 file. The release notes are the changelog line of the
+version in `module.xml`.
+
+1. Set `<version>` in `module.xml`, and add the changelog line of the
+   version.
+2. Commit the change on `release/17.0`, and push the branch.
+3. Tag the commit with the version, for example `git tag -s 17.0.1.0`.
+4. Push the tag: `git push origin 17.0.1.0`.
+
+The workflow stops, and makes no release, when the tag is not the version in
+`module.xml` or when a check fails.
+
 ## Static analysis
 
 These targets need Docker but not the FreePBX stack:
